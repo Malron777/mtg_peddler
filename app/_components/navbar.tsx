@@ -1,5 +1,5 @@
 import { RxHamburgerMenu } from "react-icons/rx";
-import AppIcon from "./app-icon";
+import AppIcon from "./avatar";
 
 export default function Navbar() {
   return (
