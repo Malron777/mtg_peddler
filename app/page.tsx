@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
+import SignIn from "./_components/sign-in";
+import { isLoggedIn } from "./auth";
 
 export default async function Home() {
-  redirect("/dashboard");
+  const loggedIn = await isLoggedIn();
 
-  return (
-    <div className="flex flex-col items-center align-middle w-full">
-      <p>HoMe PaGe</p>
-    </div>
-  );
+  if (loggedIn) {
+    redirect("/dashboard");
+  }
+
+  return <SignIn />;
 }
