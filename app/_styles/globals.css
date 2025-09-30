@@ -34,7 +34,69 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
+
+  /* Primary - Olive/Avocado Green (Friendly, Growth, Trade) */
+    --olive-50: #f6f7f3;
+    --olive-100: #e8eadc;
+    --olive-200: #d4d7c2;
+    --olive-300: #b3b896;
+    --olive-400: #94996e;  /* Main olive */
+    --olive-500: #7a8057;
+    --olive-600: #626745;
+    --olive-700: #4e5238;
+    --olive-800: #3f432f;
+    --olive-900: #353829;
+  
+    /* Accent - Warm Gold (Premium, Rare cards, Success) */
+    --gold-50: #fffef5;
+    --gold-100: #fff9db;
+    --gold-200: #ffeeb3;
+    --gold-300: #ffdd80;
+    --gold-400: #ffc94d;
+    --gold-500: #ffb01f;
+    --gold-600: #e6960a;
+    --gold-700: #bf7a0a;
+  
+    /* Neutral - Slate (Professional, Clean) */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --slate-950: #020617;
+
+      /* Card Rarity Colors */
+  --rarity-common: #1e293b;
+  --rarity-uncommon: #71717a;
+  --rarity-rare: #eab308;
+  --rarity-mythic: #ea580c;
+  --rarity-special: #a855f7;
+
+  /* Trading Status Colors */
+  --status-trade: #7a8057;      /* Olive */
+  --status-sale: #0891b2;       /* Cyan */
+  --status-both: #7c3aed;        /* Violet */
+  --status-reserved: #dc2626;   /* Red */
+  
+  /* Condition Colors */
+  --condition-nm: #16a34a;      /* Near Mint - Green */
+  --condition-lp: #0891b2;      /* Lightly Played - Cyan */
+  --condition-mp: #eab308;      /* Moderately Played - Yellow */
+  --condition-hp: #ea580c;      /* Heavily Played - Orange */
+  --condition-dmg: #dc2626;     /* Damaged - Red */
+
+  /* System Status */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --error: #dc2626;
+  --info: #0891b2;
+  }
+
 
 @theme inline {
   --color-background: var(--background);
