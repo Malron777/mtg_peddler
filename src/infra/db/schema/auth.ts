@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { deals } from "./tcg";
 
 // Enums
 export const userRoleEnum = pgEnum("user_role", ["admin", "user", "store"]);
@@ -135,7 +136,7 @@ export const userReports = pgTable("user_reports", {
   reportedUserId: text("reported_user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  dealId: text("deal_id"),
+  dealId: text("deal_id").references(() => deals.id, { onDelete: "set null" }),
   reason: text("reason").notNull(),
   description: text("description"),
   status: reportStatusEnum("status").default("pending").notNull(),
