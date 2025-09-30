@@ -6,6 +6,7 @@ export const promotionSchema = createSelectSchema(promotions);
 export const insertPromotionSchema = createInsertSchema(promotions);
 
 export type Promotion = z.infer<typeof promotionSchema>;
+export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 
 export const updatePromotionSchema = insertPromotionSchema.omit({
   createdAt: true,

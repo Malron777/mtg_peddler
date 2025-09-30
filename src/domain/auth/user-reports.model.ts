@@ -6,6 +6,7 @@ export const userReportSchema = createSelectSchema(userReports);
 export const insertUserReportSchema = createInsertSchema(userReports);
 
 export type UserReport = z.infer<typeof userReportSchema>;
+export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
 
 export const updateUserReportSchema = insertUserReportSchema.omit({
   createdAt: true,

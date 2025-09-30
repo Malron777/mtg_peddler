@@ -6,6 +6,7 @@ export const paymentMethodSchema = createSelectSchema(paymentMethods);
 export const insertPaymentMethodSchema = createInsertSchema(paymentMethods);
 
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
+export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
 
 export const updatePaymentMethodSchema = insertPaymentMethodSchema.omit({
   createdAt: true,

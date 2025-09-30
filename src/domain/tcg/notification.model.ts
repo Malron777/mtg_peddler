@@ -6,6 +6,7 @@ export const notificationSchema = createSelectSchema(notifications);
 export const insertNotificationSchema = createInsertSchema(notifications);
 
 export type Notification = z.infer<typeof notificationSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export const updateNotificationSchema = insertNotificationSchema.omit({
   createdAt: true,

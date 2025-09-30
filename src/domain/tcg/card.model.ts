@@ -5,6 +5,8 @@ import z from "zod";
 export const cardSchema = createSelectSchema(cards);
 export const insertCardSchema = createInsertSchema(cards);
 
+export type InsertCard = z.infer<typeof insertCardSchema>;
+
 export type Card = z.infer<typeof cardSchema>;
 
 export const updateCardSchema = insertCardSchema.omit({

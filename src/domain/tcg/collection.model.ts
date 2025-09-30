@@ -6,6 +6,7 @@ export const collectionSchema = createSelectSchema(collections);
 export const insertCollectionSchema = createInsertSchema(collections);
 
 export type Collection = z.infer<typeof collectionSchema>;
+export type InsertCollection = z.infer<typeof insertCollectionSchema>;
 
 export const updateCollectionSchema = insertCollectionSchema.omit({
   createdAt: true,

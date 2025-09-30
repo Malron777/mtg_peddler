@@ -6,6 +6,7 @@ export const priceHistorySchema = createSelectSchema(priceHistory);
 export const insertPriceHistorySchema = createInsertSchema(priceHistory);
 
 export type PriceHistory = z.infer<typeof priceHistorySchema>;
+export type InsertPriceHistory = z.infer<typeof insertPriceHistorySchema>;
 
 export const updatePriceHistorySchema = insertPriceHistorySchema.omit({
   createdAt: true,
