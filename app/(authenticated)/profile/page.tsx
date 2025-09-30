@@ -1,6 +1,6 @@
 "use client";
 
-import { getCurrentUser } from "@/app/auth";
+import { getCurrentUser } from "@/app/auth-actions";
 import { useUpdateUser } from "@/app/lib/hooks/use-user-queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,11 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState<Partial<UpdateUser>>({});
   const [loading, setLoading] = useState(true);
 
-  const { updateUser, updateUserLoading, updateUserError } = useUpdateUser();
+  const {
+    updateUser,
+    loading: updateUserLoading,
+    error: updateUserError,
+  } = useUpdateUser();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -159,7 +163,7 @@ export default function ProfilePage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Information */}
-          <Card>
+          <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Profile Information</CardTitle>
@@ -182,7 +186,12 @@ export default function ProfilePage() {
                     <Save className="h-4 w-4 mr-2" />
                     {updateUserLoading ? "Saving..." : "Save"}
                   </Button>
-                  <Button onClick={handleCancel} variant="outline" size="sm">
+                  <Button
+                    onClick={handleCancel}
+                    variant="outline"
+                    size="sm"
+                    disabled={updateUserLoading}
+                  >
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
@@ -207,6 +216,7 @@ export default function ProfilePage() {
                         handleInputChange("name", e.target.value)
                       }
                       placeholder="Enter your name"
+                      disabled={updateUserLoading}
                     />
                   ) : (
                     <p className="text-sm font-medium">{user.name}</p>
@@ -233,6 +243,7 @@ export default function ProfilePage() {
                         handleInputChange("image", e.target.value)
                       }
                       placeholder="Enter image URL"
+                      disabled={updateUserLoading}
                     />
                   ) : (
                     <p className="text-sm font-medium">

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { isLoggedIn } from "./auth";
+import { isLoggedIn } from "./auth-actions";
 
 export default async function Home() {
   const loggedIn = await isLoggedIn();
