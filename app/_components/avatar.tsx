@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import froggy from "../../froggy.png";
 
-export default function AppIcon() {
+export default function Avatar() {
   return (
     <Link href="/profile">
       <Image

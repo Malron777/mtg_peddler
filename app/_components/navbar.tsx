@@ -1,7 +1,12 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { RxHamburgerMenu } from "react-icons/rx";
-import AppIcon from "./avatar";
+import { getCurrentUser } from "../auth";
+import Avatar from "./avatar";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const user = await getCurrentUser();
+
   return (
     <div className="bg-brown-primary p-3">
       <div className="grid grid-cols-3 grid-rows-1 ">
@@ -10,10 +15,34 @@ export default function Navbar() {
         </p>
         <div className="place-self-end">
           <div className="flex gap-4">
-            <AppIcon />
-            <button className="mr-6">
-              <RxHamburgerMenu size="2em" />
-            </button>
+            {user ? (
+              <div className="flex gap-6 items-center">
+                <Avatar />
+                <Link href="/logout">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-black text-white border-none hover:bg-gray-800 hover:text-white"
+                  >
+                    Logout
+                  </Button>
+                </Link>
+                <button className="mr-6">
+                  <RxHamburgerMenu size="2em" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Link href="/sign-in">
+                  <Button variant="outline" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button size="sm">Sign Up</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
