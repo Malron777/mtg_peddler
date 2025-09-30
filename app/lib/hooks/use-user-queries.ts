@@ -4,8 +4,8 @@ import { UpdateUser, User } from "@/src/domain/auth/user.model";
 import {
   GetAllUsersOptions,
   GetAllUsersResult,
-} from "@/src/infra/repos/get-all-users.query";
-import { GetUserResult } from "@/src/infra/repos/get-user.query";
+} from "@/src/infra/repos/user/get-all-users.query";
+import { GetUserResult } from "@/src/infra/repos/user/get-user.query";
 import { useCallback, useState } from "react";
 
 // Hook for getting a single user

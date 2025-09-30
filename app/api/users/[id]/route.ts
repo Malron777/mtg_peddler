@@ -1,7 +1,7 @@
 import { dependencies } from "@/src/config/dependencies";
 import { UpdateUser } from "@/src/domain/auth/user.model";
-import { getUserQuery } from "@/src/infra/repos/get-user.query";
-import { updateUserQuery } from "@/src/infra/repos/update-user.query";
+import { getUserQuery } from "@/src/infra/repos/user/get-user.query";
+import { updateUserQuery } from "@/src/infra/repos/user/update-user.query";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
