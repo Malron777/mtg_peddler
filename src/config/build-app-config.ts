@@ -10,6 +10,7 @@ export function buildAppConfig(): AppConfig {
     const env = envSchema.parse(process.env);
     return {
       DATABASE_URL: env.DATABASE_URL,
+      TEST_DATABASE_URL: env.TEST_DATABASE_URL,
       BETTER_AUTH_SECRET: env.BETTER_AUTH_SECRET,
       BETTER_AUTH_URL: env.BETTER_AUTH_URL,
       GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
