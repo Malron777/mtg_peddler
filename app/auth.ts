@@ -1,3 +1,5 @@
+"use server";
+
 import { dependencies } from "@/src/config/dependencies";
 import { User } from "@/src/domain/auth/user.model";
 import { betterAuth } from "better-auth";
