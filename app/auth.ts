@@ -1,4 +1,5 @@
 import { dependencies } from "@/src/config/dependencies";
+import { userRoleEnum } from "@/src/infra/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
@@ -6,6 +7,18 @@ export const auth = betterAuth({
   database: drizzleAdapter(dependencies.db, {
     provider: "pg",
   }),
+  user: {
+    additionalFields: {
+      reputationScore: { type: "string", input: false },
+      role: {
+        type: userRoleEnum.enumValues,
+        default: "user",
+        input: false,
+      },
+      preferredCurrency: { type: "string", input: true },
+      notificationPreferences: { type: "json", input: false },
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },
