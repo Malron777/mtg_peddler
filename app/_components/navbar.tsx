@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { getCurrentUser } from "../auth";
+import { getCurrentUser } from "../auth-actions";
 import Avatar from "./avatar";
 
 export default async function Navbar() {
