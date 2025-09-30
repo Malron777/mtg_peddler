@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import SignIn from "./_components/sign-in";
 import { isLoggedIn } from "./auth";
 
 export default async function Home() {
@@ -9,5 +8,5 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
-  return <SignIn />;
+  redirect("/sign-in");
 }
