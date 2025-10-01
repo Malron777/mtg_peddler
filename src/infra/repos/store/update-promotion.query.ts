@@ -2,6 +2,7 @@ import { Promotion, UpdatePromotion } from "@/src/domain/tcg/promotion.model";
 import { DB } from "@/src/infra/db/db";
 import { promotions } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updatePromotionQuery(
   db: DB,
@@ -10,7 +11,7 @@ export async function updatePromotionQuery(
   const result = await db
     .update(promotions)
     .set({
-      ...updatePromotion,
+      ...filterUndefined(updatePromotion),
       updatedAt: new Date(),
     })
     .where(eq(promotions.id, updatePromotion.id))

@@ -7,9 +7,14 @@ export const insertStoreSchema = createInsertSchema(stores);
 
 export type Store = z.infer<typeof storeSchema>;
 
-export const updateStoreSchema = insertStoreSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateStoreSchema = insertStoreSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateStore = z.infer<typeof updateStoreSchema>;

@@ -5,6 +5,7 @@ import {
 import { DB } from "@/src/infra/db/db";
 import { storeStaff } from "@/src/infra/db/schema";
 import { and, eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateStoreStaffQuery(
   db: DB,
@@ -13,7 +14,7 @@ export async function updateStoreStaffQuery(
   const result = await db
     .update(storeStaff)
     .set({
-      ...updateStoreStaff,
+      ...filterUndefined(updateStoreStaff),
       updatedAt: new Date(),
     })
     .where(

@@ -5,6 +5,7 @@ import {
 import { DB } from "@/src/infra/db/db";
 import { wantListItems } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateWantListItemQuery(
   db: DB,
@@ -13,7 +14,7 @@ export async function updateWantListItemQuery(
   const result = await db
     .update(wantListItems)
     .set({
-      ...updateWantListItem,
+      ...filterUndefined(updateWantListItem),
       updatedAt: new Date(),
     })
     .where(eq(wantListItems.id, updateWantListItem.id))

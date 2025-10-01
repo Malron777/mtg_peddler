@@ -2,6 +2,7 @@ import { Store, UpdateStore } from "@/src/domain/auth/stores.model";
 import { DB } from "@/src/infra/db/db";
 import { stores } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateStoreQuery(
   db: DB,
@@ -10,7 +11,7 @@ export async function updateStoreQuery(
   const result = await db
     .update(stores)
     .set({
-      ...updateStore,
+      ...filterUndefined(updateStore),
       updatedAt: new Date(),
     })
     .where(eq(stores.id, updateStore.id))

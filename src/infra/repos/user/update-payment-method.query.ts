@@ -5,6 +5,7 @@ import {
 import { DB } from "@/src/infra/db/db";
 import { paymentMethods } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updatePaymentMethodQuery(
   db: DB,
@@ -13,7 +14,7 @@ export async function updatePaymentMethodQuery(
   const result = await db
     .update(paymentMethods)
     .set({
-      ...updatePaymentMethod,
+      ...filterUndefined(updatePaymentMethod),
       updatedAt: new Date(),
     })
     .where(eq(paymentMethods.id, updatePaymentMethod.id))

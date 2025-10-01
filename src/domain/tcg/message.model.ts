@@ -8,9 +8,14 @@ export const insertMessageSchema = createInsertSchema(messages);
 export type Message = z.infer<typeof messageSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
-export const updateMessageSchema = insertMessageSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateMessageSchema = insertMessageSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateMessage = z.infer<typeof updateMessageSchema>;

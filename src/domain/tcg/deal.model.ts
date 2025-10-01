@@ -7,9 +7,14 @@ export const insertDealSchema = createInsertSchema(deals);
 
 export type Deal = z.infer<typeof dealSchema>;
 
-export const updateDealSchema = insertDealSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateDealSchema = insertDealSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateDeal = z.infer<typeof updateDealSchema>;

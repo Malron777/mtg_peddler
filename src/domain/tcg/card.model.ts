@@ -9,9 +9,14 @@ export type InsertCard = z.infer<typeof insertCardSchema>;
 
 export type Card = z.infer<typeof cardSchema>;
 
-export const updateCardSchema = insertCardSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateCardSchema = insertCardSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    scryfallId: true,
+  });
 
 export type UpdateCard = z.infer<typeof updateCardSchema>;

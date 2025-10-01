@@ -2,6 +2,7 @@ import { UpdateWantList, WantList } from "@/src/domain/tcg/want-list.model";
 import { DB } from "@/src/infra/db/db";
 import { wantLists } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateWantListQuery(
   db: DB,
@@ -10,7 +11,7 @@ export async function updateWantListQuery(
   const result = await db
     .update(wantLists)
     .set({
-      ...updateWantList,
+      ...filterUndefined(updateWantList),
       updatedAt: new Date(),
     })
     .where(eq(wantLists.id, updateWantList.id))

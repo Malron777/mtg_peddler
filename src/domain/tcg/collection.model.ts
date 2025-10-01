@@ -8,9 +8,14 @@ export const insertCollectionSchema = createInsertSchema(collections);
 export type Collection = z.infer<typeof collectionSchema>;
 export type InsertCollection = z.infer<typeof insertCollectionSchema>;
 
-export const updateCollectionSchema = insertCollectionSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateCollectionSchema = insertCollectionSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateCollection = z.infer<typeof updateCollectionSchema>;

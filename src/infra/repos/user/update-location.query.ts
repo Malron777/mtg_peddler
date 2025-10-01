@@ -2,6 +2,7 @@ import { Location, UpdateLocation } from "@/src/domain/tcg/location.model";
 import { DB } from "@/src/infra/db/db";
 import { locations } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateLocationQuery(
   db: DB,
@@ -10,7 +11,7 @@ export async function updateLocationQuery(
   const result = await db
     .update(locations)
     .set({
-      ...updateLocation,
+      ...filterUndefined(updateLocation),
       updatedAt: new Date(),
     })
     .where(eq(locations.id, updateLocation.id))

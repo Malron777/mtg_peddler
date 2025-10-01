@@ -8,9 +8,14 @@ export const insertPaymentMethodSchema = createInsertSchema(paymentMethods);
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
 export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
 
-export const updatePaymentMethodSchema = insertPaymentMethodSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updatePaymentMethodSchema = insertPaymentMethodSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdatePaymentMethod = z.infer<typeof updatePaymentMethodSchema>;

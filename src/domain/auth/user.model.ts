@@ -12,11 +12,16 @@ export const insertUserSchema = createInsertSchema(user).omit({
 export type User = z.infer<typeof userSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export const updateUserSchema = insertUserSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-  email: true,
-  emailVerified: true,
-});
+export const updateUserSchema = userSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    email: true,
+    emailVerified: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateUser = z.infer<typeof updateUserSchema>;

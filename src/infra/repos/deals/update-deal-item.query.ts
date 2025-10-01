@@ -2,6 +2,7 @@ import { DealItem, UpdateDealItem } from "@/src/domain/tcg/deal-item.model";
 import { DB } from "@/src/infra/db/db";
 import { dealItems } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updateDealItemQuery(
   db: DB,
@@ -10,7 +11,7 @@ export async function updateDealItemQuery(
   const result = await db
     .update(dealItems)
     .set({
-      ...updateDealItem,
+      ...filterUndefined(updateDealItem),
       updatedAt: new Date(),
     })
     .where(eq(dealItems.id, updateDealItem.id))

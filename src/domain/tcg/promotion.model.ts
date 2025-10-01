@@ -8,9 +8,14 @@ export const insertPromotionSchema = createInsertSchema(promotions);
 export type Promotion = z.infer<typeof promotionSchema>;
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 
-export const updatePromotionSchema = insertPromotionSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updatePromotionSchema = insertPromotionSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdatePromotion = z.infer<typeof updatePromotionSchema>;

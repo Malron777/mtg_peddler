@@ -8,9 +8,14 @@ export const insertUserReportSchema = createInsertSchema(userReports);
 export type UserReport = z.infer<typeof userReportSchema>;
 export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
 
-export const updateUserReportSchema = insertUserReportSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const updateUserReportSchema = insertUserReportSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
 
 export type UpdateUserReport = z.infer<typeof updateUserReportSchema>;

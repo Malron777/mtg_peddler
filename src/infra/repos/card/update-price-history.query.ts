@@ -5,6 +5,7 @@ import {
 import { DB } from "@/src/infra/db/db";
 import { priceHistory } from "@/src/infra/db/schema";
 import { eq } from "drizzle-orm";
+import { filterUndefined } from "../utils";
 
 export async function updatePriceHistoryQuery(
   db: DB,
@@ -13,7 +14,7 @@ export async function updatePriceHistoryQuery(
   const result = await db
     .update(priceHistory)
     .set({
-      ...updatePriceHistory,
+      ...filterUndefined(updatePriceHistory),
     })
     .where(eq(priceHistory.id, updatePriceHistory.id))
     .returning();
