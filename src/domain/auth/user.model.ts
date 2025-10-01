@@ -3,9 +3,14 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import z from "zod";
 
 export const userSchema = createSelectSchema(user);
-export const insertUserSchema = createInsertSchema(user);
+export const insertUserSchema = createInsertSchema(user).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type User = z.infer<typeof userSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export const updateUserSchema = insertUserSchema.omit({
   createdAt: true,
