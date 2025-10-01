@@ -6,7 +6,6 @@ import { userTestFactory } from "./user.model.test-factory";
 export const userReportsTestFactory = {
   buildOne(overrides: Partial<UserReport>): UserReport {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       reporterId: crypto.randomUUID(),
       reportedUserId: crypto.randomUUID(),
@@ -17,6 +16,7 @@ export const userReportsTestFactory = {
       resolvedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

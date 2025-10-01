@@ -6,7 +6,6 @@ import { Promotion } from "./promotion.model";
 export const promotionTestFactory = {
   buildOne(overrides: Partial<Promotion>): Promotion {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       storeId: crypto.randomUUID(),
       title: "Test Promotion",
@@ -17,6 +16,7 @@ export const promotionTestFactory = {
       collectionId: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

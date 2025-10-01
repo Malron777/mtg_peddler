@@ -6,7 +6,6 @@ import { WantList } from "./want-list.model";
 export const wantListTestFactory = {
   buildOne(overrides: Partial<WantList>): WantList {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       name: "Test Want List",
@@ -14,6 +13,7 @@ export const wantListTestFactory = {
       priority: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

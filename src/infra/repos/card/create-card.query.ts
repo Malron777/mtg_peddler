@@ -13,6 +13,14 @@ export async function createCardQuery(
   insertCard: InsertCard
 ): Promise<CreateCardResult> {
   try {
+    // Validate required fields
+    if (!insertCard.scryfallId || insertCard.scryfallId.trim() === "") {
+      return {
+        success: false,
+        error: "scryfallId is required and cannot be empty",
+      };
+    }
+
     const result = await db.insert(cards).values(insertCard).returning();
 
     return {

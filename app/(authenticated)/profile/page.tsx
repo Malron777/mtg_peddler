@@ -35,7 +35,7 @@ export default function ProfilePage() {
     const fetchUser = async () => {
       try {
         const currentUser = await getCurrentUser();
-        setUser(currentUser);
+        setUser(currentUser as User);
         if (currentUser) {
           setEditForm({
             id: currentUser.id,

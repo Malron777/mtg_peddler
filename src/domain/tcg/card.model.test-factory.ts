@@ -5,7 +5,6 @@ import { Card } from "./card.model";
 export const cardTestFactory = {
   buildOne(overrides: Partial<Card>): Card {
     return {
-      ...overrides,
       scryfallId: crypto.randomUUID(),
       oracleId: crypto.randomUUID(),
       name: "Test Card",
@@ -17,6 +16,7 @@ export const cardTestFactory = {
       lastFetchedAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

@@ -6,7 +6,6 @@ import { PaymentMethod } from "./payment-method.model";
 export const paymentMethodTestFactory = {
   buildOne(overrides: Partial<PaymentMethod>): PaymentMethod {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       type: "bank_transfer",
@@ -14,6 +13,7 @@ export const paymentMethodTestFactory = {
       isPrimary: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

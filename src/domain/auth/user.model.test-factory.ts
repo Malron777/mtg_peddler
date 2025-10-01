@@ -5,7 +5,6 @@ import { User } from "./user.model";
 export const userTestFactory = {
   buildOne(overrides: Partial<User>): User {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       name: "Test User",
       email: "test@email.com",
@@ -17,6 +16,7 @@ export const userTestFactory = {
       notificationPreferences: { email: true, sms: true, push: true },
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

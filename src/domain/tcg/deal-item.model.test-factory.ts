@@ -7,7 +7,6 @@ import { dealTestFactory } from "./deal.model.test-factory";
 export const dealItemTestFactory = {
   buildOne(overrides: Partial<DealItem>): DealItem {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       dealId: crypto.randomUUID(),
       collectionItemId: crypto.randomUUID(),
@@ -15,6 +14,7 @@ export const dealItemTestFactory = {
       quantity: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

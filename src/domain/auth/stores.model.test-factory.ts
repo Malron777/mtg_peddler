@@ -5,7 +5,6 @@ import { Store } from "./stores.model";
 export const storesTestFactory = {
   buildOne(overrides: Partial<Store>): Store {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       name: "Test Store",
       websiteUrl: "https://teststore.com",
@@ -15,6 +14,7 @@ export const storesTestFactory = {
       createdBy: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

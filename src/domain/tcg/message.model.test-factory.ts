@@ -6,7 +6,6 @@ import { Message } from "./message.model";
 export const messageTestFactory = {
   buildOne(overrides: Partial<Message>): Message {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       dealId: crypto.randomUUID(),
       senderId: crypto.randomUUID(),
@@ -15,6 +14,7 @@ export const messageTestFactory = {
       isRead: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

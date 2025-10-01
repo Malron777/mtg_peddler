@@ -6,7 +6,6 @@ import { Location } from "./location.model";
 export const locationTestFactory = {
   buildOne(overrides: Partial<Location>): Location {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       type: "address",
@@ -15,6 +14,7 @@ export const locationTestFactory = {
       isPrimary: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

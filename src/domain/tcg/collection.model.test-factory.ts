@@ -6,7 +6,6 @@ import { Collection } from "./collection.model";
 export const collectionTestFactory = {
   buildOne(overrides: Partial<Collection>): Collection {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       name: "Test Collection",
@@ -14,6 +13,7 @@ export const collectionTestFactory = {
       isPublic: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

@@ -8,7 +8,6 @@ import { paymentMethodTestFactory } from "./payment-method.model.test-factory";
 export const dealTestFactory = {
   buildOne(overrides: Partial<Deal>): Deal {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       sellerId: crypto.randomUUID(),
       buyerId: crypto.randomUUID(),
@@ -19,6 +18,7 @@ export const dealTestFactory = {
       createdAt: new Date(),
       finalizedAt: null,
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

@@ -7,7 +7,6 @@ import { collectionTestFactory } from "./collection.model.test-factory";
 export const collectionItemTestFactory = {
   buildOne(overrides: Partial<CollectionItem>): CollectionItem {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       collectionId: crypto.randomUUID(),
       cardScryfallId: crypto.randomUUID(),
@@ -20,6 +19,7 @@ export const collectionItemTestFactory = {
       priceSource: "tcg",
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

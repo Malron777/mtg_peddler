@@ -7,12 +7,12 @@ import { userTestFactory } from "./user.model.test-factory";
 export const storeStaffTestFactory = {
   buildOne(overrides: Partial<StoreStaff>): StoreStaff {
     return {
-      ...overrides,
       storeId: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       role: "staff",
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

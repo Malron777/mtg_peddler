@@ -6,7 +6,6 @@ import { PriceHistory } from "./price-history.model";
 export const priceHistoryTestFactory = {
   buildOne(overrides: Partial<PriceHistory>): PriceHistory {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       cardScryfallId: crypto.randomUUID(),
       source: "tcg",
@@ -14,6 +13,7 @@ export const priceHistoryTestFactory = {
       currency: "USD",
       fetchedAt: new Date(),
       createdAt: new Date(),
+      ...overrides,
     };
   },
 

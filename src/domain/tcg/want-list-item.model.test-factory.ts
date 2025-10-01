@@ -7,7 +7,6 @@ import { wantListTestFactory } from "./want-list.model.test-factory";
 export const wantListItemTestFactory = {
   buildOne(overrides: Partial<WantListItem>): WantListItem {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       wantListId: crypto.randomUUID(),
       cardScryfallId: crypto.randomUUID(),
@@ -16,6 +15,7 @@ export const wantListItemTestFactory = {
       conditionMinimum: "NM",
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 

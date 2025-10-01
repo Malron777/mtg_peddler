@@ -6,7 +6,6 @@ import { Notification } from "./notification.model";
 export const notificationTestFactory = {
   buildOne(overrides: Partial<Notification>): Notification {
     return {
-      ...overrides,
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
       type: "system",
@@ -17,6 +16,7 @@ export const notificationTestFactory = {
       isRead: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      ...overrides,
     };
   },
 
