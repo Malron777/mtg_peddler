@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -14,12 +15,23 @@ describe("getAllCollectionsForUserQuery", () => {
 
   it("should return all collections for a specific user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userId = "test-user-id-1";
+      // Create users first to ensure the foreign keys exist
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "different-user-id",
+        name: "Different User",
+        email: "different@example.com",
+      });
 
       // Create collections for the user
       const collection1 = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-1",
-        userId,
+        userId: user1.id,
         name: "First Collection",
         description: "First collection description",
         isPublic: false,
@@ -27,7 +39,7 @@ describe("getAllCollectionsForUserQuery", () => {
 
       const collection2 = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-2",
-        userId,
+        userId: user1.id,
         name: "Second Collection",
         description: "Second collection description",
         isPublic: true,
@@ -36,13 +48,13 @@ describe("getAllCollectionsForUserQuery", () => {
       // Create a collection for a different user
       await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-3",
-        userId: "different-user-id",
+        userId: user2.id,
         name: "Other User Collection",
         description: "Other user collection description",
         isPublic: false,
       });
 
-      const result = await getAllCollectionsForUserQuery(db, userId);
+      const result = await getAllCollectionsForUserQuery(db, user1.id);
 
       expect(result.collections).toHaveLength(2);
       expect(result.totalCount).toBe(2);
@@ -55,7 +67,7 @@ describe("getAllCollectionsForUserQuery", () => {
       expect(result.collections.some((c) => c.id === collection2.id)).toBe(
         true
       );
-      expect(result.collections.every((c) => c.userId === userId)).toBe(true);
+      expect(result.collections.every((c) => c.userId === user1.id)).toBe(true);
     });
   });
 
@@ -90,20 +102,25 @@ describe("getAllCollectionsForUserQuery", () => {
 
   it("should handle custom pagination options", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userId = "test-user-id-pagination";
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-pagination",
+        name: "Test User Pagination",
+        email: "pagination@example.com",
+      });
 
       // Create multiple collections for the user
       for (let i = 1; i <= 5; i++) {
         await collectionTestFactory.insertOne(db, {
           id: `test-collection-id-${i}`,
-          userId,
+          userId: user.id,
           name: `Test Collection ${i}`,
           description: `Test collection ${i} description`,
           isPublic: i % 2 === 0,
         });
       }
 
-      const result = await getAllCollectionsForUserQuery(db, userId, {
+      const result = await getAllCollectionsForUserQuery(db, user.id, {
         page: 2,
         pageSize: 2,
       });
@@ -118,11 +135,16 @@ describe("getAllCollectionsForUserQuery", () => {
 
   it("should order collections by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userId = "test-user-id-ordering";
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-ordering",
+        name: "Test User Ordering",
+        email: "ordering@example.com",
+      });
 
       const collection1 = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-1",
-        userId,
+        userId: user.id,
         name: "First Collection",
         description: "First collection description",
         isPublic: false,
@@ -131,14 +153,14 @@ describe("getAllCollectionsForUserQuery", () => {
 
       const collection2 = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-2",
-        userId,
+        userId: user.id,
         name: "Second Collection",
         description: "Second collection description",
         isPublic: true,
         createdAt: new Date("2023-01-02"),
       });
 
-      const result = await getAllCollectionsForUserQuery(db, userId);
+      const result = await getAllCollectionsForUserQuery(db, user.id);
 
       expect(result.collections).toHaveLength(2);
       expect(result.collections[0].id).toBe(collection2.id); // Most recent first

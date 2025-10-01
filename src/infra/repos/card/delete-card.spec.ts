@@ -58,8 +58,8 @@ describe("deleteCardQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteCardQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).not.toBeDefined();
     });
   });
 

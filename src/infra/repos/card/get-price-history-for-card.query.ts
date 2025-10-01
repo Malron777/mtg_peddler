@@ -31,7 +31,7 @@ export async function getPriceHistoryForCardQuery(
     .from(priceHistory)
     .where(eq(priceHistory.cardScryfallId, cardScryfallId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated price history
   const priceHistoryResult = await db

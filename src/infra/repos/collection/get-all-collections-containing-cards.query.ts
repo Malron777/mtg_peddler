@@ -35,7 +35,7 @@ export async function getAllCollectionsContainingCardsQuery(
     )
     .where(eq(collectionItems.cardScryfallId, cardScryfallId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated collections
   const collectionsResult = await db

@@ -1,3 +1,4 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { priceHistoryTestFactory } from "@/src/domain/tcg/price-history.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -14,8 +15,21 @@ describe("createPriceHistoryQuery", () => {
 
   it("should successfully create a price history entry", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a card first to ensure the foreign key exists
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-scryfall-id-1",
+        oracleId: "test-oracle-id-1",
+        name: "Test Lightning Bolt",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/lightning-bolt.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const priceHistoryData = priceHistoryTestFactory.buildOne({
-        cardScryfallId: "test-scryfall-id-1",
+        cardScryfallId: card.scryfallId,
         source: "tcg",
         price: "25.50",
         currency: "USD",
@@ -26,7 +40,7 @@ describe("createPriceHistoryQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.priceHistory).toBeDefined();
-      expect(result.priceHistory?.cardScryfallId).toBe("test-scryfall-id-1");
+      expect(result.priceHistory?.cardScryfallId).toBe(card.scryfallId);
       expect(result.priceHistory?.source).toBe("tcg");
       expect(result.priceHistory?.price).toBe("25.50");
       expect(result.priceHistory?.currency).toBe("USD");
@@ -54,8 +68,21 @@ describe("createPriceHistoryQuery", () => {
 
   it("should fail when trying to create price history with invalid data", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a card first to ensure the foreign key exists
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-scryfall-id-2",
+        oracleId: "test-oracle-id-2",
+        name: "Test Card 2",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card2.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const invalidPriceHistoryData = priceHistoryTestFactory.buildOne({
-        cardScryfallId: "test-scryfall-id-2",
+        cardScryfallId: card.scryfallId,
         source: "tcg" as const,
         price: "invalid-price", // Invalid price format
         currency: "USD",
@@ -104,8 +131,21 @@ describe("createPriceHistoryQuery", () => {
 
   it("should handle null values gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a card first to ensure the foreign key exists
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-scryfall-id-3",
+        oracleId: "test-oracle-id-3",
+        name: "Test Card 3",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card3.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const priceHistoryData = priceHistoryTestFactory.buildOne({
-        cardScryfallId: "test-scryfall-id-3",
+        cardScryfallId: card.scryfallId,
         source: "tcg",
         price: "25.50",
         currency: "USD",

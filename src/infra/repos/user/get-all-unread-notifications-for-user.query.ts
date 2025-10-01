@@ -33,7 +33,7 @@ export async function getAllUnreadNotificationsForUserQuery(
       and(eq(notifications.userId, userId), eq(notifications.isRead, false))
     );
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated notifications
   const notificationsResult = await db

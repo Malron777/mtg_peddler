@@ -29,7 +29,7 @@ export async function getAllCardsQuery(
     .select({ count: sql<number>`count(*)` })
     .from(cards);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated cards
   const cardsResult = await db

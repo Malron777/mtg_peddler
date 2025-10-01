@@ -31,7 +31,7 @@ export async function getAllDealsForUserQuery(
     .from(deals)
     .where(or(eq(deals.sellerId, userId), eq(deals.buyerId, userId)));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated deals
   const dealsResult = await db

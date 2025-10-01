@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -14,9 +15,16 @@ describe("createCollectionQuery", () => {
 
   it("should successfully create a collection", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
       const collectionData = collectionTestFactory.buildOne({
         id: "test-collection-id-1",
-        userId: "test-user-id-1",
+        userId: user.id,
         name: "My Test Collection",
         description: "A collection for testing purposes",
         isPublic: false,
@@ -27,7 +35,7 @@ describe("createCollectionQuery", () => {
       expect(result.success).toBe(true);
       expect(result.collection).toBeDefined();
       expect(result.collection?.id).toBe("test-collection-id-1");
-      expect(result.collection?.userId).toBe("test-user-id-1");
+      expect(result.collection?.userId).toBe(user.id);
       expect(result.collection?.name).toBe("My Test Collection");
       expect(result.collection?.description).toBe(
         "A collection for testing purposes"
@@ -39,9 +47,22 @@ describe("createCollectionQuery", () => {
 
   it("should fail when trying to create a collection with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create users first to ensure the foreign keys exist
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-2",
+        name: "Test User 2",
+        email: "test2@example.com",
+      });
+
       const collectionData = collectionTestFactory.buildOne({
         id: "duplicate-collection-id",
-        userId: "test-user-id-1",
+        userId: user1.id,
         name: "First Collection",
       });
 
@@ -52,7 +73,7 @@ describe("createCollectionQuery", () => {
       // Try to create second collection with same id
       const duplicateCollectionData = collectionTestFactory.buildOne({
         id: "duplicate-collection-id",
-        userId: "test-user-id-2",
+        userId: user2.id,
         name: "Second Collection",
       });
 
@@ -85,11 +106,18 @@ describe("createCollectionQuery", () => {
 
   it("should handle database connection errors gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-3",
+        name: "Test User 3",
+        email: "test3@example.com",
+      });
+
       // This test simulates a scenario where the database might be unavailable
       // In a real scenario, this would be tested with a mock or by closing the connection
       const collectionData = collectionTestFactory.buildOne({
         id: "test-error-handling",
-        userId: "test-user-id-3",
+        userId: user.id,
         name: "Error Test Collection",
       });
 
@@ -103,9 +131,16 @@ describe("createCollectionQuery", () => {
 
   it("should create a public collection", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-4",
+        name: "Test User 4",
+        email: "test4@example.com",
+      });
+
       const collectionData = collectionTestFactory.buildOne({
         id: "test-public-collection-id",
-        userId: "test-user-id-4",
+        userId: user.id,
         name: "Public Collection",
         description: "A public collection",
         isPublic: true,

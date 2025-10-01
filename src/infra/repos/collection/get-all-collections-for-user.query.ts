@@ -31,7 +31,7 @@ export async function getAllCollectionsForUserQuery(
     .from(collections)
     .where(eq(collections.userId, userId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated collections
   const collectionsResult = await db

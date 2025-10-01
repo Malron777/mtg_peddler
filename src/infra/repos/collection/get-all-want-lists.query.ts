@@ -29,7 +29,7 @@ export async function getAllWantListsQuery(
     .select({ count: sql<number>`count(*)` })
     .from(wantLists);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated want lists
   const wantListsResult = await db

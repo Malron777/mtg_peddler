@@ -38,7 +38,7 @@ export async function getAllActivePromotionsForStoreQuery(
       )
     );
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated promotions
   const promotionsResult = await db

@@ -1,7 +1,7 @@
 import { Card } from "@/src/domain/tcg/card.model";
 import { DB } from "@/src/infra/db/db";
 import { cards, collectionItems } from "@/src/infra/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 
 export interface GetAllCardsForCollectionOptions {
   page?: number;
@@ -35,11 +35,11 @@ export async function getAllCardsForCollectionQuery(
     )
     .where(eq(collectionItems.collectionId, collectionId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated cards
   const cardsResult = await db
-    .selectDistinct({ scryfallId: cards.scryfallId })
+    .select({ scryfallId: cards.scryfallId })
     .from(cards)
     .innerJoin(
       collectionItems,
@@ -52,11 +52,10 @@ export async function getAllCardsForCollectionQuery(
 
   // Get full card details for the distinct cards
   const cardIds = cardsResult.map((c) => c.scryfallId);
-  const fullCards = await db
-    .select()
-    .from(cards)
-    .where(sql`${cards.scryfallId} = ANY(${cardIds})`)
-    .orderBy(desc(cards.createdAt));
+  const fullCards = await db.query.cards.findMany({
+    where: inArray(cards.scryfallId, cardIds),
+    orderBy: desc(cards.createdAt),
+  });
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

@@ -1,4 +1,6 @@
 import { storeStaffTestFactory } from "@/src/domain/auth/store-staff.model.test-factory";
+import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -15,9 +17,26 @@ describe("createStoreStaffQuery", () => {
 
   it("should successfully create a store staff member", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const store = await storesTestFactory.insertOne(db, {
+        id: "test-store-id-1",
+        name: "Test Store",
+        websiteUrl: "https://teststore.com",
+        physicalAddress: "123 Test St",
+        description: "A test store",
+        isVerified: false,
+        createdBy: user.id,
+      });
+
       const storeStaffData = storeStaffTestFactory.buildOne({
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
+        storeId: store.id,
+        userId: user.id,
         role: "manager",
       });
 
@@ -25,8 +44,8 @@ describe("createStoreStaffQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.storeStaff).toBeDefined();
-      expect(result.storeStaff?.storeId).toBe("test-store-id-1");
-      expect(result.storeStaff?.userId).toBe("test-user-id-1");
+      expect(result.storeStaff?.storeId).toBe(store.id);
+      expect(result.storeStaff?.userId).toBe(user.id);
       expect(result.storeStaff?.role).toBe("manager");
       expect(result.error).toBeUndefined();
     });
@@ -34,14 +53,37 @@ describe("createStoreStaffQuery", () => {
 
   it("should fail when creating a store staff member with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-2",
+        name: "Test User 2",
+        email: "test2@example.com",
+      });
+
+      const store = await storesTestFactory.insertOne(db, {
+        id: "test-store-id-1",
+        name: "Test Store",
+        websiteUrl: "https://teststore.com",
+        physicalAddress: "123 Test St",
+        description: "A test store",
+        isVerified: false,
+        createdBy: user1.id,
+      });
+
       const storeStaffData1 = storeStaffTestFactory.buildOne({
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
+        storeId: store.id,
+        userId: user1.id,
       });
 
       const storeStaffData2 = storeStaffTestFactory.buildOne({
-        storeId: "test-store-id-1",
-        userId: "test-user-id-2",
+        storeId: store.id,
+        userId: user2.id,
       });
 
       // Insert first store staff member
@@ -76,9 +118,26 @@ describe("createStoreStaffQuery", () => {
 
   it("should handle database connection errors gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const store = await storesTestFactory.insertOne(db, {
+        id: "test-store-id-1",
+        name: "Test Store",
+        websiteUrl: "https://teststore.com",
+        physicalAddress: "123 Test St",
+        description: "A test store",
+        isVerified: false,
+        createdBy: user.id,
+      });
+
       const storeStaffData = storeStaffTestFactory.buildOne({
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
+        storeId: store.id,
+        userId: user.id,
       });
 
       // Mock a database error by using invalid schema reference
@@ -97,9 +156,26 @@ describe("createStoreStaffQuery", () => {
 
   it("should create a store staff member with default role", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const store = await storesTestFactory.insertOne(db, {
+        id: "test-store-id-1",
+        name: "Test Store",
+        websiteUrl: "https://teststore.com",
+        physicalAddress: "123 Test St",
+        description: "A test store",
+        isVerified: false,
+        createdBy: user.id,
+      });
+
       const storeStaffData = storeStaffTestFactory.buildOne({
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
+        storeId: store.id,
+        userId: user.id,
         role: undefined,
       });
 
@@ -107,8 +183,8 @@ describe("createStoreStaffQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.storeStaff).toBeDefined();
-      expect(result.storeStaff?.storeId).toBe("test-store-id-1");
-      expect(result.storeStaff?.userId).toBe("test-user-id-1");
+      expect(result.storeStaff?.storeId).toBe(store.id);
+      expect(result.storeStaff?.userId).toBe(user.id);
       expect(result.storeStaff?.role).toBe("staff"); // Default role
       expect(result.error).toBeUndefined();
     });

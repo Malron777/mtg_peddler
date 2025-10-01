@@ -1,4 +1,7 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -14,10 +17,37 @@ describe("createCollectionItemQuery", () => {
 
   it("should successfully create a collection item", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const collection = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-1",
+        userId: user.id,
+        name: "Test Collection",
+        description: "A test collection",
+        isPublic: false,
+      });
+
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+        oracleId: "test-oracle-id-1",
+        name: "Test Card",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const collectionItemData = collectionItemTestFactory.buildOne({
         id: "test-collection-item-id-1",
-        collectionId: "test-collection-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
+        collectionId: collection.id,
+        cardScryfallId: card.scryfallId,
         quantity: 2,
         condition: "NM",
         language: "en",
@@ -32,10 +62,8 @@ describe("createCollectionItemQuery", () => {
       expect(result.success).toBe(true);
       expect(result.collectionItem).toBeDefined();
       expect(result.collectionItem?.id).toBe("test-collection-item-id-1");
-      expect(result.collectionItem?.collectionId).toBe("test-collection-id-1");
-      expect(result.collectionItem?.cardScryfallId).toBe(
-        "test-card-scryfall-id-1"
-      );
+      expect(result.collectionItem?.collectionId).toBe(collection.id);
+      expect(result.collectionItem?.cardScryfallId).toBe(card.scryfallId);
       expect(result.collectionItem?.quantity).toBe(2);
       expect(result.collectionItem?.condition).toBe("NM");
       expect(result.collectionItem?.language).toBe("en");
@@ -49,10 +77,63 @@ describe("createCollectionItemQuery", () => {
 
   it("should fail when trying to create a collection item with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-2",
+        name: "Test User 2",
+        email: "test2@example.com",
+      });
+
+      const collection1 = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-1",
+        userId: user1.id,
+        name: "Test Collection 1",
+        description: "A test collection",
+        isPublic: false,
+      });
+
+      const collection2 = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-2",
+        userId: user2.id,
+        name: "Test Collection 2",
+        description: "Another test collection",
+        isPublic: false,
+      });
+
+      const card1 = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+        oracleId: "test-oracle-id-1",
+        name: "Test Card 1",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card1.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
+      const card2 = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-card-scryfall-id-2",
+        oracleId: "test-oracle-id-2",
+        name: "Test Card 2",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card2.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{U}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const collectionItemData = collectionItemTestFactory.buildOne({
         id: "duplicate-collection-item-id",
-        collectionId: "test-collection-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
+        collectionId: collection1.id,
+        cardScryfallId: card1.scryfallId,
         quantity: 1,
         condition: "NM",
       });
@@ -67,8 +148,8 @@ describe("createCollectionItemQuery", () => {
       // Try to create second collection item with same id
       const duplicateCollectionItemData = collectionItemTestFactory.buildOne({
         id: "duplicate-collection-item-id",
-        collectionId: "test-collection-id-2",
-        cardScryfallId: "test-card-scryfall-id-2",
+        collectionId: collection2.id,
+        cardScryfallId: card2.scryfallId,
         quantity: 2,
         condition: "LP",
       });
@@ -107,12 +188,39 @@ describe("createCollectionItemQuery", () => {
 
   it("should handle database connection errors gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-3",
+        name: "Test User 3",
+        email: "test3@example.com",
+      });
+
+      const collection = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-3",
+        userId: user.id,
+        name: "Test Collection",
+        description: "A test collection",
+        isPublic: false,
+      });
+
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-card-scryfall-id-3",
+        oracleId: "test-oracle-id-3",
+        name: "Test Card",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       // This test simulates a scenario where the database might be unavailable
       // In a real scenario, this would be tested with a mock or by closing the connection
       const collectionItemData = collectionItemTestFactory.buildOne({
         id: "test-error-handling",
-        collectionId: "test-collection-id-3",
-        cardScryfallId: "test-card-scryfall-id-3",
+        collectionId: collection.id,
+        cardScryfallId: card.scryfallId,
         quantity: 1,
         condition: "NM",
       });
@@ -127,10 +235,37 @@ describe("createCollectionItemQuery", () => {
 
   it("should create a foil collection item", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create dependencies first
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-4",
+        name: "Test User 4",
+        email: "test4@example.com",
+      });
+
+      const collection = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-4",
+        userId: user.id,
+        name: "Test Collection",
+        description: "A test collection",
+        isPublic: false,
+      });
+
+      const card = await cardTestFactory.insertOne(db, {
+        scryfallId: "test-card-scryfall-id-4",
+        oracleId: "test-oracle-id-4",
+        name: "Test Card",
+        setCode: "M21",
+        setName: "Core Set 2021",
+        imageUris: { normal: "https://example.com/card.jpg" },
+        pricesLastUpdated: new Date("2023-01-01"),
+        cachedData: { manaCost: "{R}", type: "Instant" },
+        lastFetchedAt: new Date("2023-01-01"),
+      });
+
       const collectionItemData = collectionItemTestFactory.buildOne({
         id: "test-foil-collection-item-id",
-        collectionId: "test-collection-id-4",
-        cardScryfallId: "test-card-scryfall-id-4",
+        collectionId: collection.id,
+        cardScryfallId: card.scryfallId,
         quantity: 1,
         condition: "NM",
         language: "en",

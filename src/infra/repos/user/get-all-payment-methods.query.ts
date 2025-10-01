@@ -29,7 +29,7 @@ export async function getAllPaymentMethodsQuery(
     .select({ count: sql<number>`count(*)` })
     .from(paymentMethods);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated payment methods
   const paymentMethodsResult = await db

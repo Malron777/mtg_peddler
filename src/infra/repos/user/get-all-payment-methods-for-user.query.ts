@@ -31,7 +31,7 @@ export async function getAllPaymentMethodsForUserQuery(
     .from(paymentMethods)
     .where(eq(paymentMethods.userId, userId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated payment methods
   const paymentMethodsResult = await db

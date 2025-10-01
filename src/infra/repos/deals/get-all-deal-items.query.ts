@@ -29,7 +29,7 @@ export async function getAllDealItemsQuery(
     .select({ count: sql<number>`count(*)` })
     .from(dealItems);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated deal items
   const dealItemsResult = await db

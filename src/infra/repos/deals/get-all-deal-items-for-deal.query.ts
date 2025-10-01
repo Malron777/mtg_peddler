@@ -31,7 +31,7 @@ export async function getAllDealItemsForDealQuery(
     .from(dealItems)
     .where(eq(dealItems.dealId, dealId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated deal items
   const dealItemsResult = await db

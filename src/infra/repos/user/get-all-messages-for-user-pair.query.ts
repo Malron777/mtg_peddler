@@ -37,7 +37,7 @@ export async function getAllMessagesForUserPairQuery(
       )
     );
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated messages
   const messagesResult = await db

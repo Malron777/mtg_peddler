@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
@@ -16,10 +17,11 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should return all cards for a collection", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db, {});
       // Create a collection
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-1",
-        userId: "test-user-id-1",
+        userId: user.id,
         name: "Test Collection",
         description: "A test collection",
         isPublic: false,
@@ -87,9 +89,11 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should return empty result when collection has no cards", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db, {});
+
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-2",
-        userId: "test-user-id-2",
+        userId: user.id,
         name: "Empty Collection",
         description: "An empty collection",
         isPublic: false,
@@ -122,9 +126,11 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should handle custom pagination options", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db, {});
+
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-3",
-        userId: "test-user-id-3",
+        userId: user.id,
         name: "Large Collection",
         description: "A large collection",
         isPublic: false,
@@ -171,9 +177,11 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should handle duplicate cards in collection (same card, different conditions)", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db, {});
+
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-4",
-        userId: "test-user-id-4",
+        userId: user.id,
         name: "Duplicate Collection",
         description: "Collection with duplicate cards",
         isPublic: false,

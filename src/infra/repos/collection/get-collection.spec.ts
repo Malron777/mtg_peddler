@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -14,9 +15,16 @@ describe("getCollectionQuery", () => {
 
   it("should successfully retrieve an existing collection", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-collection-id-1",
-        userId: "test-user-id-1",
+        userId: user.id,
         name: "My Test Collection",
         description: "A collection for testing purposes",
         isPublic: false,
@@ -27,7 +35,7 @@ describe("getCollectionQuery", () => {
       expect(result.success).toBe(true);
       expect(result.collection).toBeDefined();
       expect(result.collection?.id).toBe(collection.id);
-      expect(result.collection?.userId).toBe("test-user-id-1");
+      expect(result.collection?.userId).toBe(user.id);
       expect(result.collection?.name).toBe("My Test Collection");
       expect(result.collection?.description).toBe(
         "A collection for testing purposes"
@@ -83,9 +91,16 @@ describe("getCollectionQuery", () => {
 
   it("should retrieve a public collection", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-2",
+        name: "Test User 2",
+        email: "test2@example.com",
+      });
+
       const collection = await collectionTestFactory.insertOne(db, {
         id: "test-public-collection-id",
-        userId: "test-user-id-2",
+        userId: user.id,
         name: "Public Collection",
         description: "A public collection",
         isPublic: true,

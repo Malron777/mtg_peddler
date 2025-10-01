@@ -31,7 +31,7 @@ export async function getAllCollectionItemsForCollectionQuery(
     .from(collectionItems)
     .where(eq(collectionItems.collectionId, collectionId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated collection items
   const collectionItemsResult = await db

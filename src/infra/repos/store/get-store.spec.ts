@@ -1,4 +1,5 @@
 import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -14,6 +15,13 @@ describe("getStoreQuery", () => {
 
   it("should successfully retrieve an existing store", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+        name: "Test User 1",
+        email: "test1@example.com",
+      });
+
       const store = await storesTestFactory.insertOne(db, {
         id: "test-store-id-1",
         name: "Test Magic Store",
@@ -21,7 +29,7 @@ describe("getStoreQuery", () => {
         physicalAddress: "123 Magic Street, Test City",
         description: "A test store for Magic: The Gathering cards",
         isVerified: false,
-        createdBy: "test-user-id-1",
+        createdBy: user.id,
       });
 
       const result = await getStoreQuery(db, store.id);
@@ -36,7 +44,7 @@ describe("getStoreQuery", () => {
         "A test store for Magic: The Gathering cards"
       );
       expect(result.store?.isVerified).toBe(false);
-      expect(result.store?.createdBy).toBe("test-user-id-1");
+      expect(result.store?.createdBy).toBe(user.id);
       expect(result.error).toBeUndefined();
     });
   });
@@ -87,6 +95,13 @@ describe("getStoreQuery", () => {
 
   it("should retrieve a verified store", async () => {
     await runWithTestDb(async (db: DB) => {
+      // Create a user first to ensure the foreign key exists
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-2",
+        name: "Test User 2",
+        email: "test2@example.com",
+      });
+
       const store = await storesTestFactory.insertOne(db, {
         id: "test-verified-store-id",
         name: "Verified Magic Store",
@@ -94,7 +109,7 @@ describe("getStoreQuery", () => {
         physicalAddress: "456 Verified Street, Test City",
         description: "A verified store for Magic: The Gathering cards",
         isVerified: true,
-        createdBy: "test-user-id-2",
+        createdBy: user.id,
       });
 
       const result = await getStoreQuery(db, store.id);

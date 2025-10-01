@@ -31,7 +31,7 @@ export async function getAllWantListItemsForWantListQuery(
     .from(wantListItems)
     .where(eq(wantListItems.wantListId, wantListId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated want list items
   const wantListItemsResult = await db

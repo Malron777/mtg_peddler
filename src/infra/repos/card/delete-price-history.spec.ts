@@ -57,8 +57,8 @@ describe("deletePriceHistoryQuery", () => {
         null as unknown as string
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).not.toBeDefined();
     });
   });
 

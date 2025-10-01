@@ -29,7 +29,7 @@ export async function getAllCollectionsQuery(
     .select({ count: sql<number>`count(*)` })
     .from(collections);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated collections
   const collectionsResult = await db

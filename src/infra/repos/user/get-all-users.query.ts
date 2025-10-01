@@ -29,7 +29,7 @@ export async function getAllUsersQuery(
     .select({ count: sql<number>`count(*)` })
     .from(user);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated users
   const users = await db

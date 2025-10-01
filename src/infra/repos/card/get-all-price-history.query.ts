@@ -29,7 +29,7 @@ export async function getAllPriceHistoryQuery(
     .select({ count: sql<number>`count(*)` })
     .from(priceHistory);
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated price history
   const priceHistoryResult = await db

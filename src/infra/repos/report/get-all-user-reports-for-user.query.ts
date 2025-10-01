@@ -31,7 +31,7 @@ export async function getAllUserReportsForUserQuery(
     .from(userReports)
     .where(eq(userReports.reporterId, userId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated user reports
   const userReportsResult = await db

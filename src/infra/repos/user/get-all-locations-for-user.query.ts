@@ -31,7 +31,7 @@ export async function getAllLocationsForUserQuery(
     .from(locations)
     .where(eq(locations.userId, userId));
 
-  const totalCount = countResult[0]?.count ?? 0;
+  const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated locations
   const locationsResult = await db
