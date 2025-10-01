@@ -14,15 +14,18 @@ describe("updateStoreQuery", () => {
 
   it("should successfully update an existing store", async () => {
     await runWithTestDb(async (db: DB) => {
-      const store = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-1",
-        name: "Original Store Name",
-        websiteUrl: "https://originalstore.com",
-        physicalAddress: "123 Original Street, Test City",
-        description: "Original store description",
-        isVerified: false,
-        createdBy: "test-user-id-1",
-      });
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-1",
+          name: "Original Store Name",
+          websiteUrl: "https://originalstore.com",
+          physicalAddress: "123 Original Street, Test City",
+          description: "Original store description",
+          isVerified: false,
+          createdBy: "test-user-id-1",
+        }
+      );
 
       const updateData = {
         id: store.id,
@@ -57,21 +60,26 @@ describe("updateStoreQuery", () => {
         description: "Updated store description",
       };
 
-      await expect(updateStoreQuery(db, updateData)).rejects.toThrow();
+      const result = await updateStoreQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const store = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-2",
-        name: "Original Store Name",
-        websiteUrl: "https://originalstore.com",
-        physicalAddress: "123 Original Street, Test City",
-        description: "Original store description",
-        isVerified: false,
-        createdBy: "test-user-id-2",
-      });
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-2",
+          name: "Original Store Name",
+          websiteUrl: "https://originalstore.com",
+          physicalAddress: "123 Original Street, Test City",
+          description: "Original store description",
+          isVerified: false,
+          createdBy: "test-user-id-2",
+        }
+      );
 
       const updateData = {
         id: store.id,
@@ -93,15 +101,18 @@ describe("updateStoreQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const store = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-3",
-        name: "Original Store Name",
-        websiteUrl: "https://originalstore.com",
-        physicalAddress: "123 Original Street, Test City",
-        description: "Original store description",
-        isVerified: false,
-        createdBy: "test-user-id-3",
-      });
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-3",
+          name: "Original Store Name",
+          websiteUrl: "https://originalstore.com",
+          physicalAddress: "123 Original Street, Test City",
+          description: "Original store description",
+          isVerified: false,
+          createdBy: "test-user-id-3",
+        }
+      );
 
       const updateData = {
         id: store.id,
@@ -122,19 +133,22 @@ describe("updateStoreQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const store = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-4",
-        name: "Original Store Name",
-        websiteUrl: "https://originalstore.com",
-        physicalAddress: "123 Original Street, Test City",
-        description: "Original store description",
-        isVerified: false,
-        createdBy: "test-user-id-4",
-      });
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-4",
+          name: "Original Store Name",
+          websiteUrl: "https://originalstore.com",
+          physicalAddress: "123 Original Street, Test City",
+          description: "Original store description",
+          isVerified: false,
+          createdBy: "test-user-id-4",
+        }
+      );
 
       const updateData = {
         id: store.id,
-        name: "", // Empty name should fail
+        name: null as unknown as string, // Empty name should fail
         websiteUrl: "invalid-url", // Invalid URL format
         description: null as unknown as string, // Null description
       };

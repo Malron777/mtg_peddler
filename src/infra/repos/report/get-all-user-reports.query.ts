@@ -32,12 +32,20 @@ export async function getAllUserReportsQuery(
   const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated user reports
-  const userReportsResult = await db
+  let query = db
     .select()
     .from(userReports)
-    .orderBy(desc(userReports.createdAt))
-    .limit(pageSize)
-    .offset(offset);
+    .orderBy(desc(userReports.createdAt));
+
+  // Handle negative pageSize (treat as "no limit")
+  if (pageSize < 0) {
+    // When pageSize is negative, ignore offset to avoid skipping rows
+    query = query.limit(Number.MAX_SAFE_INTEGER);
+  } else {
+    query = query.limit(pageSize).offset(offset);
+  }
+
+  const userReportsResult = await query;
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

@@ -1,3 +1,5 @@
+import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { promotionTestFactory } from "@/src/domain/tcg/promotion.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,44 +17,63 @@ describe("createPromotionQuery", () => {
 
   it("should successfully create a promotion", async () => {
     await runWithTestDb(async (db: DB) => {
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
+
       const promotionData = promotionTestFactory.buildOne({
-        storeId: "test-store-id-1",
+        storeId: store.id,
         title: "Test Promotion",
         description: "A test promotion for testing purposes",
         discountPercentage: "15.00",
         startsAt: new Date("2023-01-01"),
         endsAt: new Date("2023-01-31"),
-        collectionId: "test-collection-id-1",
+        collectionId: collection.id,
       });
 
       const result = await createPromotionQuery(db, promotionData);
 
       expect(result.success).toBe(true);
       expect(result.promotion).toBeDefined();
-      expect(result.promotion?.storeId).toBe("test-store-id-1");
+      expect(result.promotion?.storeId).toBe(store.id);
       expect(result.promotion?.title).toBe("Test Promotion");
       expect(result.promotion?.description).toBe(
         "A test promotion for testing purposes"
       );
       expect(result.promotion?.discountPercentage).toBe("15.00");
-      expect(result.promotion?.collectionId).toBe("test-collection-id-1");
+      expect(result.promotion?.collectionId).toBe(collection.id);
       expect(result.error).toBeUndefined();
     });
   });
 
   it("should fail when creating a promotion with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
+      const store1 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+      const store2 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
+
       const duplicateId = "duplicate-promotion-id";
       const promotionData1 = promotionTestFactory.buildOne({
         id: duplicateId,
-        storeId: "test-store-id-1",
+        storeId: store1.id,
         title: "First Promotion",
+        collectionId: collection1.id,
       });
 
       const promotionData2 = promotionTestFactory.buildOne({
         id: duplicateId,
-        storeId: "test-store-id-2",
+        storeId: store2.id,
         title: "Second Promotion",
+        collectionId: collection2.id,
       });
 
       // Insert first promotion
@@ -113,8 +134,12 @@ describe("createPromotionQuery", () => {
 
   it("should create a promotion with minimal required fields", async () => {
     await runWithTestDb(async (db: DB) => {
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+
       const minimalPromotionData = promotionTestFactory.buildOne({
-        storeId: "test-store-id-1",
+        storeId: store.id,
         title: "Minimal Promotion",
         description: undefined,
         collectionId: undefined,
@@ -124,7 +149,7 @@ describe("createPromotionQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.promotion).toBeDefined();
-      expect(result.promotion?.storeId).toBe("test-store-id-1");
+      expect(result.promotion?.storeId).toBe(store.id);
       expect(result.promotion?.title).toBe("Minimal Promotion");
       expect(result.error).toBeUndefined();
     });

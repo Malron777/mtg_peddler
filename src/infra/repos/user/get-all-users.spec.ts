@@ -15,7 +15,7 @@ describe("getAllUsersQuery", () => {
   it("should return all users with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test users
-      const user1 = await userTestFactory.insertOne(db, {
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "First User",
         email: "first@example.com",
@@ -27,7 +27,7 @@ describe("getAllUsersQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const user2 = await userTestFactory.insertOne(db, {
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Second User",
         email: "second@example.com",
@@ -67,7 +67,7 @@ describe("getAllUsersQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple users
       for (let i = 1; i <= 5; i++) {
-        await userTestFactory.insertOne(db, {
+        await userTestFactory.buildAndInsertOne(db, {
           id: `test-user-id-${i}`,
           name: `Test User ${i}`,
           email: `user${i}@example.com`,
@@ -96,7 +96,7 @@ describe("getAllUsersQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await userTestFactory.insertOne(db, {
+      await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -120,7 +120,7 @@ describe("getAllUsersQuery", () => {
 
   it("should order users by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user1 = await userTestFactory.insertOne(db, {
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "First User",
         email: "first@example.com",
@@ -136,7 +136,7 @@ describe("getAllUsersQuery", () => {
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const user2 = await userTestFactory.insertOne(db, {
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Second User",
         email: "second@example.com",
@@ -161,7 +161,7 @@ describe("getAllUsersQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create a few users
       for (let i = 1; i <= 3; i++) {
-        await userTestFactory.insertOne(db, {
+        await userTestFactory.buildAndInsertOne(db, {
           id: `test-user-id-${i}`,
           name: `Test User ${i}`,
           email: `user${i}@example.com`,

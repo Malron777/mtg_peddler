@@ -1,3 +1,5 @@
+import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { promotionTestFactory } from "@/src/domain/tcg/promotion.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,15 +17,17 @@ describe("getAllPromotionsForStoreQuery", () => {
   it("should retrieve promotions for a specific store", async () => {
     await runWithTestDb(async (db: DB) => {
       const storeId = "test-store-id-1";
+      const collectionId = "test-collection-id-1";
 
       // Create promotions for the store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId,
         title: "Store Promotion 1",
         description: "First store promotion",
         discountPercentage: "10.00",
         startsAt: new Date("2023-01-01"),
         endsAt: new Date("2023-01-31"),
+        collectionId,
       });
       await promotionTestFactory.buildAndInsertOne(db, {
         storeId,
@@ -32,10 +36,11 @@ describe("getAllPromotionsForStoreQuery", () => {
         discountPercentage: "20.00",
         startsAt: new Date("2023-02-01"),
         endsAt: new Date("2023-02-28"),
+        collectionId,
       });
 
       // Create promotion for different store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-2",
         title: "Other Store Promotion",
         description: "Promotion for different store",
@@ -61,7 +66,7 @@ describe("getAllPromotionsForStoreQuery", () => {
       const storeId = "test-store-with-no-promotions";
 
       // Create promotion for different store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-2",
         title: "Other Store Promotion",
         description: "Promotion for different store",
@@ -99,21 +104,26 @@ describe("getAllPromotionsForStoreQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const storeId = "test-store-id-1";
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
 
       // Create 5 promotions for the store
       for (let i = 1; i <= 5; i++) {
         await promotionTestFactory.buildAndInsertOne(db, {
-          storeId,
+          storeId: store.id,
           title: `Store Promotion ${i}`,
           description: `Store promotion ${i}`,
           discountPercentage: `${i * 5}.00`,
           startsAt: new Date(`2023-0${i}-01`),
           endsAt: new Date(`2023-0${i}-28`),
+          collectionId: collection.id,
         });
       }
 
-      const result = await getAllPromotionsForStoreQuery(db, storeId, {
+      const result = await getAllPromotionsForStoreQuery(db, store.id, {
         page: 2,
         pageSize: 2,
       });
@@ -129,16 +139,19 @@ describe("getAllPromotionsForStoreQuery", () => {
   it("should order promotions by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
       const storeId = "test-store-id-1";
+      const collectionId = "test-collection-id-1";
 
-      const promotion1 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId,
-        title: "First Store Promotion",
-        description: "First promotion",
-        discountPercentage: "10.00",
-        startsAt: new Date("2023-01-01"),
-        endsAt: new Date("2023-01-31"),
-        createdAt: new Date("2023-01-01"),
-      });
+      const promotion1 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId,
+          title: "First Store Promotion",
+          description: "First promotion",
+          discountPercentage: "10.00",
+          startsAt: new Date("2023-01-01"),
+          endsAt: new Date("2023-01-31"),
+          createdAt: new Date("2023-01-01"),
+          collectionId,
+        });
 
       const promotion2 = await promotionTestFactory.buildAndInsertOne(db, {
         storeId,
@@ -148,6 +161,7 @@ describe("getAllPromotionsForStoreQuery", () => {
         startsAt: new Date("2023-02-01"),
         endsAt: new Date("2023-02-28"),
         createdAt: new Date("2023-01-02"),
+        collectionId,
       });
 
       const result = await getAllPromotionsForStoreQuery(db, storeId);

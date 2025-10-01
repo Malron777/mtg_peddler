@@ -14,7 +14,7 @@ describe("getUserQuery", () => {
 
   it("should successfully retrieve an existing user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -93,7 +93,7 @@ describe("getUserQuery", () => {
 
   it("should retrieve an admin user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-admin-user-id",
         name: "Admin User",
         email: "admin@example.com",
@@ -117,7 +117,7 @@ describe("getUserQuery", () => {
 
   it("should retrieve a user with unverified email", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-unverified-user-id",
         name: "Unverified User",
         email: "unverified@example.com",

@@ -15,7 +15,7 @@ describe("getAllPromotionsQuery", () => {
   it("should retrieve promotions with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create test promotions
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-1",
         title: "Promotion 1",
         description: "First promotion",
@@ -23,7 +23,7 @@ describe("getAllPromotionsQuery", () => {
         startsAt: new Date("2023-01-01"),
         endsAt: new Date("2023-01-31"),
       });
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-2",
         title: "Promotion 2",
         description: "Second promotion",
@@ -60,7 +60,7 @@ describe("getAllPromotionsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 5 promotions
       for (let i = 1; i <= 5; i++) {
-        await promotionTestFactory.buildAndInsertOne(db, {
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
           storeId: `test-store-id-${i}`,
           title: `Promotion ${i}`,
           description: `Promotion ${i}`,
@@ -85,7 +85,7 @@ describe("getAllPromotionsQuery", () => {
 
   it("should handle invalid pagination parameters", async () => {
     await runWithTestDb(async (db: DB) => {
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-1",
         title: "Promotion 1",
         description: "First promotion",
@@ -109,25 +109,27 @@ describe("getAllPromotionsQuery", () => {
 
   it("should order promotions by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const promotion1 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        title: "First Promotion",
-        description: "First promotion",
-        discountPercentage: "10.00",
-        startsAt: new Date("2023-01-01"),
-        endsAt: new Date("2023-01-31"),
-        createdAt: new Date("2023-01-01"),
-      });
+      const promotion1 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          title: "First Promotion",
+          description: "First promotion",
+          discountPercentage: "10.00",
+          startsAt: new Date("2023-01-01"),
+          endsAt: new Date("2023-01-31"),
+          createdAt: new Date("2023-01-01"),
+        });
 
-      const promotion2 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-2",
-        title: "Second Promotion",
-        description: "Second promotion",
-        discountPercentage: "20.00",
-        startsAt: new Date("2023-02-01"),
-        endsAt: new Date("2023-02-28"),
-        createdAt: new Date("2023-01-02"),
-      });
+      const promotion2 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-2",
+          title: "Second Promotion",
+          description: "Second promotion",
+          discountPercentage: "20.00",
+          startsAt: new Date("2023-02-01"),
+          endsAt: new Date("2023-02-28"),
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllPromotionsQuery(db);
 
@@ -141,7 +143,7 @@ describe("getAllPromotionsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 3 promotions
       for (let i = 1; i <= 3; i++) {
-        await promotionTestFactory.buildAndInsertOne(db, {
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
           storeId: `test-store-id-${i}`,
           title: `Promotion ${i}`,
           description: `Promotion ${i}`,

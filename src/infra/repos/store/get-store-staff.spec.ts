@@ -1,4 +1,6 @@
 import { storeStaffTestFactory } from "@/src/domain/auth/store-staff.model.test-factory";
+import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -14,9 +16,14 @@ describe("getStoreStaffQuery", () => {
 
   it("should successfully retrieve a store staff member", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db);
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
+
       const storeStaff = await storeStaffTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
+        storeId: store.id,
+        userId: user.id,
         role: "manager",
       });
 
@@ -29,8 +36,8 @@ describe("getStoreStaffQuery", () => {
       expect(result.success).toBe(true);
       expect(result.storeStaff).toBeDefined();
       expect(result.storeStaff?.id).toBe(storeStaff.id);
-      expect(result.storeStaff?.storeId).toBe("test-store-id-1");
-      expect(result.storeStaff?.userId).toBe("test-user-id-1");
+      expect(result.storeStaff?.storeId).toBe(store.id);
+      expect(result.storeStaff?.userId).toBe(storeStaff.userId);
       expect(result.storeStaff?.role).toBe("manager");
       expect(result.error).toBeUndefined();
     });
@@ -114,11 +121,8 @@ describe("getStoreStaffQuery", () => {
 
   it("should retrieve a store staff member with staff role", async () => {
     await runWithTestDb(async (db: DB) => {
-      const storeStaff = await storeStaffTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
-        role: "staff",
-      });
+      const storeStaff =
+        await storeStaffTestFactory.buildAndInsertOneWithDependencies(db);
 
       const result = await getStoreStaffQuery(
         db,

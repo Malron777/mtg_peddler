@@ -27,28 +27,27 @@ export const storeStaffTestFactory = {
     overrides: Partial<StoreStaff>
   ): Promise<StoreStaff> {
     const staff = this.buildOne(overrides);
-    const result = await db.insert(storeStaff).values(staff).returning();
-    return result[0];
+    return await this.insertOne(db, staff);
   },
 
   async buildAndInsertOneWithDependencies(
     db: DB,
-    overrides: Partial<StoreStaff>
+    overrides: Partial<StoreStaff> = {}
   ): Promise<StoreStaff> {
-    // Create dependencies if not provided
-    const userId =
-      overrides.userId || (await userTestFactory.buildAndInsertOne(db, {})).id;
-    const storeId =
-      overrides.storeId ||
-      (await storesTestFactory.buildAndInsertOne(db, {})).id;
-
-    // Build and insert with dependencies
-    const staff = this.buildOne({
-      ...overrides,
-      userId,
-      storeId,
+    const user = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.userId ? { id: overrides.userId } : {}),
     });
-    const result = await db.insert(storeStaff).values(staff).returning();
-    return result[0];
+    const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+      db,
+      {
+        ...(overrides.storeId ? { id: overrides.storeId } : {}),
+      }
+    );
+
+    return await this.buildAndInsertOne(db, {
+      ...overrides,
+      userId: user.id,
+      storeId: store.id,
+    });
   },
 };

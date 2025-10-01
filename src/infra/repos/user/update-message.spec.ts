@@ -1,4 +1,5 @@
 import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
+import { dealTestFactory } from "@/src/domain/tcg/deal.model.test-factory";
 import { messageTestFactory } from "@/src/domain/tcg/message.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,7 +16,7 @@ describe("updateMessageQuery", () => {
 
   it("should successfully update an existing message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-1",
         name: "Test Sender",
         email: "sender@example.com",
@@ -27,7 +28,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-1",
         name: "Test Recipient",
         email: "recipient@example.com",
@@ -39,8 +40,18 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: true, push: true },
       });
 
+      const deal = await dealTestFactory.insertOne(db, {
+        id: "test-deal-id-1",
+        sellerId: sender.id,
+        buyerId: recipient.id,
+        status: "negotiating",
+        totalAmount: "1300",
+        paymentMethodId: null,
+        shippingLocationId: null,
+      });
+
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-1",
+        dealId: deal.id,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Original message content",
@@ -68,7 +79,7 @@ describe("updateMessageQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent message", async () => {
+  it("should return undefined when trying to update non-existent message", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-message-id",
@@ -76,13 +87,15 @@ describe("updateMessageQuery", () => {
         isRead: true,
       };
 
-      await expect(updateMessageQuery(db, updateData)).rejects.toThrow();
+      const result = await updateMessageQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-2",
         name: "Test Sender 2",
         email: "sender2@example.com",
@@ -94,7 +107,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-2",
         name: "Test Recipient 2",
         email: "recipient2@example.com",
@@ -107,7 +120,7 @@ describe("updateMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-2",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Original message",
@@ -133,7 +146,7 @@ describe("updateMessageQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-3",
         name: "Test Sender 3",
         email: "sender3@example.com",
@@ -145,7 +158,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-3",
         name: "Test Recipient 3",
         email: "recipient3@example.com",
@@ -158,7 +171,7 @@ describe("updateMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-3",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Original message",
@@ -183,7 +196,7 @@ describe("updateMessageQuery", () => {
 
   it("should update message content only", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-4",
         name: "Test Sender 4",
         email: "sender4@example.com",
@@ -195,7 +208,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-4",
         name: "Test Recipient 4",
         email: "recipient4@example.com",
@@ -208,7 +221,7 @@ describe("updateMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-4",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Original content",
@@ -234,7 +247,7 @@ describe("updateMessageQuery", () => {
 
   it("should update message with long content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-5",
         name: "Test Sender 5",
         email: "sender5@example.com",
@@ -246,7 +259,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-5",
         name: "Test Recipient 5",
         email: "recipient5@example.com",
@@ -259,7 +272,7 @@ describe("updateMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-5",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Short content",
@@ -285,7 +298,7 @@ describe("updateMessageQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-6",
         name: "Test Sender 6",
         email: "sender6@example.com",
@@ -297,7 +310,7 @@ describe("updateMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-6",
         name: "Test Recipient 6",
         email: "recipient6@example.com",
@@ -310,7 +323,7 @@ describe("updateMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-6",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Original content",

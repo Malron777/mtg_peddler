@@ -14,15 +14,16 @@ describe("getUserReportQuery", () => {
 
   it("should successfully retrieve an existing user report", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-1",
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId: "test-deal-id-1",
-        reason: "Fraudulent behavior",
-        description: "User provided fake cards and refused to refund",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-1",
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId: "test-deal-id-1",
+          reason: "Fraudulent behavior",
+          description: "User provided fake cards and refused to refund",
+          status: "pending",
+        });
 
       const result = await getUserReportQuery(db, userReport.id);
 
@@ -87,16 +88,17 @@ describe("getUserReportQuery", () => {
 
   it("should retrieve a resolved user report", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-resolved-report-id",
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
-        dealId: "test-deal-id-2",
-        reason: "Payment issue",
-        description: "User did not send payment as agreed",
-        status: "resolved",
-        resolvedAt: new Date("2023-01-01"),
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-resolved-report-id",
+          reporterId: "test-reporter-id-2",
+          reportedUserId: "test-reported-user-id-2",
+          dealId: "test-deal-id-2",
+          reason: "Payment issue",
+          description: "User did not send payment as agreed",
+          status: "resolved",
+          resolvedAt: new Date("2023-01-01"),
+        });
 
       const result = await getUserReportQuery(db, userReport.id);
 
@@ -110,15 +112,16 @@ describe("getUserReportQuery", () => {
 
   it("should retrieve a user report without dealId", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-no-deal-id",
-        reporterId: "test-reporter-id-3",
-        reportedUserId: "test-reported-user-id-3",
-        dealId: null,
-        reason: "Inappropriate behavior",
-        description: "User was harassing other users in chat",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-no-deal-id",
+          reporterId: "test-reporter-id-3",
+          reportedUserId: "test-reported-user-id-3",
+          dealId: null,
+          reason: "Inappropriate behavior",
+          description: "User was harassing other users in chat",
+          status: "pending",
+        });
 
       const result = await getUserReportQuery(db, userReport.id);
 

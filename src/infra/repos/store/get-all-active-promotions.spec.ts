@@ -19,7 +19,7 @@ describe("getAllActivePromotionsQuery", () => {
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day from now
 
       // Create active promotions
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-1",
         title: "Active Promotion 1",
         description: "First active promotion",
@@ -27,7 +27,7 @@ describe("getAllActivePromotionsQuery", () => {
         startsAt: startDate,
         endsAt: endDate,
       });
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-2",
         title: "Active Promotion 2",
         description: "Second active promotion",
@@ -37,7 +37,7 @@ describe("getAllActivePromotionsQuery", () => {
       });
 
       // Create inactive promotion (ended)
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-3",
         title: "Inactive Promotion",
         description: "Ended promotion",
@@ -63,7 +63,7 @@ describe("getAllActivePromotionsQuery", () => {
       const now = new Date();
 
       // Create only inactive promotions
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-1",
         title: "Inactive Promotion 1",
         description: "Ended promotion",
@@ -90,7 +90,7 @@ describe("getAllActivePromotionsQuery", () => {
 
       // Create 5 active promotions
       for (let i = 1; i <= 5; i++) {
-        await promotionTestFactory.buildAndInsertOne(db, {
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
           storeId: `test-store-id-${i}`,
           title: `Active Promotion ${i}`,
           description: `Active promotion ${i}`,
@@ -119,7 +119,7 @@ describe("getAllActivePromotionsQuery", () => {
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-1",
         title: "Active Promotion",
         description: "Active promotion",
@@ -147,25 +147,27 @@ describe("getAllActivePromotionsQuery", () => {
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      const promotion1 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        title: "First Active Promotion",
-        description: "First promotion",
-        discountPercentage: "10.00",
-        startsAt: startDate,
-        endsAt: endDate,
-        createdAt: new Date("2023-01-01"),
-      });
+      const promotion1 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          title: "First Active Promotion",
+          description: "First promotion",
+          discountPercentage: "10.00",
+          startsAt: startDate,
+          endsAt: endDate,
+          createdAt: new Date("2023-01-01"),
+        });
 
-      const promotion2 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-2",
-        title: "Second Active Promotion",
-        description: "Second promotion",
-        discountPercentage: "20.00",
-        startsAt: startDate,
-        endsAt: endDate,
-        createdAt: new Date("2023-01-02"),
-      });
+      const promotion2 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-2",
+          title: "Second Active Promotion",
+          description: "Second promotion",
+          discountPercentage: "20.00",
+          startsAt: startDate,
+          endsAt: endDate,
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllActivePromotionsQuery(db);
 
@@ -183,7 +185,7 @@ describe("getAllActivePromotionsQuery", () => {
 
       // Create 3 active promotions
       for (let i = 1; i <= 3; i++) {
-        await promotionTestFactory.buildAndInsertOne(db, {
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
           storeId: `test-store-id-${i}`,
           title: `Active Promotion ${i}`,
           description: `Active promotion ${i}`,

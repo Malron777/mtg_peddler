@@ -1,4 +1,6 @@
 import { userReportsTestFactory } from "@/src/domain/auth/user-reports.model.test-factory";
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
+import { dealTestFactory } from "@/src/domain/tcg/deal.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -17,7 +19,7 @@ describe("getAllUserReportsForDealQuery", () => {
       const dealId = "test-deal-id-1";
 
       // Create user reports for the deal
-      await userReportsTestFactory.buildAndInsertOne(db, {
+      await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
         reporterId: "test-reporter-id-1",
         reportedUserId: "test-reported-user-id-1",
         dealId,
@@ -25,20 +27,39 @@ describe("getAllUserReportsForDealQuery", () => {
         description: "Test description 1",
         status: "pending",
       });
+
+      const reporterUser2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reporter-id-2",
+      });
+      const reportedUser2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reported-user-id-2",
+      });
       await userReportsTestFactory.buildAndInsertOne(db, {
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
+        reporterId: reporterUser2.id,
+        reportedUserId: reportedUser2.id,
         dealId,
         reason: "Test reason 2",
         description: "Test description 2",
         status: "resolved",
       });
 
+      const reporterUser3 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reporter-id-3",
+      });
+      const reportedUser3 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reported-user-id-3",
+      });
+      const deal2 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-deal-id-2",
+        }
+      );
       // Create user report for different deal
       await userReportsTestFactory.buildAndInsertOne(db, {
-        reporterId: "test-reporter-id-3",
-        reportedUserId: "test-reported-user-id-3",
-        dealId: "test-deal-id-2",
+        reporterId: reporterUser3.id,
+        reportedUserId: reportedUser3.id,
+        dealId: deal2.id,
         reason: "Test reason 3",
         description: "Test description 3",
         status: "pending",
@@ -61,7 +82,7 @@ describe("getAllUserReportsForDealQuery", () => {
       const dealId = "test-deal-with-no-reports";
 
       // Create user report for different deal
-      await userReportsTestFactory.buildAndInsertOne(db, {
+      await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
         reporterId: "test-reporter-id-1",
         reportedUserId: "test-reported-user-id-1",
         dealId: "test-deal-id-2",
@@ -96,21 +117,29 @@ describe("getAllUserReportsForDealQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealId = "test-deal-id-1";
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
+        id: "test-deal-id-1",
+      });
 
       // Create 5 user reports for the deal
       for (let i = 1; i <= 5; i++) {
+        const reporterUser = await userTestFactory.buildAndInsertOne(db, {
+          id: `test-reporter-id-${i}`,
+        });
+        const reportedUser = await userTestFactory.buildAndInsertOne(db, {
+          id: `test-reported-user-id-${i}`,
+        });
         await userReportsTestFactory.buildAndInsertOne(db, {
-          reporterId: `test-reporter-id-${i}`,
-          reportedUserId: `test-reported-user-id-${i}`,
-          dealId,
+          reporterId: reporterUser.id,
+          reportedUserId: reportedUser.id,
+          dealId: deal.id,
           reason: `Test reason ${i}`,
           description: `Test description ${i}`,
           status: "pending",
         });
       }
 
-      const result = await getAllUserReportsForDealQuery(db, dealId, {
+      const result = await getAllUserReportsForDealQuery(db, deal.id, {
         page: 2,
         pageSize: 2,
       });
@@ -127,19 +156,27 @@ describe("getAllUserReportsForDealQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const dealId = "test-deal-id-1";
 
-      const report1 = await userReportsTestFactory.buildAndInsertOne(db, {
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId,
-        reason: "Test reason 1",
-        description: "Test description 1",
-        status: "pending",
-        createdAt: new Date("2023-01-01"),
+      const report1 =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId,
+          reason: "Test reason 1",
+          description: "Test description 1",
+          status: "pending",
+          createdAt: new Date("2023-01-01"),
+        });
+
+      const reporterUser2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reporter-id-2",
+      });
+      const reportedUser2 = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reported-user-id-2",
       });
 
       const report2 = await userReportsTestFactory.buildAndInsertOne(db, {
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
+        reporterId: reporterUser2.id,
+        reportedUserId: reportedUser2.id,
         dealId,
         reason: "Test reason 2",
         description: "Test description 2",

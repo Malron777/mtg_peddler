@@ -1,3 +1,5 @@
+import { storesTestFactory } from "@/src/domain/auth/stores.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { promotionTestFactory } from "@/src/domain/tcg/promotion.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,18 +17,20 @@ describe("getAllActivePromotionsForStoreQuery", () => {
   it("should retrieve active promotions for a specific store", async () => {
     await runWithTestDb(async (db: DB) => {
       const storeId = "test-store-id-1";
+      const collectionId = "test-collection-id-1";
       const now = new Date();
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day ago
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day from now
 
       // Create active promotions for the store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId,
         title: "Active Promotion 1",
         description: "First active promotion",
         discountPercentage: "10.00",
         startsAt: startDate,
         endsAt: endDate,
+        collectionId,
       });
       await promotionTestFactory.buildAndInsertOne(db, {
         storeId,
@@ -35,6 +39,7 @@ describe("getAllActivePromotionsForStoreQuery", () => {
         discountPercentage: "20.00",
         startsAt: startDate,
         endsAt: endDate,
+        collectionId,
       });
 
       // Create inactive promotion (ended)
@@ -45,10 +50,11 @@ describe("getAllActivePromotionsForStoreQuery", () => {
         discountPercentage: "15.00",
         startsAt: new Date(now.getTime() - 48 * 60 * 60 * 1000), // 2 days ago
         endsAt: new Date(now.getTime() - 24 * 60 * 60 * 1000), // 1 day ago
+        collectionId,
       });
 
       // Create promotion for different store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId: "test-store-id-2",
         title: "Other Store Promotion",
         description: "Promotion for different store",
@@ -75,7 +81,7 @@ describe("getAllActivePromotionsForStoreQuery", () => {
       const now = new Date();
 
       // Create inactive promotion for the store
-      await promotionTestFactory.buildAndInsertOne(db, {
+      await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
         storeId,
         title: "Inactive Promotion",
         description: "Ended promotion",
@@ -113,24 +119,29 @@ describe("getAllActivePromotionsForStoreQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const storeId = "test-store-id-1";
+      const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db
+      );
       const now = new Date();
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
       // Create 5 active promotions for the store
       for (let i = 1; i <= 5; i++) {
+        const collection =
+          await collectionTestFactory.buildAndInsertOneWithDependencies(db);
         await promotionTestFactory.buildAndInsertOne(db, {
-          storeId,
+          storeId: store.id,
           title: `Active Promotion ${i}`,
           description: `Active promotion ${i}`,
           discountPercentage: `${i * 5}.00`,
           startsAt: startDate,
           endsAt: endDate,
+          collectionId: collection.id,
         });
       }
 
-      const result = await getAllActivePromotionsForStoreQuery(db, storeId, {
+      const result = await getAllActivePromotionsForStoreQuery(db, store.id, {
         page: 2,
         pageSize: 2,
       });
@@ -146,19 +157,27 @@ describe("getAllActivePromotionsForStoreQuery", () => {
   it("should order promotions by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
       const storeId = "test-store-id-1";
+      const collectionId = "test-collection-id-1";
       const now = new Date();
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      const promotion1 = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId,
-        title: "First Active Promotion",
-        description: "First promotion",
-        discountPercentage: "10.00",
-        startsAt: startDate,
-        endsAt: endDate,
-        createdAt: new Date("2023-01-01"),
-      });
+      const promotion1 =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId,
+          title: "First Active Promotion",
+          description: "First promotion",
+          discountPercentage: "10.00",
+          startsAt: startDate,
+          endsAt: endDate,
+          createdAt: new Date("2023-01-01"),
+          collectionId,
+        });
+
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+        });
 
       const promotion2 = await promotionTestFactory.buildAndInsertOne(db, {
         storeId,
@@ -168,6 +187,7 @@ describe("getAllActivePromotionsForStoreQuery", () => {
         startsAt: startDate,
         endsAt: endDate,
         createdAt: new Date("2023-01-02"),
+        collectionId: collection2.id,
       });
 
       const result = await getAllActivePromotionsForStoreQuery(db, storeId);

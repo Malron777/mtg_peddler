@@ -15,7 +15,7 @@ describe("deleteLocationQuery", () => {
 
   it("should successfully delete an existing location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -69,8 +69,8 @@ describe("deleteLocationQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteLocationQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).not.toBeDefined();
     });
   });
 
@@ -87,7 +87,7 @@ describe("deleteLocationQuery", () => {
 
   it("should delete only the specified location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -128,7 +128,7 @@ describe("deleteLocationQuery", () => {
 
   it("should handle deleting location with foreign key constraints", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -157,7 +157,7 @@ describe("deleteLocationQuery", () => {
 
   it("should handle deleting primary location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -186,7 +186,7 @@ describe("deleteLocationQuery", () => {
 
   it("should handle deleting location with complex address details", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",

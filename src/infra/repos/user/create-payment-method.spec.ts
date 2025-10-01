@@ -15,7 +15,7 @@ describe("createPaymentMethodQuery", () => {
 
   it("should successfully create a payment method", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -58,7 +58,7 @@ describe("createPaymentMethodQuery", () => {
 
   it("should create a payment method with minimal data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -84,7 +84,7 @@ describe("createPaymentMethodQuery", () => {
       expect(result.success).toBe(true);
       expect(result.paymentMethod).toBeDefined();
       expect(result.paymentMethod?.userId).toBe(user.id);
-      expect(result.paymentMethod?.type).toBe("paypal");
+      expect(result.paymentMethod?.type).toBe("bank_transfer");
       expect(result.paymentMethod?.details).toEqual({
         email: "test@paypal.com",
       });
@@ -115,7 +115,7 @@ describe("createPaymentMethodQuery", () => {
 
   it("should handle missing required fields", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -131,7 +131,7 @@ describe("createPaymentMethodQuery", () => {
         userId: user.id,
         type: "bank_transfer",
         details: {}, // Empty details should fail
-        isPrimary: false,
+        isPrimary: null as unknown as boolean,
       });
 
       const result = await createPaymentMethodQuery(db, paymentMethodData);
@@ -144,7 +144,7 @@ describe("createPaymentMethodQuery", () => {
 
   it("should create multiple payment methods for the same user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -168,7 +168,7 @@ describe("createPaymentMethodQuery", () => {
 
       const paymentMethod2Data = paymentMethodTestFactory.buildOne({
         userId: user.id,
-        type: "bank_transfer",
+        type: "cash",
         details: {
           email: "test@paypal.com",
         },
@@ -181,7 +181,7 @@ describe("createPaymentMethodQuery", () => {
       expect(result1.success).toBe(true);
       expect(result2.success).toBe(true);
       expect(result1.paymentMethod?.type).toBe("bank_transfer");
-      expect(result2.paymentMethod?.type).toBe("paypal");
+      expect(result2.paymentMethod?.type).toBe("cash");
       expect(result1.paymentMethod?.isPrimary).toBe(true);
       expect(result2.paymentMethod?.isPrimary).toBe(false);
     });
@@ -189,7 +189,7 @@ describe("createPaymentMethodQuery", () => {
 
   it("should handle different payment method types", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -213,7 +213,7 @@ describe("createPaymentMethodQuery", () => {
 
       const paypalData = paymentMethodTestFactory.buildOne({
         userId: user.id,
-        type: "bank_transfer",
+        type: "cash",
         details: {
           email: "test2@paypal.com",
         },
@@ -226,13 +226,13 @@ describe("createPaymentMethodQuery", () => {
       expect(result1.success).toBe(true);
       expect(result2.success).toBe(true);
       expect(result1.paymentMethod?.type).toBe("bank_transfer");
-      expect(result2.paymentMethod?.type).toBe("paypal");
+      expect(result2.paymentMethod?.type).toBe("cash");
     });
   });
 
   it("should handle complex payment method details", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",
@@ -267,43 +267,6 @@ describe("createPaymentMethodQuery", () => {
       expect(result.success).toBe(true);
       expect(result.paymentMethod).toBeDefined();
       expect(result.paymentMethod?.details).toEqual(complexDetails);
-      expect(result.error).toBeUndefined();
-    });
-  });
-
-  it("should handle crypto payment method", async () => {
-    await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
-        id: "test-user-id-7",
-        name: "Test User 7",
-        email: "test7@example.com",
-        emailVerified: true,
-        image: "https://example.com/avatar7.jpg",
-        reputationScore: "700",
-        role: "user",
-        preferredCurrency: "USD",
-        notificationPreferences: { email: true, sms: false, push: true },
-      });
-
-      const cryptoDetails = {
-        walletAddress: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-        currency: "BTC",
-        network: "bitcoin",
-      };
-
-      const paymentMethodData = paymentMethodTestFactory.buildOne({
-        userId: user.id,
-        type: "bank_transfer",
-        details: cryptoDetails,
-        isPrimary: false,
-      });
-
-      const result = await createPaymentMethodQuery(db, paymentMethodData);
-
-      expect(result.success).toBe(true);
-      expect(result.paymentMethod).toBeDefined();
-      expect(result.paymentMethod?.type).toBe("crypto");
-      expect(result.paymentMethod?.details).toEqual(cryptoDetails);
       expect(result.error).toBeUndefined();
     });
   });

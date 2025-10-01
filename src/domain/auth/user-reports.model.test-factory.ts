@@ -1,5 +1,6 @@
 import { DB } from "@/src/infra/db/db";
 import { userReports } from "@/src/infra/db/schema/auth";
+import { dealTestFactory } from "../tcg/deal.model.test-factory";
 import { UserReport } from "./user-reports.model";
 import { userTestFactory } from "./user.model.test-factory";
 
@@ -40,22 +41,26 @@ export const userReportsTestFactory = {
     overrides: Partial<UserReport>
   ): Promise<UserReport> {
     // Create dependencies if not provided
-    const reporterId =
-      overrides.reporterId ||
-      (await userTestFactory.buildAndInsertOne(db, {})).id;
-    const reportedUserId =
-      overrides.reportedUserId ||
-      (await userTestFactory.buildAndInsertOne(db, {})).id;
-
+    const reporter = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.reporterId ? { id: overrides.reporterId } : {}),
+    });
+    const reportedUser = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.reportedUserId ? { id: overrides.reportedUserId } : {}),
+    });
     // DealId is optional, so we don't create it unless specifically needed
-    const dealId = overrides.dealId;
+    const deal =
+      overrides.dealId !== undefined
+        ? await dealTestFactory.buildAndInsertOneWithDependencies(db, {
+            ...(overrides.dealId ? { id: overrides.dealId } : {}),
+          })
+        : undefined;
 
     // Build and insert with dependencies
     const report = this.buildOne({
       ...overrides,
-      reporterId,
-      reportedUserId,
-      dealId,
+      reporterId: reporter.id,
+      reportedUserId: reportedUser.id,
+      dealId: deal ? deal.id : null,
     });
     const result = await db.insert(userReports).values(report).returning();
     return result[0];

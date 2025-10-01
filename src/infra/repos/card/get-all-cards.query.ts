@@ -32,12 +32,17 @@ export async function getAllCardsQuery(
   const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated cards
-  const cardsResult = await db
-    .select()
-    .from(cards)
-    .orderBy(desc(cards.createdAt))
-    .limit(pageSize)
-    .offset(offset);
+  let query = db.select().from(cards).orderBy(desc(cards.createdAt));
+
+  // Handle negative pageSize (treat as "no limit")
+  if (pageSize < 0) {
+    // When pageSize is negative, ignore offset to avoid skipping rows
+    query = query.limit(Number.MAX_SAFE_INTEGER);
+  } else {
+    query = query.limit(pageSize).offset(offset);
+  }
+
+  const cardsResult = await query;
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

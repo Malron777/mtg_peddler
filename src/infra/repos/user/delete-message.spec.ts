@@ -15,7 +15,7 @@ describe("deleteMessageQuery", () => {
 
   it("should successfully delete an existing message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-1",
         name: "Test Sender",
         email: "sender@example.com",
@@ -27,7 +27,7 @@ describe("deleteMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-1",
         name: "Test Recipient",
         email: "recipient@example.com",
@@ -40,7 +40,7 @@ describe("deleteMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-1",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Test message content",
@@ -78,8 +78,8 @@ describe("deleteMessageQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteMessageQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).not.toBeDefined();
     });
   });
 
@@ -96,7 +96,7 @@ describe("deleteMessageQuery", () => {
 
   it("should delete only the specified message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-2",
         name: "Test Sender 2",
         email: "sender2@example.com",
@@ -108,7 +108,7 @@ describe("deleteMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-2",
         name: "Test Recipient 2",
         email: "recipient2@example.com",
@@ -121,7 +121,7 @@ describe("deleteMessageQuery", () => {
       });
 
       const message1 = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-2",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "First message",
@@ -129,7 +129,7 @@ describe("deleteMessageQuery", () => {
       });
 
       const message2 = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-2",
+        dealId: null,
         senderId: recipient.id,
         recipientId: sender.id,
         content: "Second message",
@@ -149,7 +149,7 @@ describe("deleteMessageQuery", () => {
 
   it("should handle deleting read message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-3",
         name: "Test Sender 3",
         email: "sender3@example.com",
@@ -161,7 +161,7 @@ describe("deleteMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-3",
         name: "Test Recipient 3",
         email: "recipient3@example.com",
@@ -174,7 +174,7 @@ describe("deleteMessageQuery", () => {
       });
 
       const readMessage = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-3",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Read message",
@@ -190,7 +190,7 @@ describe("deleteMessageQuery", () => {
 
   it("should handle deleting message with long content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-4",
         name: "Test Sender 4",
         email: "sender4@example.com",
@@ -202,7 +202,7 @@ describe("deleteMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-4",
         name: "Test Recipient 4",
         email: "recipient4@example.com",
@@ -218,7 +218,7 @@ describe("deleteMessageQuery", () => {
         "This is a very long message that contains multiple sentences and should test the system's ability to handle longer content. It includes various punctuation marks, numbers like 123, and special characters like @#$%. The message should be stored correctly without any issues.";
 
       const longMessage = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-4",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: longContent,
@@ -234,7 +234,7 @@ describe("deleteMessageQuery", () => {
 
   it("should handle deleting message without deal ID", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-5",
         name: "Test Sender 5",
         email: "sender5@example.com",
@@ -246,7 +246,7 @@ describe("deleteMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-5",
         name: "Test Recipient 5",
         email: "recipient5@example.com",

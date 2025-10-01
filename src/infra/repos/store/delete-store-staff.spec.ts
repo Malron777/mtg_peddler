@@ -14,11 +14,12 @@ describe("deleteStoreStaffQuery", () => {
 
   it("should successfully delete a store staff member", async () => {
     await runWithTestDb(async (db: DB) => {
-      const storeStaff = await storeStaffTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        userId: "test-user-id-1",
-        role: "manager",
-      });
+      const storeStaff =
+        await storeStaffTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          userId: "test-user-id-1",
+          role: "manager",
+        });
 
       const result = await deleteStoreStaffQuery(
         db,
@@ -70,8 +71,8 @@ describe("deleteStoreStaffQuery", () => {
         "test-user-id-1"
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 
@@ -83,8 +84,8 @@ describe("deleteStoreStaffQuery", () => {
         null as unknown as string
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 

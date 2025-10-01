@@ -1,6 +1,7 @@
 import { DB } from "@/src/infra/db/db";
 import { promotions } from "@/src/infra/db/schema/tcg";
 import { storesTestFactory } from "../auth/stores.model.test-factory";
+import { collectionTestFactory } from "./collection.model.test-factory";
 import { Promotion } from "./promotion.model";
 
 export const promotionTestFactory = {
@@ -39,19 +40,21 @@ export const promotionTestFactory = {
     db: DB,
     overrides: Partial<Promotion>
   ): Promise<Promotion> {
-    // Create dependencies if not provided
-    const storeId =
-      overrides.storeId ||
-      (await storesTestFactory.buildAndInsertOne(db, {})).id;
+    const store = await storesTestFactory.buildAndInsertOneWithDependencies(
+      db,
+      {
+        ...(overrides.storeId ? { id: overrides.storeId } : {}),
+      }
+    );
+    const collection =
+      await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+        ...(overrides.collectionId ? { id: overrides.collectionId } : {}),
+      });
 
-    // Optional dependencies
-    const collectionId = overrides.collectionId;
-
-    // Build and insert with dependencies
     const promotion = this.buildOne({
       ...overrides,
-      storeId,
-      collectionId,
+      storeId: store.id,
+      collectionId: collection.id,
     });
     const result = await db.insert(promotions).values(promotion).returning();
     return result[0];

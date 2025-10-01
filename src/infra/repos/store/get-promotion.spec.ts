@@ -14,15 +14,16 @@ describe("getPromotionQuery", () => {
 
   it("should successfully retrieve a promotion", async () => {
     await runWithTestDb(async (db: DB) => {
-      const promotion = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        title: "Test Promotion",
-        description: "A test promotion for testing purposes",
-        discountPercentage: "15.00",
-        startsAt: new Date("2023-01-01"),
-        endsAt: new Date("2023-01-31"),
-        collectionId: "test-collection-id-1",
-      });
+      const promotion =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          title: "Test Promotion",
+          description: "A test promotion for testing purposes",
+          discountPercentage: "15.00",
+          startsAt: new Date("2023-01-01"),
+          endsAt: new Date("2023-01-31"),
+          collectionId: "test-collection-id-1",
+        });
 
       const result = await getPromotionQuery(db, promotion.id);
 
@@ -85,14 +86,15 @@ describe("getPromotionQuery", () => {
 
   it("should retrieve a promotion with high discount", async () => {
     await runWithTestDb(async (db: DB) => {
-      const promotion = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        title: "High Discount Promotion",
-        description: "A promotion with high discount",
-        discountPercentage: "50.00",
-        startsAt: new Date("2023-01-01"),
-        endsAt: new Date("2023-01-31"),
-      });
+      const promotion =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          title: "High Discount Promotion",
+          description: "A promotion with high discount",
+          discountPercentage: "50.00",
+          startsAt: new Date("2023-01-01"),
+          endsAt: new Date("2023-01-31"),
+        });
 
       const result = await getPromotionQuery(db, promotion.id);
 

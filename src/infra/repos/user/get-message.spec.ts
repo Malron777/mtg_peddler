@@ -15,7 +15,7 @@ describe("getMessageQuery", () => {
 
   it("should successfully retrieve an existing message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-1",
         name: "Test Sender",
         email: "sender@example.com",
@@ -27,7 +27,7 @@ describe("getMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-1",
         name: "Test Recipient",
         email: "recipient@example.com",
@@ -40,7 +40,7 @@ describe("getMessageQuery", () => {
       });
 
       const message = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-1",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Hello, this is a test message!",
@@ -52,7 +52,7 @@ describe("getMessageQuery", () => {
       expect(result.success).toBe(true);
       expect(result.message).toBeDefined();
       expect(result.message?.id).toBe(message.id);
-      expect(result.message?.dealId).toBe("test-deal-id-1");
+      expect(result.message?.dealId).toBe(null);
       expect(result.message?.senderId).toBe(sender.id);
       expect(result.message?.recipientId).toBe(recipient.id);
       expect(result.message?.content).toBe("Hello, this is a test message!");
@@ -107,7 +107,7 @@ describe("getMessageQuery", () => {
 
   it("should retrieve a read message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-2",
         name: "Test Sender 2",
         email: "sender2@example.com",
@@ -119,7 +119,7 @@ describe("getMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-2",
         name: "Test Recipient 2",
         email: "recipient2@example.com",
@@ -132,7 +132,7 @@ describe("getMessageQuery", () => {
       });
 
       const readMessage = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-2",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "This message has been read",
@@ -150,7 +150,7 @@ describe("getMessageQuery", () => {
 
   it("should retrieve a message without deal ID", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-3",
         name: "Test Sender 3",
         email: "sender3@example.com",
@@ -162,7 +162,7 @@ describe("getMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-3",
         name: "Test Recipient 3",
         email: "recipient3@example.com",
@@ -193,7 +193,7 @@ describe("getMessageQuery", () => {
 
   it("should retrieve a message with long content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-4",
         name: "Test Sender 4",
         email: "sender4@example.com",
@@ -205,7 +205,7 @@ describe("getMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-4",
         name: "Test Recipient 4",
         email: "recipient4@example.com",
@@ -221,7 +221,7 @@ describe("getMessageQuery", () => {
         "This is a very long message that contains multiple sentences and should test the system's ability to handle longer content. It includes various punctuation marks, numbers like 123, and special characters like @#$%. The message should be stored correctly without any issues.";
 
       const longMessage = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-4",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: longContent,
@@ -239,7 +239,7 @@ describe("getMessageQuery", () => {
 
   it("should retrieve a message with special characters", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-5",
         name: "Test Sender 5",
         email: "sender5@example.com",
@@ -251,7 +251,7 @@ describe("getMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-5",
         name: "Test Recipient 5",
         email: "recipient5@example.com",
@@ -267,7 +267,7 @@ describe("getMessageQuery", () => {
         "Message with special chars: @#$%^&*()_+-=[]{}|;':\",./<>?`~";
 
       const specialMessage = await messageTestFactory.insertOne(db, {
-        dealId: "test-deal-id-5",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: specialContent,

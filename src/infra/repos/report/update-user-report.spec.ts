@@ -14,15 +14,16 @@ describe("updateUserReportQuery", () => {
 
   it("should successfully update an existing user report", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-1",
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId: "test-deal-id-1",
-        reason: "Fraudulent behavior",
-        description: "User provided fake cards and refused to refund",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-1",
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId: "test-deal-id-1",
+          reason: "Fraudulent behavior",
+          description: "User provided fake cards and refused to refund",
+          status: "pending",
+        });
 
       const updateData = {
         id: userReport.id,
@@ -57,22 +58,23 @@ describe("updateUserReportQuery", () => {
         status: "resolved" as const,
         description: "Updated description",
       };
-
-      await expect(updateUserReportQuery(db, updateData)).rejects.toThrow();
+      const result = await updateUserReportQuery(db, updateData);
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-2",
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
-        dealId: "test-deal-id-2",
-        reason: "Payment issue",
-        description: "User did not send payment as agreed",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-2",
+          reporterId: "test-reporter-id-2",
+          reportedUserId: "test-reported-user-id-2",
+          dealId: "test-deal-id-2",
+          reason: "Payment issue",
+          description: "User did not send payment as agreed",
+          status: "pending",
+        });
 
       const updateData = {
         id: userReport.id,
@@ -94,15 +96,16 @@ describe("updateUserReportQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-3",
-        reporterId: "test-reporter-id-3",
-        reportedUserId: "test-reported-user-id-3",
-        dealId: "test-deal-id-3",
-        reason: "Test reason",
-        description: "Test description",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-3",
+          reporterId: "test-reporter-id-3",
+          reportedUserId: "test-reported-user-id-3",
+          dealId: "test-deal-id-3",
+          reason: "Test reason",
+          description: "Test description",
+          status: "pending",
+        });
 
       const updateData = {
         id: userReport.id,
@@ -123,20 +126,22 @@ describe("updateUserReportQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-4",
-        reporterId: "test-reporter-id-4",
-        reportedUserId: "test-reported-user-id-4",
-        dealId: "test-deal-id-4",
-        reason: "Test reason",
-        description: "Test description",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-4",
+          reporterId: "test-reporter-id-4",
+          reportedUserId: "test-reported-user-id-4",
+          dealId: "test-deal-id-4",
+          reason: "Test reason",
+          description: "Test description",
+          status: "pending",
+        });
 
       const updateData = {
         id: userReport.id,
-        status: "pending" as const, // Invalid status
-        description: "", // Empty description
+        status: "pending" as const,
+        description: "",
+        reporterId: null as unknown as string,
       };
 
       await expect(updateUserReportQuery(db, updateData)).rejects.toThrow();

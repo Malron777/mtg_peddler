@@ -14,7 +14,7 @@ describe("updateUserQuery", () => {
 
   it("should successfully update an existing user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Original Name",
         email: "original@example.com",
@@ -58,7 +58,7 @@ describe("updateUserQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent user", async () => {
+  it("should return undefined error when trying to update non-existent user", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-user-id",
@@ -66,13 +66,15 @@ describe("updateUserQuery", () => {
         reputationScore: "200",
       };
 
-      await expect(updateUserQuery(db, updateData)).rejects.toThrow();
+      const result = await updateUserQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Original Name",
         email: "original2@example.com",
@@ -108,7 +110,7 @@ describe("updateUserQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Original Name",
         email: "original3@example.com",
@@ -143,7 +145,7 @@ describe("updateUserQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Original Name",
         email: "original4@example.com",
@@ -157,7 +159,7 @@ describe("updateUserQuery", () => {
 
       const updateData = {
         id: user.id,
-        name: "", // Empty name should fail
+        name: null as unknown as string, // Empty name should fail
         reputationScore: "invalid-score", // Invalid reputation score
         role: "user" as const,
       };

@@ -15,7 +15,7 @@ describe("createMessageQuery", () => {
 
   it("should successfully create a message", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-1",
         name: "Test Sender",
         email: "sender@example.com",
@@ -27,7 +27,7 @@ describe("createMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-1",
         name: "Test Recipient",
         email: "recipient@example.com",
@@ -40,7 +40,7 @@ describe("createMessageQuery", () => {
       });
 
       const messageData = messageTestFactory.buildOne({
-        dealId: "test-deal-id-1",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "Hello, this is a test message!",
@@ -51,7 +51,7 @@ describe("createMessageQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toBeDefined();
-      expect(result.message?.dealId).toBe("test-deal-id-1");
+      expect(result.message?.dealId).toBe(null);
       expect(result.message?.senderId).toBe(sender.id);
       expect(result.message?.recipientId).toBe(recipient.id);
       expect(result.message?.content).toBe("Hello, this is a test message!");
@@ -62,7 +62,7 @@ describe("createMessageQuery", () => {
 
   it("should create a message with minimal data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-2",
         name: "Test Sender 2",
         email: "sender2@example.com",
@@ -74,7 +74,7 @@ describe("createMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-2",
         name: "Test Recipient 2",
         email: "recipient2@example.com",
@@ -109,7 +109,7 @@ describe("createMessageQuery", () => {
 
   it("should handle invalid sender ID gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-3",
         name: "Test Recipient 3",
         email: "recipient3@example.com",
@@ -139,7 +139,7 @@ describe("createMessageQuery", () => {
 
   it("should handle invalid recipient ID gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-4",
         name: "Test Sender 4",
         email: "sender4@example.com",
@@ -169,7 +169,7 @@ describe("createMessageQuery", () => {
 
   it("should handle missing required fields", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-5",
         name: "Test Sender 5",
         email: "sender5@example.com",
@@ -181,7 +181,7 @@ describe("createMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-5",
         name: "Test Recipient 5",
         email: "recipient5@example.com",
@@ -211,7 +211,7 @@ describe("createMessageQuery", () => {
 
   it("should create multiple messages between the same users", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-6",
         name: "Test Sender 6",
         email: "sender6@example.com",
@@ -223,7 +223,7 @@ describe("createMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-6",
         name: "Test Recipient 6",
         email: "recipient6@example.com",
@@ -236,7 +236,7 @@ describe("createMessageQuery", () => {
       });
 
       const message1Data = messageTestFactory.buildOne({
-        dealId: "test-deal-id-6",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: "First message",
@@ -244,7 +244,7 @@ describe("createMessageQuery", () => {
       });
 
       const message2Data = messageTestFactory.buildOne({
-        dealId: "test-deal-id-6",
+        dealId: null,
         senderId: recipient.id,
         recipientId: sender.id,
         content: "Reply message",
@@ -265,7 +265,7 @@ describe("createMessageQuery", () => {
 
   it("should handle long message content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const sender = await userTestFactory.insertOne(db, {
+      const sender = await userTestFactory.buildAndInsertOne(db, {
         id: "test-sender-id-7",
         name: "Test Sender 7",
         email: "sender7@example.com",
@@ -277,7 +277,7 @@ describe("createMessageQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const recipient = await userTestFactory.insertOne(db, {
+      const recipient = await userTestFactory.buildAndInsertOne(db, {
         id: "test-recipient-id-7",
         name: "Test Recipient 7",
         email: "recipient7@example.com",
@@ -293,7 +293,7 @@ describe("createMessageQuery", () => {
         "This is a very long message that contains multiple sentences and should test the system's ability to handle longer content. It includes various punctuation marks, numbers like 123, and special characters like @#$%. The message should be stored correctly without any issues.";
 
       const messageData = messageTestFactory.buildOne({
-        dealId: "test-deal-id-7",
+        dealId: null,
         senderId: sender.id,
         recipientId: recipient.id,
         content: longContent,

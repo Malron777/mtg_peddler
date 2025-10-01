@@ -25,7 +25,7 @@ export const collectionTestFactory = {
 
   async buildAndInsertOne(
     db: DB,
-    overrides: Partial<Collection>
+    overrides: Partial<Collection> = {}
   ): Promise<Collection> {
     const collection = this.buildOne(overrides);
     const result = await db.insert(collections).values(collection).returning();
@@ -34,7 +34,7 @@ export const collectionTestFactory = {
 
   async buildAndInsertOneWithDependencies(
     db: DB,
-    overrides: Partial<Collection>
+    overrides: Partial<Collection> = {}
   ): Promise<Collection> {
     // Create dependencies if not provided
     const userId =

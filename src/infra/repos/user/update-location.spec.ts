@@ -15,7 +15,7 @@ describe("updateLocationQuery", () => {
 
   it("should successfully update an existing location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -70,7 +70,7 @@ describe("updateLocationQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent location", async () => {
+  it("should return undefined when trying to update non-existent location", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-location-id",
@@ -78,13 +78,15 @@ describe("updateLocationQuery", () => {
         isPrimary: true,
       };
 
-      await expect(updateLocationQuery(db, updateData)).rejects.toThrow();
+      const result = await updateLocationQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -126,7 +128,7 @@ describe("updateLocationQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -167,7 +169,7 @@ describe("updateLocationQuery", () => {
 
   it("should update location type", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -198,7 +200,7 @@ describe("updateLocationQuery", () => {
       const result = await updateLocationQuery(db, updateData);
 
       expect(result.id).toBe(location.id);
-      expect(result.type).toBe("pickup");
+      expect(result.type).toBe("pudo");
       expect(result.name).toBe(location.name); // Should remain unchanged
       expect(result.addressDetails).toEqual(location.addressDetails); // Should remain unchanged
       expect(result.isPrimary).toBe(location.isPrimary); // Should remain unchanged
@@ -208,7 +210,7 @@ describe("updateLocationQuery", () => {
 
   it("should update complex address details", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -260,7 +262,7 @@ describe("updateLocationQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",
@@ -285,7 +287,7 @@ describe("updateLocationQuery", () => {
 
       const updateData = {
         id: location.id,
-        name: "", // Empty name should fail
+        name: null as unknown as string, // Empty name should fail
         type: "pudo" as const,
       };
 

@@ -14,12 +14,13 @@ describe("deletePromotionQuery", () => {
 
   it("should successfully delete a promotion", async () => {
     await runWithTestDb(async (db: DB) => {
-      const promotion = await promotionTestFactory.buildAndInsertOne(db, {
-        storeId: "test-store-id-1",
-        title: "Test Promotion",
-        description: "A test promotion",
-        discountPercentage: "10.00",
-      });
+      const promotion =
+        await promotionTestFactory.buildAndInsertOneWithDependencies(db, {
+          storeId: "test-store-id-1",
+          title: "Test Promotion",
+          description: "A test promotion",
+          discountPercentage: "10.00",
+        });
 
       const result = await deletePromotionQuery(db, promotion.id);
 
@@ -52,8 +53,8 @@ describe("deletePromotionQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deletePromotionQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 

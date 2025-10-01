@@ -15,7 +15,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should return all locations for a user with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -63,7 +63,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should return empty result when user has no locations", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -87,7 +87,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should handle custom pagination options", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -128,7 +128,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should only return locations for the specified user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user1 = await userTestFactory.insertOne(db, {
+      const user1 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -140,7 +140,7 @@ describe("getAllLocationsForUserQuery", () => {
         notificationPreferences: { email: true, sms: false, push: true },
       });
 
-      const user2 = await userTestFactory.insertOne(db, {
+      const user2 = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -185,7 +185,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should order locations by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",
@@ -261,7 +261,7 @@ describe("getAllLocationsForUserQuery", () => {
 
   it("should handle large page sizes gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-7",
         name: "Test User 7",
         email: "test7@example.com",

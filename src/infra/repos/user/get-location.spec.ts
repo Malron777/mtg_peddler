@@ -15,7 +15,7 @@ describe("getLocationQuery", () => {
 
   it("should successfully retrieve an existing location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -107,7 +107,7 @@ describe("getLocationQuery", () => {
 
   it("should retrieve a pickup location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -134,7 +134,7 @@ describe("getLocationQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.location).toBeDefined();
-      expect(result.location?.type).toBe("pickup");
+      expect(result.location?.type).toBe("pudo");
       expect(result.location?.name).toBe("Pickup Location");
       expect(result.location?.isPrimary).toBe(false);
       expect(result.error).toBeUndefined();
@@ -143,7 +143,7 @@ describe("getLocationQuery", () => {
 
   it("should retrieve a location with minimal address details", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -178,7 +178,7 @@ describe("getLocationQuery", () => {
 
   it("should retrieve a location with complex address details", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -229,7 +229,7 @@ describe("getLocationQuery", () => {
 
   it("should retrieve a non-primary location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",

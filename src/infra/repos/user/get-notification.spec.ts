@@ -15,7 +15,7 @@ describe("getNotificationQuery", () => {
 
   it("should successfully retrieve an existing notification", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -102,7 +102,7 @@ describe("getNotificationQuery", () => {
 
   it("should retrieve a read notification", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -135,7 +135,7 @@ describe("getNotificationQuery", () => {
 
   it("should retrieve a notification without related entity", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -175,7 +175,7 @@ describe("getNotificationQuery", () => {
 
   it("should retrieve a notification with long content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -211,7 +211,7 @@ describe("getNotificationQuery", () => {
 
   it("should retrieve different notification types", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -249,7 +249,7 @@ describe("getNotificationQuery", () => {
       expect(result1.success).toBe(true);
       expect(result2.success).toBe(true);
       expect(result1.notification?.type).toBe("system");
-      expect(result2.notification?.type).toBe("deal");
+      expect(result2.notification?.type).toBe("deal_update");
       expect(result1.error).toBeUndefined();
       expect(result2.error).toBeUndefined();
     });
@@ -257,7 +257,7 @@ describe("getNotificationQuery", () => {
 
   it("should retrieve a notification with special characters in content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",

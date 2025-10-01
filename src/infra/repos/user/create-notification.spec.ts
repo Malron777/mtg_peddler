@@ -15,7 +15,7 @@ describe("createNotificationQuery", () => {
 
   it("should successfully create a notification", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -57,7 +57,7 @@ describe("createNotificationQuery", () => {
 
   it("should create a notification with minimal data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -71,7 +71,7 @@ describe("createNotificationQuery", () => {
 
       const notificationData = notificationTestFactory.buildOne({
         userId: user.id,
-        type: "message",
+        type: "deal_update",
         title: "New Deal Available",
         content: "A new deal has been posted",
         relatedEntityType: null,
@@ -84,7 +84,7 @@ describe("createNotificationQuery", () => {
       expect(result.success).toBe(true);
       expect(result.notification).toBeDefined();
       expect(result.notification?.userId).toBe(user.id);
-      expect(result.notification?.type).toBe("deal");
+      expect(result.notification?.type).toBe("deal_update");
       expect(result.notification?.title).toBe("New Deal Available");
       expect(result.notification?.content).toBe("A new deal has been posted");
       expect(result.notification?.relatedEntityType).toBeNull();
@@ -116,7 +116,7 @@ describe("createNotificationQuery", () => {
 
   it("should handle missing required fields", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -131,7 +131,7 @@ describe("createNotificationQuery", () => {
       const notificationData = notificationTestFactory.buildOne({
         userId: user.id,
         type: "system",
-        title: "", // Empty title should fail
+        title: null as unknown as string, // Empty title should fail
         content: "This is a test notification",
         relatedEntityType: "user",
         relatedEntityId: user.id,
@@ -148,7 +148,7 @@ describe("createNotificationQuery", () => {
 
   it("should create multiple notifications for the same user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -194,7 +194,7 @@ describe("createNotificationQuery", () => {
 
   it("should handle different notification types", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -232,13 +232,13 @@ describe("createNotificationQuery", () => {
       expect(result1.success).toBe(true);
       expect(result2.success).toBe(true);
       expect(result1.notification?.type).toBe("system");
-      expect(result2.notification?.type).toBe("deal");
+      expect(result2.notification?.type).toBe("message");
     });
   });
 
   it("should handle long notification content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",
@@ -274,7 +274,7 @@ describe("createNotificationQuery", () => {
 
   it("should create notification with different related entity types", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-7",
         name: "Test User 7",
         email: "test7@example.com",

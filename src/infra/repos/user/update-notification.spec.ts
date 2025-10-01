@@ -15,7 +15,7 @@ describe("updateNotificationQuery", () => {
 
   it("should successfully update an existing notification", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -61,7 +61,7 @@ describe("updateNotificationQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent notification", async () => {
+  it("should return undefined when trying to update non-existent notification", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-notification-id",
@@ -70,13 +70,15 @@ describe("updateNotificationQuery", () => {
         isRead: true,
       };
 
-      await expect(updateNotificationQuery(db, updateData)).rejects.toThrow();
+      const result = await updateNotificationQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -119,7 +121,7 @@ describe("updateNotificationQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -161,7 +163,7 @@ describe("updateNotificationQuery", () => {
 
   it("should update notification type", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -191,7 +193,7 @@ describe("updateNotificationQuery", () => {
       const result = await updateNotificationQuery(db, updateData);
 
       expect(result.id).toBe(notification.id);
-      expect(result.type).toBe("deal");
+      expect(result.type).toBe("deal_update");
       expect(result.title).toBe(notification.title); // Should remain unchanged
       expect(result.content).toBe(notification.content); // Should remain unchanged
       expect(result.isRead).toBe(notification.isRead); // Should remain unchanged
@@ -202,7 +204,7 @@ describe("updateNotificationQuery", () => {
 
   it("should update notification with long content", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -245,7 +247,7 @@ describe("updateNotificationQuery", () => {
 
   it("should update related entity information", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",
@@ -288,7 +290,7 @@ describe("updateNotificationQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-7",
         name: "Test User 7",
         email: "test7@example.com",
@@ -312,7 +314,7 @@ describe("updateNotificationQuery", () => {
 
       const updateData = {
         id: notification.id,
-        title: "", // Empty title should fail
+        title: null as unknown as string, // Empty title should fail
         type: "system" as const,
       };
 

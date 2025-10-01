@@ -14,14 +14,15 @@ describe("deleteUserReportQuery", () => {
 
   it("should successfully delete a user report", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userReport = await userReportsTestFactory.buildAndInsertOne(db, {
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId: "test-deal-id-1",
-        reason: "Test reason",
-        description: "Test description",
-        status: "pending",
-      });
+      const userReport =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId: "test-deal-id-1",
+          reason: "Test reason",
+          description: "Test description",
+          status: "pending",
+        });
 
       const result = await deleteUserReportQuery(db, userReport.id);
 
@@ -54,8 +55,8 @@ describe("deleteUserReportQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteUserReportQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 

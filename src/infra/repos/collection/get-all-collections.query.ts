@@ -32,12 +32,20 @@ export async function getAllCollectionsQuery(
   const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated collections
-  const collectionsResult = await db
+  let query = db
     .select()
     .from(collections)
-    .orderBy(desc(collections.createdAt))
-    .limit(pageSize)
-    .offset(offset);
+    .orderBy(desc(collections.createdAt));
+
+  // Handle negative pageSize (treat as "no limit")
+  if (pageSize < 0) {
+    // When pageSize is negative, ignore offset to avoid skipping rows
+    query = query.limit(Number.MAX_SAFE_INTEGER);
+  } else {
+    query = query.limit(pageSize).offset(offset);
+  }
+
+  const collectionsResult = await query;
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

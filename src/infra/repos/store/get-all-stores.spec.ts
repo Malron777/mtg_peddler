@@ -15,25 +15,31 @@ describe("getAllStoresQuery", () => {
   it("should return all stores with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test stores
-      const store1 = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-1",
-        name: "First Magic Store",
-        websiteUrl: "https://firstmagicstore.com",
-        physicalAddress: "123 First Street, Test City",
-        description: "First test store for Magic: The Gathering cards",
-        isVerified: false,
-        createdBy: "test-user-id-1",
-      });
+      const store1 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-1",
+          name: "First Magic Store",
+          websiteUrl: "https://firstmagicstore.com",
+          physicalAddress: "123 First Street, Test City",
+          description: "First test store for Magic: The Gathering cards",
+          isVerified: false,
+          createdBy: "test-user-id-1",
+        }
+      );
 
-      const store2 = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-2",
-        name: "Second Magic Store",
-        websiteUrl: "https://secondmagicstore.com",
-        physicalAddress: "456 Second Street, Test City",
-        description: "Second test store for Magic: The Gathering cards",
-        isVerified: true,
-        createdBy: "test-user-id-2",
-      });
+      const store2 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-2",
+          name: "Second Magic Store",
+          websiteUrl: "https://secondmagicstore.com",
+          physicalAddress: "456 Second Street, Test City",
+          description: "Second test store for Magic: The Gathering cards",
+          isVerified: true,
+          createdBy: "test-user-id-2",
+        }
+      );
 
       const result = await getAllStoresQuery(db);
 
@@ -63,7 +69,7 @@ describe("getAllStoresQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple stores
       for (let i = 1; i <= 5; i++) {
-        await storesTestFactory.insertOne(db, {
+        await storesTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-store-id-${i}`,
           name: `Test Store ${i}`,
           websiteUrl: `https://teststore${i}.com`,
@@ -86,7 +92,7 @@ describe("getAllStoresQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await storesTestFactory.insertOne(db, {
+      await storesTestFactory.buildAndInsertOneWithDependencies(db, {
         id: "test-store-id-1",
         name: "Test Store",
         websiteUrl: "https://teststore.com",
@@ -108,30 +114,36 @@ describe("getAllStoresQuery", () => {
 
   it("should order stores by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const store1 = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-1",
-        name: "First Store",
-        websiteUrl: "https://firststore.com",
-        physicalAddress: "123 First Street, Test City",
-        description: "First test store",
-        isVerified: false,
-        createdBy: "test-user-id-1",
-        createdAt: new Date("2023-01-01"),
-      });
+      const store1 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-1",
+          name: "First Store",
+          websiteUrl: "https://firststore.com",
+          physicalAddress: "123 First Street, Test City",
+          description: "First test store",
+          isVerified: false,
+          createdBy: "test-user-id-1",
+          createdAt: new Date("2023-01-01"),
+        }
+      );
 
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const store2 = await storesTestFactory.insertOne(db, {
-        id: "test-store-id-2",
-        name: "Second Store",
-        websiteUrl: "https://secondstore.com",
-        physicalAddress: "456 Second Street, Test City",
-        description: "Second test store",
-        isVerified: true,
-        createdBy: "test-user-id-2",
-        createdAt: new Date("2023-01-02"),
-      });
+      const store2 = await storesTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-store-id-2",
+          name: "Second Store",
+          websiteUrl: "https://secondstore.com",
+          physicalAddress: "456 Second Street, Test City",
+          description: "Second test store",
+          isVerified: true,
+          createdBy: "test-user-id-2",
+          createdAt: new Date("2023-01-02"),
+        }
+      );
 
       const result = await getAllStoresQuery(db);
 
@@ -145,7 +157,7 @@ describe("getAllStoresQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create a few stores
       for (let i = 1; i <= 3; i++) {
-        await storesTestFactory.insertOne(db, {
+        await storesTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-store-id-${i}`,
           name: `Test Store ${i}`,
           websiteUrl: `https://teststore${i}.com`,

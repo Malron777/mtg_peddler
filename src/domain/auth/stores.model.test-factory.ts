@@ -1,6 +1,7 @@
 import { DB } from "@/src/infra/db/db";
 import { stores } from "@/src/infra/db/schema/auth";
 import { Store } from "./stores.model";
+import { userTestFactory } from "./user.model.test-factory";
 
 export const storesTestFactory = {
   buildOne(overrides: Partial<Store>): Store {
@@ -28,5 +29,18 @@ export const storesTestFactory = {
     const store = this.buildOne(overrides);
     const result = await db.insert(stores).values(store).returning();
     return result[0];
+  },
+
+  async buildAndInsertOneWithDependencies(
+    db: DB,
+    overrides: Partial<Store> = {}
+  ): Promise<Store> {
+    const user = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.createdBy ? { id: overrides.createdBy } : {}),
+    });
+    return await this.buildAndInsertOne(db, {
+      ...overrides,
+      createdBy: user.id,
+    });
   },
 };

@@ -1,4 +1,6 @@
 import { userReportsTestFactory } from "@/src/domain/auth/user-reports.model.test-factory";
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
+import { dealTestFactory } from "@/src/domain/tcg/deal.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -15,26 +17,28 @@ describe("getAllUserReportsQuery", () => {
   it("should return all user reports with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test user reports
-      const report1 = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-1",
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId: "test-deal-id-1",
-        reason: "Fraudulent behavior",
-        description: "User provided fake cards and refused to refund",
-        status: "pending",
-      });
+      const report1 =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-1",
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId: "test-deal-id-1",
+          reason: "Fraudulent behavior",
+          description: "User provided fake cards and refused to refund",
+          status: "pending",
+        });
 
-      const report2 = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-2",
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
-        dealId: "test-deal-id-2",
-        reason: "Payment issue",
-        description: "User did not send payment as agreed",
-        status: "resolved",
-        resolvedAt: new Date("2023-01-01"),
-      });
+      const report2 =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-2",
+          reporterId: "test-reporter-id-2",
+          reportedUserId: "test-reported-user-id-2",
+          dealId: "test-deal-id-2",
+          reason: "Payment issue",
+          description: "User did not send payment as agreed",
+          status: "resolved",
+          resolvedAt: new Date("2023-01-01"),
+        });
 
       const result = await getAllUserReportsQuery(db);
 
@@ -64,7 +68,7 @@ describe("getAllUserReportsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple user reports
       for (let i = 1; i <= 5; i++) {
-        await userReportsTestFactory.insertOne(db, {
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-report-id-${i}`,
           reporterId: `test-reporter-id-${i}`,
           reportedUserId: `test-reported-user-id-${i}`,
@@ -87,7 +91,7 @@ describe("getAllUserReportsQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await userReportsTestFactory.insertOne(db, {
+      await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
         id: "test-report-id-1",
         reporterId: "test-reporter-id-1",
         reportedUserId: "test-reported-user-id-1",
@@ -112,30 +116,32 @@ describe("getAllUserReportsQuery", () => {
 
   it("should order user reports by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const report1 = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-1",
-        reporterId: "test-reporter-id-1",
-        reportedUserId: "test-reported-user-id-1",
-        dealId: "test-deal-id-1",
-        reason: "Test reason 1",
-        description: "Test description 1",
-        status: "pending",
-        createdAt: new Date("2023-01-01"),
-      });
+      const report1 =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-1",
+          reporterId: "test-reporter-id-1",
+          reportedUserId: "test-reported-user-id-1",
+          dealId: "test-deal-id-1",
+          reason: "Test reason 1",
+          description: "Test description 1",
+          status: "pending",
+          createdAt: new Date("2023-01-01"),
+        });
 
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const report2 = await userReportsTestFactory.insertOne(db, {
-        id: "test-report-id-2",
-        reporterId: "test-reporter-id-2",
-        reportedUserId: "test-reported-user-id-2",
-        dealId: "test-deal-id-2",
-        reason: "Test reason 2",
-        description: "Test description 2",
-        status: "resolved",
-        createdAt: new Date("2023-01-02"),
-      });
+      const report2 =
+        await userReportsTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-report-id-2",
+          reporterId: "test-reporter-id-2",
+          reportedUserId: "test-reported-user-id-2",
+          dealId: "test-deal-id-2",
+          reason: "Test reason 2",
+          description: "Test description 2",
+          status: "resolved",
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllUserReportsQuery(db);
 
@@ -147,13 +153,26 @@ describe("getAllUserReportsQuery", () => {
 
   it("should handle large page sizes gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
+      const reporter = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reporter-id-1",
+      });
+      const reportedUser = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-reported-user-id-1",
+      });
+
       // Create a few user reports
       for (let i = 1; i <= 3; i++) {
-        await userReportsTestFactory.insertOne(db, {
+        const deal = await dealTestFactory.buildAndInsertOneWithDependencies(
+          db,
+          {
+            id: `test-deal-id-${i}`,
+          }
+        );
+        await userReportsTestFactory.buildAndInsertOne(db, {
           id: `test-report-id-${i}`,
-          reporterId: `test-reporter-id-${i}`,
-          reportedUserId: `test-reported-user-id-${i}`,
-          dealId: `test-deal-id-${i}`,
+          reporterId: reporter.id,
+          reportedUserId: reportedUser.id,
+          dealId: deal.id,
           reason: `Test reason ${i}`,
           description: `Test description ${i}`,
           status: "pending",

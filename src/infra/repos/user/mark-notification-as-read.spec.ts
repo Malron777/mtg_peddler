@@ -15,7 +15,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should successfully mark an unread notification as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -53,7 +53,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should handle marking already read notification as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -134,7 +134,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should mark different notification types as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -186,7 +186,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should mark notification without related entity as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -227,7 +227,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should mark notification with long content as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -264,7 +264,7 @@ describe("markNotificationAsReadQuery", () => {
 
   it("should update the updatedAt timestamp when marking as read", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-6",
         name: "Test User 6",
         email: "test6@example.com",

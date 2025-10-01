@@ -4,10 +4,11 @@ import { User } from "./user.model";
 
 export const userTestFactory = {
   buildOne(overrides: Partial<User>): User {
+    const id = crypto.randomUUID();
     return {
-      id: crypto.randomUUID(),
+      id: id,
       name: "Test User",
-      email: "test@email.com",
+      email: `${id}@email.com`,
       emailVerified: true,
       image: "Test Image",
       reputationScore: "Test Reputation Score",
@@ -20,15 +21,16 @@ export const userTestFactory = {
     };
   },
 
-  async insertOne(db: DB, overrides: Partial<User>): Promise<User> {
-    const u = this.buildOne(overrides);
+  async insertOne(db: DB, u: User): Promise<User> {
     const result = await db.insert(user).values(u).returning();
     return result[0];
   },
 
-  async buildAndInsertOne(db: DB, overrides: Partial<User>): Promise<User> {
-    const u = this.buildOne(overrides);
-    const result = await db.insert(user).values(u).returning();
-    return result[0];
+  async buildAndInsertOne(
+    db: DB,
+    overrides: Partial<User> = {}
+  ): Promise<User> {
+    const user = this.buildOne(overrides);
+    return await this.insertOne(db, user);
   },
 };

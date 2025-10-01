@@ -15,7 +15,7 @@ describe("createLocationQuery", () => {
 
   it("should successfully create a location", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-1",
         name: "Test User",
         email: "test@example.com",
@@ -62,7 +62,7 @@ describe("createLocationQuery", () => {
 
   it("should create a location with minimal data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-2",
         name: "Test User 2",
         email: "test2@example.com",
@@ -87,7 +87,7 @@ describe("createLocationQuery", () => {
       expect(result.success).toBe(true);
       expect(result.location).toBeDefined();
       expect(result.location?.userId).toBe(user.id);
-      expect(result.location?.type).toBe("pickup");
+      expect(result.location?.type).toBe("pudo");
       expect(result.location?.name).toBe("Pickup Location");
       expect(result.location?.addressDetails).toEqual({
         street: "456 Oak Ave",
@@ -117,7 +117,7 @@ describe("createLocationQuery", () => {
 
   it("should handle missing required fields", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-3",
         name: "Test User 3",
         email: "test3@example.com",
@@ -132,9 +132,9 @@ describe("createLocationQuery", () => {
       const locationData = locationTestFactory.buildOne({
         userId: user.id,
         type: "address",
-        name: "", // Empty name should fail
+        name: null as unknown as string,
         addressDetails: {},
-        isPrimary: false,
+        isPrimary: null as unknown as boolean, // Empty isPrimary should fail
       });
 
       const result = await createLocationQuery(db, locationData);
@@ -147,7 +147,7 @@ describe("createLocationQuery", () => {
 
   it("should create multiple locations for the same user", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-4",
         name: "Test User 4",
         email: "test4@example.com",
@@ -189,7 +189,7 @@ describe("createLocationQuery", () => {
 
   it("should handle different location types", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.insertOne(db, {
+      const user = await userTestFactory.buildAndInsertOne(db, {
         id: "test-user-id-5",
         name: "Test User 5",
         email: "test5@example.com",
@@ -223,7 +223,7 @@ describe("createLocationQuery", () => {
       expect(result1.success).toBe(true);
       expect(result2.success).toBe(true);
       expect(result1.location?.type).toBe("address");
-      expect(result2.location?.type).toBe("pickup");
+      expect(result2.location?.type).toBe("pudo");
     });
   });
 });
