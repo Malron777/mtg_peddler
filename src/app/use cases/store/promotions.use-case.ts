@@ -1,5 +1,7 @@
-import { InsertPromotion } from "@/src/domain/auth/stores.model";
-import { UpdatePromotion } from "@/src/domain/tcg/promotion.model";
+import {
+  InsertPromotion,
+  UpdatePromotion,
+} from "@/src/domain/tcg/promotion.model";
 import { DB } from "@/src/infra/db/db";
 import { createPromotionQuery } from "@/src/infra/repos/store/create-promotion.query";
 import { deletePromotionQuery } from "@/src/infra/repos/store/delete-promotion.query";

@@ -1,4 +1,7 @@
-import { InsertPriceHistory, PriceHistory } from "@/src/domain/tcg/card.model";
+import {
+  InsertPriceHistory,
+  UpdatePriceHistory,
+} from "@/src/domain/tcg/price-history.model";
 import { DB } from "@/src/infra/db/db";
 import { createPriceHistoryQuery } from "@/src/infra/repos/card/create-price-history.query";
 import { deletePriceHistoryQuery } from "@/src/infra/repos/card/delete-price-history.query";
@@ -30,7 +33,7 @@ export class PriceHistoryUseCase {
     return getAllPriceHistoryQuery(this.db);
   }
 
-  async updatePriceHistory(updateData: Partial<PriceHistory>) {
+  async updatePriceHistory(updateData: UpdatePriceHistory) {
     return updatePriceHistoryQuery(this.db, updateData);
   }
 
