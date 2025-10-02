@@ -15,7 +15,7 @@ describe("getAllCardsQuery", () => {
   it("should return all cards with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test cards
-      const card1 = await cardTestFactory.insertOne(db, {
+      const card1 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Lightning Bolt",
@@ -27,7 +27,7 @@ describe("getAllCardsQuery", () => {
         lastFetchedAt: new Date("2023-01-01"),
       });
 
-      const card2 = await cardTestFactory.insertOne(db, {
+      const card2 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-2",
         oracleId: "test-oracle-id-2",
         name: "Counterspell",
@@ -71,7 +71,7 @@ describe("getAllCardsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple cards
       for (let i = 1; i <= 5; i++) {
-        await cardTestFactory.insertOne(db, {
+        await cardTestFactory.buildAndInsertOne(db, {
           scryfallId: `test-scryfall-id-${i}`,
           oracleId: `test-oracle-id-${i}`,
           name: `Test Card ${i}`,
@@ -98,7 +98,7 @@ describe("getAllCardsQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await cardTestFactory.insertOne(db, {
+      await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Test Card",
@@ -122,7 +122,7 @@ describe("getAllCardsQuery", () => {
 
   it("should order cards by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card1 = await cardTestFactory.insertOne(db, {
+      const card1 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "First Card",
@@ -138,7 +138,7 @@ describe("getAllCardsQuery", () => {
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const card2 = await cardTestFactory.insertOne(db, {
+      const card2 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-2",
         oracleId: "test-oracle-id-2",
         name: "Second Card",

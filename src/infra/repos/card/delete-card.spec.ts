@@ -14,7 +14,7 @@ describe("deleteCardQuery", () => {
 
   it("should successfully delete an existing card", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Test Lightning Bolt",

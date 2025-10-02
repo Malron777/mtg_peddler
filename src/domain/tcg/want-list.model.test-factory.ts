@@ -37,13 +37,14 @@ export const wantListTestFactory = {
     overrides: Partial<WantList>
   ): Promise<WantList> {
     // Create dependencies if not provided
-    const userId =
-      overrides.userId || (await userTestFactory.buildAndInsertOne(db, {})).id;
+    const user = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.userId ? { id: overrides.userId } : {}),
+    });
 
     // Build and insert with dependencies
     const wantList = this.buildOne({
       ...overrides,
-      userId,
+      userId: user.id,
     });
     const result = await db.insert(wantLists).values(wantList).returning();
     return result[0];

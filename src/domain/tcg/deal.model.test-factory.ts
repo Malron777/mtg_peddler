@@ -13,8 +13,8 @@ export const dealTestFactory = {
       buyerId: crypto.randomUUID(),
       status: "negotiating",
       totalAmount: "100.00",
-      paymentMethodId: crypto.randomUUID(),
-      shippingLocationId: crypto.randomUUID(),
+      paymentMethodId: null,
+      shippingLocationId: null,
       createdAt: new Date(),
       finalizedAt: null,
       updatedAt: new Date(),
@@ -39,31 +39,37 @@ export const dealTestFactory = {
     overrides: Partial<Deal>
   ): Promise<Deal> {
     // Create dependencies if not provided
-    const sellerId =
-      overrides.sellerId ||
-      (await userTestFactory.buildAndInsertOne(db, {})).id;
-    const buyerId =
-      overrides.buyerId || (await userTestFactory.buildAndInsertOne(db, {})).id;
+    const seller = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.sellerId ? { id: overrides.sellerId } : {}),
+    });
+    const buyer = await userTestFactory.buildAndInsertOne(db, {
+      ...(overrides.buyerId ? { id: overrides.buyerId } : {}),
+    });
 
-    // Optional dependencies
-    const paymentMethodId =
-      overrides.paymentMethodId ||
-      (
-        await paymentMethodTestFactory.buildAndInsertOne(db, {
-          userId: buyerId,
+    // Optional dependencies - only create if not provided
+    const paymentMethod = overrides.paymentMethodId
+      ? await paymentMethodTestFactory.buildAndInsertOne(db, {
+          userId: buyer.id,
+          id: overrides.paymentMethodId,
         })
-      ).id;
-    const shippingLocationId =
-      overrides.shippingLocationId ||
-      (await locationTestFactory.buildAndInsertOne(db, { userId: buyerId })).id;
+      : null;
+
+    const location = overrides.shippingLocationId
+      ? await locationTestFactory.buildAndInsertOne(db, {
+          userId: buyer.id,
+          ...(overrides.shippingLocationId
+            ? { id: overrides.shippingLocationId }
+            : {}),
+        })
+      : null;
 
     // Build and insert with dependencies
     const deal = this.buildOne({
       ...overrides,
-      sellerId,
-      buyerId,
-      paymentMethodId,
-      shippingLocationId,
+      sellerId: seller.id,
+      buyerId: buyer.id,
+      paymentMethodId: paymentMethod ? paymentMethod.id : null,
+      shippingLocationId: location ? location.id : null,
     });
     const result = await db.insert(deals).values(deal).returning();
     return result[0];

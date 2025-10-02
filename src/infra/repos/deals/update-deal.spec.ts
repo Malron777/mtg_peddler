@@ -14,14 +14,9 @@ describe("updateDealQuery", () => {
 
   it("should successfully update an existing deal", async () => {
     await runWithTestDb(async (db: DB) => {
-      const deal = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-1",
-        sellerId: "test-seller-id-1",
-        buyerId: "test-buyer-id-1",
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         status: "negotiating",
         totalAmount: "100.00",
-        paymentMethodId: "test-payment-method-id-1",
-        shippingLocationId: "test-location-id-1",
       });
 
       const updateData = {
@@ -46,7 +41,7 @@ describe("updateDealQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent deal", async () => {
+  it("should return undefined when trying to update non-existent deal", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-deal-id",
@@ -54,20 +49,17 @@ describe("updateDealQuery", () => {
         totalAmount: "120.00",
       };
 
-      await expect(updateDealQuery(db, updateData)).rejects.toThrow();
+      const result = await updateDealQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const deal = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-2",
-        sellerId: "test-seller-id-2",
-        buyerId: "test-buyer-id-2",
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         status: "negotiating",
         totalAmount: "200.00",
-        paymentMethodId: "test-payment-method-id-2",
-        shippingLocationId: "test-location-id-2",
       });
 
       const updateData = {
@@ -88,14 +80,9 @@ describe("updateDealQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const deal = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-3",
-        sellerId: "test-seller-id-3",
-        buyerId: "test-buyer-id-3",
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         status: "negotiating",
         totalAmount: "300.00",
-        paymentMethodId: "test-payment-method-id-3",
-        shippingLocationId: "test-location-id-3",
       });
 
       const updateData = {
@@ -115,14 +102,9 @@ describe("updateDealQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const deal = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-4",
-        sellerId: "test-seller-id-4",
-        buyerId: "test-buyer-id-4",
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         status: "negotiating",
         totalAmount: "400.00",
-        paymentMethodId: "test-payment-method-id-4",
-        shippingLocationId: "test-location-id-4",
       });
 
       const updateData = {

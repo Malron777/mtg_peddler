@@ -46,19 +46,17 @@ export const priceHistoryTestFactory = {
     overrides: Partial<PriceHistory>
   ): Promise<PriceHistory> {
     // Create dependencies if not provided
-    const cardScryfallId =
-      overrides.cardScryfallId ||
-      (await cardTestFactory.buildAndInsertOne(db, {})).scryfallId;
+    const card = await cardTestFactory.buildAndInsertOne(db, {
+      ...(overrides.cardScryfallId
+        ? { scryfallId: overrides.cardScryfallId }
+        : {}),
+    });
 
     // Build and insert with dependencies
     const priceHistoryItem = this.buildOne({
       ...overrides,
-      cardScryfallId,
+      cardScryfallId: card.scryfallId,
     });
-    const result = await db
-      .insert(priceHistory)
-      .values(priceHistoryItem)
-      .returning();
-    return result[0];
+    return this.insertOne(db, priceHistoryItem);
   },
 };

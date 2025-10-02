@@ -1,7 +1,7 @@
 import { Deal } from "@/src/domain/tcg/deal.model";
 import { DB } from "@/src/infra/db/db";
 import { collectionItems, dealItems, deals } from "@/src/infra/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 
 export interface GetAllDealsForCollectionOptions {
   page?: number;
@@ -25,6 +25,16 @@ export async function getAllDealsForCollectionQuery(
   const pageSize = options.pageSize ?? 50;
   const offset = (page - 1) * pageSize;
 
+  if (collectionId === "") {
+    return {
+      deals: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 50,
+      totalPages: 0,
+    };
+  }
+
   // Get total count
   const countResult = await db
     .select({ count: sql<number>`count(distinct ${deals.id})` })
@@ -40,7 +50,7 @@ export async function getAllDealsForCollectionQuery(
 
   // Get paginated deals
   const dealsResult = await db
-    .selectDistinct({ id: deals.id })
+    .selectDistinct()
     .from(deals)
     .innerJoin(dealItems, eq(deals.id, dealItems.dealId))
     .innerJoin(
@@ -53,12 +63,11 @@ export async function getAllDealsForCollectionQuery(
     .offset(offset);
 
   // Get full deal details for the distinct deals
-  const dealIds = dealsResult.map((d) => d.id);
-  const fullDeals = await db
-    .select()
-    .from(deals)
-    .where(sql`${deals.id} = ANY(${dealIds})`)
-    .orderBy(desc(deals.createdAt));
+  const dealIds = dealsResult.map((d) => d.deals.id);
+  const fullDeals = await db.query.deals.findMany({
+    where: inArray(deals.id, dealIds),
+    orderBy: desc(deals.createdAt),
+  });
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

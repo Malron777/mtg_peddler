@@ -49,7 +49,7 @@ export const userReportsTestFactory = {
     });
     // DealId is optional, so we don't create it unless specifically needed
     const deal =
-      overrides.dealId !== undefined
+      overrides.dealId !== undefined && overrides.dealId !== null
         ? await dealTestFactory.buildAndInsertOneWithDependencies(db, {
             ...(overrides.dealId ? { id: overrides.dealId } : {}),
           })

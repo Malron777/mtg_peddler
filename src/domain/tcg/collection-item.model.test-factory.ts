@@ -46,18 +46,21 @@ export const collectionItemTestFactory = {
     overrides: Partial<CollectionItem>
   ): Promise<CollectionItem> {
     // Create dependencies if not provided
-    const collectionId =
-      overrides.collectionId ||
-      (await collectionTestFactory.buildAndInsertOne(db, {})).id;
-    const cardScryfallId =
-      overrides.cardScryfallId ||
-      (await cardTestFactory.buildAndInsertOne(db, {})).scryfallId;
+    const collection =
+      await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+        ...(overrides.collectionId ? { id: overrides.collectionId } : {}),
+      });
+    const card = await cardTestFactory.buildAndInsertOne(db, {
+      ...(overrides.cardScryfallId
+        ? { scryfallId: overrides.cardScryfallId }
+        : {}),
+    });
 
     // Build and insert with dependencies
     const item = this.buildOne({
       ...overrides,
-      collectionId,
-      cardScryfallId,
+      collectionId: collection.id,
+      cardScryfallId: card.scryfallId,
     });
     const result = await db.insert(collectionItems).values(item).returning();
     return result[0];

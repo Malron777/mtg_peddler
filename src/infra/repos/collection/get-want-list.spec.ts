@@ -14,12 +14,13 @@ describe("getWantListQuery", () => {
 
   it("should successfully retrieve a want list", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Test Want List",
-        description: "A test want list",
-        priority: 1,
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Test Want List",
+          description: "A test want list",
+          priority: 1,
+        });
 
       const result = await getWantListQuery(db, wantList.id);
 
@@ -79,11 +80,12 @@ describe("getWantListQuery", () => {
 
   it("should retrieve a want list with high priority", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "High Priority Want List",
-        priority: 5,
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "High Priority Want List",
+          priority: 5,
+        });
 
       const result = await getWantListQuery(db, wantList.id);
 

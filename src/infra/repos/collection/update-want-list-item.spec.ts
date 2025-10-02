@@ -14,13 +14,14 @@ describe("updateWantListItemQuery", () => {
 
   it("should successfully update a want list item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-        maxPrice: "10.00",
-        conditionMinimum: "NM",
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+          maxPrice: "10.00",
+          conditionMinimum: "NM",
+        });
 
       const updateData = {
         id: wantListItem.id,
@@ -39,26 +40,29 @@ describe("updateWantListItemQuery", () => {
     });
   });
 
-  it("should throw error when updating non-existent want list item", async () => {
+  it("should return undefined when updating non-existent want list item", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-want-list-item-id",
         quantityWanted: 2,
       };
 
-      await expect(updateWantListItemQuery(db, updateData)).rejects.toThrow();
+      const result = await updateWantListItemQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-        maxPrice: "10.00",
-        conditionMinimum: "NM",
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+          maxPrice: "10.00",
+          conditionMinimum: "NM",
+        });
 
       const updateData = {
         id: wantListItem.id,
@@ -76,11 +80,12 @@ describe("updateWantListItemQuery", () => {
 
   it("should handle empty update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+        });
 
       const updateData = {
         id: wantListItem.id,
@@ -96,11 +101,12 @@ describe("updateWantListItemQuery", () => {
 
   it("should throw error with invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+        });
 
       const updateData = {
         id: wantListItem.id,

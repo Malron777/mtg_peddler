@@ -15,12 +15,12 @@ describe("getAllWantListsQuery", () => {
   it("should retrieve want lists with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create test want lists
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId: "test-user-id-1",
         name: "Want List 1",
         priority: 1,
       });
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId: "test-user-id-2",
         name: "Want List 2",
         priority: 2,
@@ -54,7 +54,7 @@ describe("getAllWantListsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 5 want lists
       for (let i = 1; i <= 5; i++) {
-        await wantListTestFactory.buildAndInsertOne(db, {
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
           userId: `test-user-id-${i}`,
           name: `Want List ${i}`,
           priority: i,
@@ -76,7 +76,7 @@ describe("getAllWantListsQuery", () => {
 
   it("should handle invalid pagination parameters", async () => {
     await runWithTestDb(async (db: DB) => {
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId: "test-user-id-1",
         name: "Want List 1",
       });
@@ -96,17 +96,19 @@ describe("getAllWantListsQuery", () => {
 
   it("should order want lists by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList1 = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "First Want List",
-        createdAt: new Date("2023-01-01"),
-      });
+      const wantList1 =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "First Want List",
+          createdAt: new Date("2023-01-01"),
+        });
 
-      const wantList2 = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-2",
-        name: "Second Want List",
-        createdAt: new Date("2023-01-02"),
-      });
+      const wantList2 =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-2",
+          name: "Second Want List",
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllWantListsQuery(db);
 
@@ -120,7 +122,7 @@ describe("getAllWantListsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 3 want lists
       for (let i = 1; i <= 3; i++) {
-        await wantListTestFactory.buildAndInsertOne(db, {
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
           userId: `test-user-id-${i}`,
           name: `Want List ${i}`,
         });

@@ -1,3 +1,4 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { priceHistoryTestFactory } from "@/src/domain/tcg/price-history.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -26,14 +27,16 @@ describe("getPriceHistoryForCardQuery", () => {
           fetchedAt: new Date("2023-01-01"),
         });
 
-      const priceHistory2 =
-        await priceHistoryTestFactory.buildAndInsertOneWithDependencies(db, {
+      const priceHistory2 = await priceHistoryTestFactory.buildAndInsertOne(
+        db,
+        {
           cardScryfallId,
           source: "tcg",
           price: "30.00",
           currency: "USD",
           fetchedAt: new Date("2023-01-02"),
-        });
+        }
+      );
 
       const result = await getPriceHistoryForCardQuery(db, cardScryfallId);
 
@@ -82,12 +85,14 @@ describe("getPriceHistoryForCardQuery", () => {
 
   it("should handle custom pagination options", async () => {
     await runWithTestDb(async (db: DB) => {
-      const cardScryfallId = "test-scryfall-id-pagination";
+      const card = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-scryfall-id-pagination",
+      });
 
       // Create multiple price history entries
       for (let i = 1; i <= 5; i++) {
-        await priceHistoryTestFactory.buildAndInsertOneWithDependencies(db, {
-          cardScryfallId,
+        await priceHistoryTestFactory.buildAndInsertOne(db, {
+          cardScryfallId: card.scryfallId,
           source: "tcg",
           price: `${20 + i}.00`,
           currency: "USD",
@@ -95,7 +100,7 @@ describe("getPriceHistoryForCardQuery", () => {
         });
       }
 
-      const result = await getPriceHistoryForCardQuery(db, cardScryfallId, {
+      const result = await getPriceHistoryForCardQuery(db, card.scryfallId, {
         page: 2,
         pageSize: 2,
       });
@@ -121,14 +126,16 @@ describe("getPriceHistoryForCardQuery", () => {
           fetchedAt: new Date("2023-01-01"),
         });
 
-      const priceHistory2 =
-        await priceHistoryTestFactory.buildAndInsertOneWithDependencies(db, {
+      const priceHistory2 = await priceHistoryTestFactory.buildAndInsertOne(
+        db,
+        {
           cardScryfallId,
           source: "tcg",
           price: "30.00",
           currency: "USD",
           fetchedAt: new Date("2023-01-02"),
-        });
+        }
+      );
 
       const result = await getPriceHistoryForCardQuery(db, cardScryfallId);
 

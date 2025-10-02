@@ -14,7 +14,7 @@ describe("getCardByIdQuery", () => {
 
   it("should successfully retrieve a card by scryfallId", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Test Lightning Bolt",

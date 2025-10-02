@@ -1,4 +1,6 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { wantListItemTestFactory } from "@/src/domain/tcg/want-list-item.model.test-factory";
+import { wantListTestFactory } from "@/src/domain/tcg/want-list.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -17,7 +19,7 @@ describe("getAllWantListItemsForWantListQuery", () => {
       const wantListId = "test-want-list-id-1";
 
       // Create want list items for the want list
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId,
         cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 1,
@@ -25,15 +27,15 @@ describe("getAllWantListItemsForWantListQuery", () => {
       });
       await wantListItemTestFactory.buildAndInsertOne(db, {
         wantListId,
-        cardScryfallId: "test-card-scryfall-id-2",
+        cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 2,
         maxPrice: "20.00",
       });
 
       // Create want list item for different want list
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId: "test-want-list-id-2",
-        cardScryfallId: "test-card-scryfall-id-3",
+        cardScryfallId: "test-card-scryfall-id-2",
         quantityWanted: 1,
         maxPrice: "15.00",
       });
@@ -55,7 +57,7 @@ describe("getAllWantListItemsForWantListQuery", () => {
       const wantListId = "test-want-list-with-no-items";
 
       // Create want list item for different want list
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId: "test-want-list-id-2",
         cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 1,
@@ -90,21 +92,37 @@ describe("getAllWantListItemsForWantListQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListId = "test-want-list-id-1";
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-want-list-id-1",
+          name: "Test Want List",
+          description: "A test want list for testing purposes",
+          priority: 1,
+        });
+      const card = await cardTestFactory.buildAndInsertOne(db, {
+        id: "test-card-scryfall-id-1",
+        name: "Test Card",
+        setCode: "M21",
+        setName: "Core Set 2021",
+      });
 
       // Create 5 want list items for the want list
       for (let i = 1; i <= 5; i++) {
         await wantListItemTestFactory.buildAndInsertOne(db, {
-          wantListId,
-          cardScryfallId: `test-card-scryfall-id-${i}`,
+          wantListId: wantList.id,
+          cardScryfallId: card.scryfallId,
           quantityWanted: i,
         });
       }
 
-      const result = await getAllWantListItemsForWantListQuery(db, wantListId, {
-        page: 2,
-        pageSize: 2,
-      });
+      const result = await getAllWantListItemsForWantListQuery(
+        db,
+        wantList.id,
+        {
+          page: 2,
+          pageSize: 2,
+        }
+      );
 
       expect(result.wantListItems).toHaveLength(2);
       expect(result.totalCount).toBe(5);
@@ -118,16 +136,17 @@ describe("getAllWantListItemsForWantListQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const wantListId = "test-want-list-id-1";
 
-      const item1 = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId,
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-        createdAt: new Date("2023-01-01"),
-      });
+      const item1 =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId,
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+          createdAt: new Date("2023-01-01"),
+        });
 
       const item2 = await wantListItemTestFactory.buildAndInsertOne(db, {
         wantListId,
-        cardScryfallId: "test-card-scryfall-id-2",
+        cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 2,
         createdAt: new Date("2023-01-02"),
       });

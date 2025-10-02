@@ -14,12 +14,13 @@ describe("updateDealItemQuery", () => {
 
   it("should successfully update a deal item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "10.00",
-        quantity: 1,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "10.00",
+          quantity: 1,
+        });
 
       const updateData = {
         id: dealItem.id,
@@ -36,25 +37,27 @@ describe("updateDealItemQuery", () => {
     });
   });
 
-  it("should throw error when updating non-existent deal item", async () => {
+  it("should return undefined when updating non-existent deal item", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-deal-item-id",
         agreedPrice: "25.00",
       };
 
-      await expect(updateDealItemQuery(db, updateData)).rejects.toThrow();
+      const result = await updateDealItemQuery(db, updateData);
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "10.00",
-        quantity: 1,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "10.00",
+          quantity: 1,
+        });
 
       const updateData = {
         id: dealItem.id,
@@ -71,12 +74,13 @@ describe("updateDealItemQuery", () => {
 
   it("should handle empty update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "10.00",
-        quantity: 1,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "10.00",
+          quantity: 1,
+        });
 
       const updateData = {
         id: dealItem.id,
@@ -93,12 +97,13 @@ describe("updateDealItemQuery", () => {
 
   it("should throw error with invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "10.00",
-        quantity: 1,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "10.00",
+          quantity: 1,
+        });
 
       const updateData = {
         id: dealItem.id,

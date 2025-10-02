@@ -26,7 +26,10 @@ export const cardTestFactory = {
     return result[0];
   },
 
-  async buildAndInsertOne(db: DB, overrides: Partial<Card>): Promise<Card> {
+  async buildAndInsertOne(
+    db: DB,
+    overrides: Partial<Card> = {}
+  ): Promise<Card> {
     const card = this.buildOne(overrides);
     const result = await db.insert(cards).values(card).returning();
     return result[0];

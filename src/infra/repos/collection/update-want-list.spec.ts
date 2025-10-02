@@ -14,12 +14,13 @@ describe("updateWantListQuery", () => {
 
   it("should successfully update a want list", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Original Want List",
-        description: "Original description",
-        priority: 1,
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Original Want List",
+          description: "Original description",
+          priority: 1,
+        });
 
       const updateData = {
         id: wantList.id,
@@ -38,25 +39,28 @@ describe("updateWantListQuery", () => {
     });
   });
 
-  it("should throw error when updating non-existent want list", async () => {
+  it("should return undefined when updating non-existent want list", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-want-list-id",
         name: "Updated Name",
       };
 
-      await expect(updateWantListQuery(db, updateData)).rejects.toThrow();
+      const result = await updateWantListQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Original Want List",
-        description: "Original description",
-        priority: 1,
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Original Want List",
+          description: "Original description",
+          priority: 1,
+        });
 
       const updateData = {
         id: wantList.id,
@@ -74,10 +78,11 @@ describe("updateWantListQuery", () => {
 
   it("should handle empty update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Original Want List",
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Original Want List",
+        });
 
       const updateData = {
         id: wantList.id,
@@ -93,10 +98,11 @@ describe("updateWantListQuery", () => {
 
   it("should throw error with invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Original Want List",
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Original Want List",
+        });
 
       const updateData = {
         id: wantList.id,

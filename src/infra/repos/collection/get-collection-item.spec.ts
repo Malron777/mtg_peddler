@@ -14,16 +14,14 @@ describe("getCollectionItemQuery", () => {
 
   it("should successfully retrieve a collection item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 2,
           isFoil: false,
           condition: "NM",
-        }
-      );
+        });
 
       const result = await getCollectionItemQuery(db, collectionItem.id);
 
@@ -89,16 +87,14 @@ describe("getCollectionItemQuery", () => {
 
   it("should retrieve a foil collection item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
           isFoil: true,
           condition: "LP",
-        }
-      );
+        });
 
       const result = await getCollectionItemQuery(db, collectionItem.id);
 

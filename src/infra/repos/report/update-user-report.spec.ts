@@ -51,7 +51,7 @@ describe("updateUserReportQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent user report", async () => {
+  it("should return undefined when trying to update non-existent user report", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-report-id",

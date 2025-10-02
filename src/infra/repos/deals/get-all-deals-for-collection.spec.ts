@@ -1,4 +1,7 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { dealItemTestFactory } from "@/src/domain/tcg/deal-item.model.test-factory";
 import { dealTestFactory } from "@/src/domain/tcg/deal.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
@@ -16,47 +19,85 @@ describe("getAllDealsForCollectionQuery", () => {
 
   it("should retrieve deals for a specific collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionId = "test-collection-id-1";
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+        });
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+        });
+
+      const card1 = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+        oracleId: "test-oracle-id-1",
+        name: "Test Card 1",
+        setCode: "M21",
+        setName: "Core Set 2021",
+      });
+      const card2 = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-2",
+        oracleId: "test-oracle-id-2",
+        name: "Test Card 2",
+        setCode: "M21",
+        setName: "Core Set 2021",
+      });
+      const card3 = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-3",
+        oracleId: "test-oracle-id-3",
+        name: "Test Card 3",
+        setCode: "M21",
+        setName: "Core Set 2021",
+      });
 
       // Create deals
-      const deal1 = await dealTestFactory.buildAndInsertOne(db, {
-        sellerId: "test-seller-id-1",
-        buyerId: "test-buyer-id-1",
-        status: "negotiating",
-      });
-      const deal2 = await dealTestFactory.buildAndInsertOne(db, {
-        sellerId: "test-seller-id-2",
-        buyerId: "test-buyer-id-2",
-        status: "negotiating",
-      });
-      const deal3 = await dealTestFactory.buildAndInsertOne(db, {
-        sellerId: "test-seller-id-3",
-        buyerId: "test-buyer-id-3",
-        status: "negotiating",
-      });
+      const deal1 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          sellerId: "test-seller-id-1",
+          buyerId: "test-buyer-id-1",
+          status: "negotiating",
+        }
+      );
+      const deal2 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          sellerId: "test-seller-id-2",
+          buyerId: "test-buyer-id-2",
+          status: "negotiating",
+        }
+      );
+      const deal3 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          sellerId: "test-seller-id-3",
+          buyerId: "test-buyer-id-3",
+          status: "negotiating",
+        }
+      );
 
       // Create collection items
       const collectionItem1 = await collectionItemTestFactory.buildAndInsertOne(
         db,
         {
-          collectionId,
-          cardScryfallId: "test-card-scryfall-id-1",
+          collectionId: collection1.id,
+          cardScryfallId: card1.scryfallId,
           quantity: 1,
         }
       );
       const collectionItem2 = await collectionItemTestFactory.buildAndInsertOne(
         db,
         {
-          collectionId,
-          cardScryfallId: "test-card-scryfall-id-2",
+          collectionId: collection1.id,
+          cardScryfallId: card2.scryfallId,
           quantity: 2,
         }
       );
       const collectionItem3 = await collectionItemTestFactory.buildAndInsertOne(
         db,
         {
-          collectionId: "test-collection-id-2",
-          cardScryfallId: "test-card-scryfall-id-3",
+          collectionId: collection2.id,
+          cardScryfallId: card3.scryfallId,
           quantity: 1,
         }
       );
@@ -83,7 +124,7 @@ describe("getAllDealsForCollectionQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllDealsForCollectionQuery(db, collectionId);
+      const result = await getAllDealsForCollectionQuery(db, collection1.id);
 
       expect(result.deals).toHaveLength(2);
       expect(result.totalCount).toBe(2);
@@ -97,22 +138,23 @@ describe("getAllDealsForCollectionQuery", () => {
 
   it("should return empty results for collection with no deals", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionId = "test-collection-with-no-deals";
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-with-no-deals",
+        });
 
       // Create deal with different collection
-      const deal = await dealTestFactory.buildAndInsertOne(db, {
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         sellerId: "test-seller-id-1",
         buyerId: "test-buyer-id-1",
         status: "negotiating",
       });
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-2",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
-        }
-      );
+        });
       await dealItemTestFactory.buildAndInsertOne(db, {
         dealId: deal.id,
         collectionItemId: collectionItem.id,
@@ -120,7 +162,7 @@ describe("getAllDealsForCollectionQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllDealsForCollectionQuery(db, collectionId);
+      const result = await getAllDealsForCollectionQuery(db, collection.id);
 
       expect(result.deals).toHaveLength(0);
       expect(result.totalCount).toBe(0);
@@ -149,19 +191,35 @@ describe("getAllDealsForCollectionQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionId = "test-collection-id-1";
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+        });
 
       // Create 5 deals with the collection
       for (let i = 1; i <= 5; i++) {
+        const buyer = await userTestFactory.buildAndInsertOne(db, {
+          id: `test-buyer-id-${i}`,
+          name: `Test Buyer ${i}`,
+          email: `buyer${i}@example.com`,
+        });
         const deal = await dealTestFactory.buildAndInsertOne(db, {
-          sellerId: `test-seller-id-${i}`,
-          buyerId: `test-buyer-id-${i}`,
+          id: `test-deal-id-${i}`,
+          sellerId: collection.userId,
+          buyerId: buyer.id,
           status: "negotiating",
+        });
+        const card = await cardTestFactory.buildAndInsertOne(db, {
+          scryfallId: `test-card-scryfall-id-${i}`,
+          oracleId: `test-oracle-id-${i}`,
+          name: `Test Card ${i}`,
+          setCode: "M21",
+          setName: "Core Set 2021",
         });
         const collectionItem =
           await collectionItemTestFactory.buildAndInsertOne(db, {
-            collectionId,
-            cardScryfallId: `test-card-scryfall-id-${i}`,
+            collectionId: collection.id,
+            cardScryfallId: card.scryfallId,
             quantity: i,
           });
         await dealItemTestFactory.buildAndInsertOne(db, {
@@ -172,7 +230,7 @@ describe("getAllDealsForCollectionQuery", () => {
         });
       }
 
-      const result = await getAllDealsForCollectionQuery(db, collectionId, {
+      const result = await getAllDealsForCollectionQuery(db, collection.id, {
         page: 2,
         pageSize: 2,
       });
@@ -187,34 +245,58 @@ describe("getAllDealsForCollectionQuery", () => {
 
   it("should order deals by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionId = "test-collection-id-1";
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+        });
 
-      const deal1 = await dealTestFactory.buildAndInsertOne(db, {
-        sellerId: "test-seller-id-1",
-        buyerId: "test-buyer-id-1",
-        status: "negotiating",
-        createdAt: new Date("2023-01-01"),
+      const card1 = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+        oracleId: "test-oracle-id-1",
+        name: "Test Card 1",
+        setCode: "M21",
+        setName: "Core Set 2021",
       });
-      const deal2 = await dealTestFactory.buildAndInsertOne(db, {
-        sellerId: "test-seller-id-2",
-        buyerId: "test-buyer-id-2",
-        status: "negotiating",
-        createdAt: new Date("2023-01-02"),
+      const card2 = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-2",
+        oracleId: "test-oracle-id-1",
+        name: "Test Card 1",
+        setCode: "M21",
+        setName: "Core Set 2021",
       });
+
+      const deal1 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          sellerId: "test-seller-id-1",
+          buyerId: "test-buyer-id-1",
+          status: "negotiating",
+          createdAt: new Date("2023-01-01"),
+        }
+      );
+      const deal2 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          sellerId: "test-seller-id-2",
+          buyerId: "test-buyer-id-2",
+          status: "negotiating",
+          createdAt: new Date("2023-01-02"),
+        }
+      );
 
       const collectionItem1 = await collectionItemTestFactory.buildAndInsertOne(
         db,
         {
-          collectionId,
-          cardScryfallId: "test-card-scryfall-id-1",
+          collectionId: collection.id,
+          cardScryfallId: card1.scryfallId,
           quantity: 1,
         }
       );
       const collectionItem2 = await collectionItemTestFactory.buildAndInsertOne(
         db,
         {
-          collectionId,
-          cardScryfallId: "test-card-scryfall-id-2",
+          collectionId: collection.id,
+          cardScryfallId: card2.scryfallId,
           quantity: 1,
         }
       );
@@ -232,7 +314,7 @@ describe("getAllDealsForCollectionQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllDealsForCollectionQuery(db, collectionId);
+      const result = await getAllDealsForCollectionQuery(db, collection.id);
 
       expect(result.deals).toHaveLength(2);
       expect(result.deals[0].id).toBe(deal2.id); // Most recent first

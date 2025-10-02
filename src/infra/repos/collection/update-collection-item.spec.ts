@@ -14,16 +14,14 @@ describe("updateCollectionItemQuery", () => {
 
   it("should successfully update a collection item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
           isFoil: false,
           condition: "NM",
-        }
-      );
+        });
 
       const updateData = {
         id: collectionItem.id,
@@ -42,29 +40,29 @@ describe("updateCollectionItemQuery", () => {
     });
   });
 
-  it("should throw error when updating non-existent collection item", async () => {
+  it("should return undefined when updating non-existent collection item", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-collection-item-id",
         quantity: 2,
       };
 
-      await expect(updateCollectionItemQuery(db, updateData)).rejects.toThrow();
+      const result = await updateCollectionItemQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
           isFoil: false,
           condition: "NM",
-        }
-      );
+        });
 
       const updateData = {
         id: collectionItem.id,
@@ -82,14 +80,12 @@ describe("updateCollectionItemQuery", () => {
 
   it("should handle empty update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
-        }
-      );
+        });
 
       const updateData = {
         id: collectionItem.id,
@@ -105,14 +101,12 @@ describe("updateCollectionItemQuery", () => {
 
   it("should throw error with invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 1,
-        }
-      );
+        });
 
       const updateData = {
         id: collectionItem.id,

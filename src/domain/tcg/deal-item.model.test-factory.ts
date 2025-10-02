@@ -38,17 +38,21 @@ export const dealItemTestFactory = {
     overrides: Partial<DealItem>
   ): Promise<DealItem> {
     // Create dependencies if not provided
-    const dealId =
-      overrides.dealId || (await dealTestFactory.buildAndInsertOne(db, {})).id;
-    const collectionItemId =
-      overrides.collectionItemId ||
-      (await collectionItemTestFactory.buildAndInsertOne(db, {})).id;
+    const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
+      ...(overrides.dealId ? { id: overrides.dealId } : {}),
+    });
+    const collectionItem =
+      await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
+        ...(overrides.collectionItemId
+          ? { id: overrides.collectionItemId }
+          : {}),
+      });
 
     // Build and insert with dependencies
     const item = this.buildOne({
       ...overrides,
-      dealId,
-      collectionItemId,
+      dealId: deal.id,
+      collectionItemId: collectionItem.id,
     });
     const result = await db.insert(dealItems).values(item).returning();
     return result[0];

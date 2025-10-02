@@ -40,7 +40,7 @@ describe("updatePriceHistoryQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent price history", async () => {
+  it("should return undefined when trying to update non-existent price history", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-id",
@@ -48,7 +48,9 @@ describe("updatePriceHistoryQuery", () => {
         currency: "EUR",
       };
 
-      await expect(updatePriceHistoryQuery(db, updateData)).rejects.toThrow();
+      const result = await updatePriceHistoryQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 

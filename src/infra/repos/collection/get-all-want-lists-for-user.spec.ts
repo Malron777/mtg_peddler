@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { wantListTestFactory } from "@/src/domain/tcg/want-list.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -17,7 +18,7 @@ describe("getAllWantListsForUserQuery", () => {
       const userId = "test-user-id-1";
 
       // Create want lists for the user
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId,
         name: "User Want List 1",
         priority: 1,
@@ -29,7 +30,7 @@ describe("getAllWantListsForUserQuery", () => {
       });
 
       // Create want list for different user
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId: "test-user-id-2",
         name: "Other User Want List",
         priority: 1,
@@ -52,7 +53,7 @@ describe("getAllWantListsForUserQuery", () => {
       const userId = "test-user-with-no-want-lists";
 
       // Create want list for different user
-      await wantListTestFactory.buildAndInsertOne(db, {
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
         userId: "test-user-id-2",
         name: "Other User Want List",
       });
@@ -83,18 +84,20 @@ describe("getAllWantListsForUserQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const userId = "test-user-id-1";
+      const user = await userTestFactory.buildAndInsertOne(db, {
+        id: "test-user-id-1",
+      });
 
       // Create 5 want lists for the user
       for (let i = 1; i <= 5; i++) {
         await wantListTestFactory.buildAndInsertOne(db, {
-          userId,
+          userId: user.id,
           name: `User Want List ${i}`,
           priority: i,
         });
       }
 
-      const result = await getAllWantListsForUserQuery(db, userId, {
+      const result = await getAllWantListsForUserQuery(db, user.id, {
         page: 2,
         pageSize: 2,
       });
@@ -111,11 +114,12 @@ describe("getAllWantListsForUserQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const userId = "test-user-id-1";
 
-      const wantList1 = await wantListTestFactory.buildAndInsertOne(db, {
-        userId,
-        name: "First Want List",
-        createdAt: new Date("2023-01-01"),
-      });
+      const wantList1 =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId,
+          name: "First Want List",
+          createdAt: new Date("2023-01-01"),
+        });
 
       const wantList2 = await wantListTestFactory.buildAndInsertOne(db, {
         userId,

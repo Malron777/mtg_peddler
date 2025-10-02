@@ -1,4 +1,3 @@
-import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
@@ -17,18 +16,19 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should return all cards for a collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.buildAndInsertOne(db, {});
+      const userId = "test-user-id-1";
       // Create a collection
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-1",
-        userId: user.id,
-        name: "Test Collection",
-        description: "A test collection",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+          userId,
+          name: "Test Collection",
+          description: "A test collection",
+          isPublic: false,
+        });
 
       // Create cards
-      const card1 = await cardTestFactory.insertOne(db, {
+      const card1 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Lightning Bolt",
@@ -40,7 +40,7 @@ describe("getAllCardsForCollectionQuery", () => {
         lastFetchedAt: new Date("2023-01-01"),
       });
 
-      const card2 = await cardTestFactory.insertOne(db, {
+      const card2 = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-2",
         oracleId: "test-oracle-id-2",
         name: "Counterspell",
@@ -53,7 +53,7 @@ describe("getAllCardsForCollectionQuery", () => {
       });
 
       // Create collection items
-      await collectionItemTestFactory.insertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOne(db, {
         id: "collection-item-1",
         collectionId: collection.id,
         cardScryfallId: card1.scryfallId,
@@ -62,7 +62,7 @@ describe("getAllCardsForCollectionQuery", () => {
         isFoil: false,
       });
 
-      await collectionItemTestFactory.insertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOne(db, {
         id: "collection-item-2",
         collectionId: collection.id,
         cardScryfallId: card2.scryfallId,
@@ -89,15 +89,16 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should return empty result when collection has no cards", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.buildAndInsertOne(db, {});
+      const userId = "test-user-id-1";
 
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-2",
-        userId: user.id,
-        name: "Empty Collection",
-        description: "An empty collection",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+          userId,
+          name: "Empty Collection",
+          description: "An empty collection",
+          isPublic: false,
+        });
 
       const result = await getAllCardsForCollectionQuery(db, collection.id);
 
@@ -126,19 +127,20 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should handle custom pagination options", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.buildAndInsertOne(db, {});
+      const userId = "test-user-id-1";
 
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-3",
-        userId: user.id,
-        name: "Large Collection",
-        description: "A large collection",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-3",
+          userId,
+          name: "Large Collection",
+          description: "A large collection",
+          isPublic: false,
+        });
 
       // Create multiple cards
       for (let i = 1; i <= 5; i++) {
-        const card = await cardTestFactory.insertOne(db, {
+        const card = await cardTestFactory.buildAndInsertOne(db, {
           scryfallId: `test-scryfall-id-${i}`,
           oracleId: `test-oracle-id-${i}`,
           name: `Test Card ${i}`,
@@ -152,7 +154,7 @@ describe("getAllCardsForCollectionQuery", () => {
           lastFetchedAt: new Date(`2023-01-${i.toString().padStart(2, "0")}`),
         });
 
-        await collectionItemTestFactory.insertOne(db, {
+        await collectionItemTestFactory.buildAndInsertOne(db, {
           id: `collection-item-${i}`,
           collectionId: collection.id,
           cardScryfallId: card.scryfallId,
@@ -177,17 +179,18 @@ describe("getAllCardsForCollectionQuery", () => {
 
   it("should handle duplicate cards in collection (same card, different conditions)", async () => {
     await runWithTestDb(async (db: DB) => {
-      const user = await userTestFactory.buildAndInsertOne(db, {});
+      const userId = "test-user-id-1";
 
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-4",
-        userId: user.id,
-        name: "Duplicate Collection",
-        description: "Collection with duplicate cards",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-4",
+          userId,
+          name: "Duplicate Collection",
+          description: "Collection with duplicate cards",
+          isPublic: false,
+        });
 
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-duplicate",
         oracleId: "test-oracle-id-duplicate",
         name: "Duplicate Card",
@@ -200,7 +203,7 @@ describe("getAllCardsForCollectionQuery", () => {
       });
 
       // Add same card with different conditions
-      await collectionItemTestFactory.insertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOne(db, {
         id: "collection-item-1",
         collectionId: collection.id,
         cardScryfallId: card.scryfallId,
@@ -209,7 +212,7 @@ describe("getAllCardsForCollectionQuery", () => {
         isFoil: false,
       });
 
-      await collectionItemTestFactory.insertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOne(db, {
         id: "collection-item-2",
         collectionId: collection.id,
         cardScryfallId: card.scryfallId,

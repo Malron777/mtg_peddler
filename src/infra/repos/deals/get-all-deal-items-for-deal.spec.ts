@@ -1,4 +1,6 @@
+import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
 import { dealItemTestFactory } from "@/src/domain/tcg/deal-item.model.test-factory";
+import { dealTestFactory } from "@/src/domain/tcg/deal.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -17,7 +19,7 @@ describe("getAllDealItemsForDealQuery", () => {
       const dealId = "test-deal-id-1";
 
       // Create deal items for the deal
-      await dealItemTestFactory.buildAndInsertOne(db, {
+      await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
         dealId,
         collectionItemId: "test-collection-item-id-1",
         agreedPrice: "10.00",
@@ -25,15 +27,15 @@ describe("getAllDealItemsForDealQuery", () => {
       });
       await dealItemTestFactory.buildAndInsertOne(db, {
         dealId,
-        collectionItemId: "test-collection-item-id-2",
+        collectionItemId: "test-collection-item-id-1",
         agreedPrice: "20.00",
         quantity: 2,
       });
 
       // Create deal item for different deal
-      await dealItemTestFactory.buildAndInsertOne(db, {
+      await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
         dealId: "test-deal-id-2",
-        collectionItemId: "test-collection-item-id-3",
+        collectionItemId: "test-collection-item-id-2",
         agreedPrice: "15.00",
         quantity: 1,
       });
@@ -55,7 +57,7 @@ describe("getAllDealItemsForDealQuery", () => {
       const dealId = "test-deal-with-no-items";
 
       // Create deal item for different deal
-      await dealItemTestFactory.buildAndInsertOne(db, {
+      await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
         dealId: "test-deal-id-2",
         collectionItemId: "test-collection-item-id-1",
         agreedPrice: "10.00",
@@ -88,19 +90,25 @@ describe("getAllDealItemsForDealQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealId = "test-deal-id-1";
+      const deal = await dealTestFactory.buildAndInsertOneWithDependencies(db, {
+        id: "test-deal-id-1",
+      });
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-item-id-1",
+        });
 
       // Create 5 deal items for the deal
       for (let i = 1; i <= 5; i++) {
         await dealItemTestFactory.buildAndInsertOne(db, {
-          dealId,
-          collectionItemId: `test-collection-item-id-${i}`,
+          dealId: deal.id,
+          collectionItemId: collectionItem.id,
           agreedPrice: `${i * 10}.00`,
           quantity: i,
         });
       }
 
-      const result = await getAllDealItemsForDealQuery(db, dealId, {
+      const result = await getAllDealItemsForDealQuery(db, deal.id, {
         page: 2,
         pageSize: 2,
       });
@@ -117,17 +125,20 @@ describe("getAllDealItemsForDealQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const dealId = "test-deal-id-1";
 
-      const item1 = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId,
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "10.00",
-        quantity: 1,
-        createdAt: new Date("2023-01-01"),
-      });
+      const item1 = await dealItemTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          dealId,
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "10.00",
+          quantity: 1,
+          createdAt: new Date("2023-01-01"),
+        }
+      );
 
       const item2 = await dealItemTestFactory.buildAndInsertOne(db, {
         dealId,
-        collectionItemId: "test-collection-item-id-2",
+        collectionItemId: "test-collection-item-id-1",
         agreedPrice: "20.00",
         quantity: 2,
         createdAt: new Date("2023-01-02"),

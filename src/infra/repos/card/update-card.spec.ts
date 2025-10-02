@@ -14,7 +14,7 @@ describe("updateCardQuery", () => {
 
   it("should successfully update an existing card", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Original Name",
@@ -49,20 +49,22 @@ describe("updateCardQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent card", async () => {
+  it("should return undefined when trying to update non-existent card", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         scryfallId: "non-existent-scryfall-id",
         name: "Updated Name",
       };
 
-      await expect(updateCardQuery(db, updateData)).rejects.toThrow();
+      const result = await updateCardQuery(db, updateData);
+
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-2",
         oracleId: "test-oracle-id-2",
         name: "Original Name",
@@ -91,7 +93,7 @@ describe("updateCardQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-3",
         oracleId: "test-oracle-id-3",
         name: "Original Name",

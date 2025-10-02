@@ -42,18 +42,21 @@ export const wantListItemTestFactory = {
     overrides: Partial<WantListItem>
   ): Promise<WantListItem> {
     // Create dependencies if not provided
-    const wantListId =
-      overrides.wantListId ||
-      (await wantListTestFactory.buildAndInsertOne(db, {})).id;
-    const cardScryfallId =
-      overrides.cardScryfallId ||
-      (await cardTestFactory.buildAndInsertOne(db, {})).scryfallId;
+    const wantList =
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+        ...(overrides.wantListId ? { id: overrides.wantListId } : {}),
+      });
+    const card = await cardTestFactory.buildAndInsertOne(db, {
+      ...(overrides.cardScryfallId
+        ? { scryfallId: overrides.cardScryfallId }
+        : {}),
+    });
 
     // Build and insert with dependencies
     const item = this.buildOne({
       ...overrides,
-      wantListId,
-      cardScryfallId,
+      wantListId: wantList.id,
+      cardScryfallId: card.scryfallId,
     });
     const result = await db.insert(wantListItems).values(item).returning();
     return result[0];

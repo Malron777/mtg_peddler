@@ -16,7 +16,7 @@ describe("createPriceHistoryQuery", () => {
   it("should successfully create a price history entry", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create a card first to ensure the foreign key exists
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-1",
         oracleId: "test-oracle-id-1",
         name: "Test Lightning Bolt",
@@ -69,7 +69,7 @@ describe("createPriceHistoryQuery", () => {
   it("should fail when trying to create price history with invalid data", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create a card first to ensure the foreign key exists
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-2",
         oracleId: "test-oracle-id-2",
         name: "Test Card 2",
@@ -132,7 +132,7 @@ describe("createPriceHistoryQuery", () => {
   it("should handle null values gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create a card first to ensure the foreign key exists
-      const card = await cardTestFactory.insertOne(db, {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
         scryfallId: "test-scryfall-id-3",
         oracleId: "test-oracle-id-3",
         name: "Test Card 3",

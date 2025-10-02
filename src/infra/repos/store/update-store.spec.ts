@@ -52,7 +52,7 @@ describe("updateStoreQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent store", async () => {
+  it("should return undefined when trying to update non-existent store", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-store-id",

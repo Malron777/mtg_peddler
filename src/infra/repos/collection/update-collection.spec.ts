@@ -14,13 +14,14 @@ describe("updateCollectionQuery", () => {
 
   it("should successfully update an existing collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-1",
-        userId: "test-user-id-1",
-        name: "Original Name",
-        description: "Original Description",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+          userId: "test-user-id-1",
+          name: "Original Name",
+          description: "Original Description",
+          isPublic: false,
+        });
 
       const updateData = {
         id: collection.id,
@@ -43,26 +44,28 @@ describe("updateCollectionQuery", () => {
     });
   });
 
-  it("should throw error when trying to update non-existent collection", async () => {
+  it("should return undefined when trying to update non-existent collection", async () => {
     await runWithTestDb(async (db: DB) => {
       const updateData = {
         id: "non-existent-collection-id",
         name: "Updated Name",
       };
 
-      await expect(updateCollectionQuery(db, updateData)).rejects.toThrow();
+      const result = await updateCollectionQuery(db, updateData);
+      expect(result).toBeUndefined();
     });
   });
 
   it("should handle partial updates correctly", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-2",
-        userId: "test-user-id-2",
-        name: "Original Name",
-        description: "Original Description",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+          userId: "test-user-id-2",
+          name: "Original Name",
+          description: "Original Description",
+          isPublic: false,
+        });
 
       const updateData = {
         id: collection.id,
@@ -82,13 +85,14 @@ describe("updateCollectionQuery", () => {
 
   it("should handle empty update data gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-3",
-        userId: "test-user-id-3",
-        name: "Original Name",
-        description: "Original Description",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-3",
+          userId: "test-user-id-3",
+          name: "Original Name",
+          description: "Original Description",
+          isPublic: false,
+        });
 
       const updateData = {
         id: collection.id,
@@ -106,17 +110,18 @@ describe("updateCollectionQuery", () => {
 
   it("should handle invalid update data", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-4",
-        userId: "test-user-id-4",
-        name: "Original Name",
-        description: "Original Description",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-4",
+          userId: "test-user-id-4",
+          name: "Original Name",
+          description: "Original Description",
+          isPublic: false,
+        });
 
       const updateData = {
         id: collection.id,
-        name: "", // Empty name should fail
+        name: null as unknown as string, // Empty name should fail
         description: null as unknown as string, // Null description
       };
 

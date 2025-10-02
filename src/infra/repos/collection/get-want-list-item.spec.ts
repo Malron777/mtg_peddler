@@ -14,13 +14,14 @@ describe("getWantListItemQuery", () => {
 
   it("should successfully retrieve a want list item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 2,
-        maxPrice: "25.00",
-        conditionMinimum: "NM",
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 2,
+          maxPrice: "25.00",
+          conditionMinimum: "NM",
+        });
 
       const result = await getWantListItemQuery(db, wantListItem.id);
 
@@ -83,12 +84,13 @@ describe("getWantListItemQuery", () => {
 
   it("should retrieve a want list item with high quantity", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantListItem = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 10,
-        maxPrice: "100.00",
-      });
+      const wantListItem =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 10,
+          maxPrice: "100.00",
+        });
 
       const result = await getWantListItemQuery(db, wantListItem.id);
 

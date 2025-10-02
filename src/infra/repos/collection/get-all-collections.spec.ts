@@ -15,21 +15,23 @@ describe("getAllCollectionsQuery", () => {
   it("should return all collections with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test collections
-      const collection1 = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-1",
-        userId: "test-user-id-1",
-        name: "First Collection",
-        description: "First collection description",
-        isPublic: false,
-      });
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+          userId: "test-user-id-1",
+          name: "First Collection",
+          description: "First collection description",
+          isPublic: false,
+        });
 
-      const collection2 = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-2",
-        userId: "test-user-id-2",
-        name: "Second Collection",
-        description: "Second collection description",
-        isPublic: true,
-      });
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+          userId: "test-user-id-2",
+          name: "Second Collection",
+          description: "Second collection description",
+          isPublic: true,
+        });
 
       const result = await getAllCollectionsQuery(db);
 
@@ -63,7 +65,7 @@ describe("getAllCollectionsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple collections
       for (let i = 1; i <= 5; i++) {
-        await collectionTestFactory.insertOne(db, {
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-collection-id-${i}`,
           userId: `test-user-id-${i}`,
           name: `Test Collection ${i}`,
@@ -84,7 +86,7 @@ describe("getAllCollectionsQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await collectionTestFactory.insertOne(db, {
+      await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
         id: "test-collection-id-1",
         userId: "test-user-id-1",
         name: "Test Collection",
@@ -107,26 +109,28 @@ describe("getAllCollectionsQuery", () => {
 
   it("should order collections by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection1 = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-1",
-        userId: "test-user-id-1",
-        name: "First Collection",
-        description: "First collection description",
-        isPublic: false,
-        createdAt: new Date("2023-01-01"),
-      });
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+          userId: "test-user-id-1",
+          name: "First Collection",
+          description: "First collection description",
+          isPublic: false,
+          createdAt: new Date("2023-01-01"),
+        });
 
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const collection2 = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-2",
-        userId: "test-user-id-2",
-        name: "Second Collection",
-        description: "Second collection description",
-        isPublic: true,
-        createdAt: new Date("2023-01-02"),
-      });
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-2",
+          userId: "test-user-id-2",
+          name: "Second Collection",
+          description: "Second collection description",
+          isPublic: true,
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllCollectionsQuery(db);
 
@@ -140,7 +144,7 @@ describe("getAllCollectionsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create a few collections
       for (let i = 1; i <= 3; i++) {
-        await collectionTestFactory.insertOne(db, {
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-collection-id-${i}`,
           userId: `test-user-id-${i}`,
           name: `Test Collection ${i}`,

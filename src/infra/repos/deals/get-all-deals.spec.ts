@@ -15,26 +15,32 @@ describe("getAllDealsQuery", () => {
   it("should return all deals with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Insert test deals
-      const deal1 = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-1",
-        sellerId: "test-seller-id-1",
-        buyerId: "test-buyer-id-1",
-        status: "negotiating",
-        totalAmount: "100.00",
-        paymentMethodId: "test-payment-method-id-1",
-        shippingLocationId: "test-location-id-1",
-      });
+      const deal1 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-deal-id-1",
+          sellerId: "test-seller-id-1",
+          buyerId: "test-buyer-id-1",
+          status: "negotiating",
+          totalAmount: "100.00",
+          paymentMethodId: "test-payment-method-id-1",
+          shippingLocationId: "test-location-id-1",
+        }
+      );
 
-      const deal2 = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-2",
-        sellerId: "test-seller-id-2",
-        buyerId: "test-buyer-id-2",
-        status: "completed",
-        totalAmount: "250.00",
-        paymentMethodId: "test-payment-method-id-2",
-        shippingLocationId: "test-location-id-2",
-        finalizedAt: new Date("2023-01-01"),
-      });
+      const deal2 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-deal-id-2",
+          sellerId: "test-seller-id-2",
+          buyerId: "test-buyer-id-2",
+          status: "completed",
+          totalAmount: "250.00",
+          paymentMethodId: "test-payment-method-id-2",
+          shippingLocationId: "test-location-id-2",
+          finalizedAt: new Date("2023-01-01"),
+        }
+      );
 
       const result = await getAllDealsQuery(db);
 
@@ -64,7 +70,7 @@ describe("getAllDealsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Insert multiple deals
       for (let i = 1; i <= 5; i++) {
-        await dealTestFactory.insertOne(db, {
+        await dealTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-deal-id-${i}`,
           sellerId: `test-seller-id-${i}`,
           buyerId: `test-buyer-id-${i}`,
@@ -87,7 +93,7 @@ describe("getAllDealsQuery", () => {
 
   it("should handle invalid pagination options gracefully", async () => {
     await runWithTestDb(async (db: DB) => {
-      await dealTestFactory.insertOne(db, {
+      await dealTestFactory.buildAndInsertOneWithDependencies(db, {
         id: "test-deal-id-1",
         sellerId: "test-seller-id-1",
         buyerId: "test-buyer-id-1",
@@ -109,30 +115,36 @@ describe("getAllDealsQuery", () => {
 
   it("should order deals by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const deal1 = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-1",
-        sellerId: "test-seller-id-1",
-        buyerId: "test-buyer-id-1",
-        status: "negotiating",
-        totalAmount: "100.00",
-        paymentMethodId: "test-payment-method-id-1",
-        shippingLocationId: "test-location-id-1",
-        createdAt: new Date("2023-01-01"),
-      });
+      const deal1 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-deal-id-1",
+          sellerId: "test-seller-id-1",
+          buyerId: "test-buyer-id-1",
+          status: "negotiating",
+          totalAmount: "100.00",
+          paymentMethodId: "test-payment-method-id-1",
+          shippingLocationId: "test-location-id-1",
+          createdAt: new Date("2023-01-01"),
+        }
+      );
 
       // Wait a bit to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const deal2 = await dealTestFactory.insertOne(db, {
-        id: "test-deal-id-2",
-        sellerId: "test-seller-id-2",
-        buyerId: "test-buyer-id-2",
-        status: "completed",
-        totalAmount: "250.00",
-        paymentMethodId: "test-payment-method-id-2",
-        shippingLocationId: "test-location-id-2",
-        createdAt: new Date("2023-01-02"),
-      });
+      const deal2 = await dealTestFactory.buildAndInsertOneWithDependencies(
+        db,
+        {
+          id: "test-deal-id-2",
+          sellerId: "test-seller-id-2",
+          buyerId: "test-buyer-id-2",
+          status: "completed",
+          totalAmount: "250.00",
+          paymentMethodId: "test-payment-method-id-2",
+          shippingLocationId: "test-location-id-2",
+          createdAt: new Date("2023-01-02"),
+        }
+      );
 
       const result = await getAllDealsQuery(db);
 
@@ -146,7 +158,7 @@ describe("getAllDealsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create a few deals
       for (let i = 1; i <= 3; i++) {
-        await dealTestFactory.insertOne(db, {
+        await dealTestFactory.buildAndInsertOneWithDependencies(db, {
           id: `test-deal-id-${i}`,
           sellerId: `test-seller-id-${i}`,
           buyerId: `test-buyer-id-${i}`,

@@ -14,12 +14,13 @@ describe("getDealItemQuery", () => {
 
   it("should successfully retrieve a deal item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "25.00",
-        quantity: 2,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "25.00",
+          quantity: 2,
+        });
 
       const result = await getDealItemQuery(db, dealItem.id);
 
@@ -81,12 +82,13 @@ describe("getDealItemQuery", () => {
 
   it("should retrieve a deal item with high quantity", async () => {
     await runWithTestDb(async (db: DB) => {
-      const dealItem = await dealItemTestFactory.buildAndInsertOne(db, {
-        dealId: "test-deal-id-1",
-        collectionItemId: "test-collection-item-id-1",
-        agreedPrice: "100.00",
-        quantity: 10,
-      });
+      const dealItem =
+        await dealItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          dealId: "test-deal-id-1",
+          collectionItemId: "test-collection-item-id-1",
+          agreedPrice: "100.00",
+          quantity: 10,
+        });
 
       const result = await getDealItemQuery(db, dealItem.id);
 

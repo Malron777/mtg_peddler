@@ -15,13 +15,13 @@ describe("getAllWantListItemsQuery", () => {
   it("should retrieve want list items with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create test want list items
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId: "test-want-list-id-1",
         cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 1,
         maxPrice: "10.00",
       });
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId: "test-want-list-id-2",
         cardScryfallId: "test-card-scryfall-id-2",
         quantityWanted: 2,
@@ -60,7 +60,7 @@ describe("getAllWantListItemsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 5 want list items
       for (let i = 1; i <= 5; i++) {
-        await wantListItemTestFactory.buildAndInsertOne(db, {
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
           wantListId: `test-want-list-id-${i}`,
           cardScryfallId: `test-card-scryfall-id-${i}`,
           quantityWanted: i,
@@ -82,7 +82,7 @@ describe("getAllWantListItemsQuery", () => {
 
   it("should handle invalid pagination parameters", async () => {
     await runWithTestDb(async (db: DB) => {
-      await wantListItemTestFactory.buildAndInsertOne(db, {
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         wantListId: "test-want-list-id-1",
         cardScryfallId: "test-card-scryfall-id-1",
         quantityWanted: 1,
@@ -103,19 +103,21 @@ describe("getAllWantListItemsQuery", () => {
 
   it("should order want list items by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const item1 = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantityWanted: 1,
-        createdAt: new Date("2023-01-01"),
-      });
+      const item1 =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantityWanted: 1,
+          createdAt: new Date("2023-01-01"),
+        });
 
-      const item2 = await wantListItemTestFactory.buildAndInsertOne(db, {
-        wantListId: "test-want-list-id-2",
-        cardScryfallId: "test-card-scryfall-id-2",
-        quantityWanted: 2,
-        createdAt: new Date("2023-01-02"),
-      });
+      const item2 =
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          wantListId: "test-want-list-id-2",
+          cardScryfallId: "test-card-scryfall-id-2",
+          quantityWanted: 2,
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllWantListItemsQuery(db);
 
@@ -129,7 +131,7 @@ describe("getAllWantListItemsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 3 want list items
       for (let i = 1; i <= 3; i++) {
-        await wantListItemTestFactory.buildAndInsertOne(db, {
+        await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
           wantListId: `test-want-list-id-${i}`,
           cardScryfallId: `test-card-scryfall-id-${i}`,
           quantityWanted: i,
