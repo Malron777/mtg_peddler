@@ -1,5 +1,7 @@
-import { UpdateStoreStaff } from "@/src/domain/auth/store-staff.model";
-import { InsertStoreStaff } from "@/src/domain/auth/stores.model";
+import {
+  InsertStoreStaff,
+  UpdateStoreStaff,
+} from "@/src/domain/auth/store-staff.model";
 import { DB } from "@/src/infra/db/db";
 import { createStoreStaffQuery } from "@/src/infra/repos/store/create-store-staff.query";
 import { deleteStoreStaffQuery } from "@/src/infra/repos/store/delete-store-staff.query";
