@@ -1,7 +1,7 @@
 import { Collection } from "@/src/domain/tcg/collection.model";
 import { DB } from "@/src/infra/db/db";
 import { collectionItems, collections } from "@/src/infra/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 
 export interface GetAllCollectionsContainingCardsOptions {
   page?: number;
@@ -25,6 +25,16 @@ export async function getAllCollectionsContainingCardsQuery(
   const pageSize = options.pageSize ?? 50;
   const offset = (page - 1) * pageSize;
 
+  if (cardScryfallId === "") {
+    return {
+      collections: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 50,
+      totalPages: 0,
+    };
+  }
+
   // Get total count
   const countResult = await db
     .select({ count: sql<number>`count(distinct ${collections.id})` })
@@ -39,7 +49,7 @@ export async function getAllCollectionsContainingCardsQuery(
 
   // Get paginated collections
   const collectionsResult = await db
-    .selectDistinct({ id: collections.id })
+    .select({ id: collections.id })
     .from(collections)
     .innerJoin(
       collectionItems,
@@ -52,11 +62,10 @@ export async function getAllCollectionsContainingCardsQuery(
 
   // Get full collection details for the distinct collections
   const collectionIds = collectionsResult.map((c) => c.id);
-  const fullCollections = await db
-    .select()
-    .from(collections)
-    .where(sql`${collections.id} = ANY(${collectionIds})`)
-    .orderBy(desc(collections.createdAt));
+  const fullCollections = await db.query.collections.findMany({
+    where: inArray(collections.id, collectionIds),
+    orderBy: desc(collections.createdAt),
+  });
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

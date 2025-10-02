@@ -105,12 +105,17 @@ describe("createCollectionItemQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // This test simulates a scenario where the database might be unavailable
       // In a real scenario, this would be tested with a mock or by closing the connection
-      const collectionItem =
-        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "test-error-handling",
-          quantity: 1,
-          condition: "NM",
-        });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
+      const card = await cardTestFactory.buildAndInsertOne(db);
+
+      const collectionItem = collectionItemTestFactory.buildOne({
+        id: "test-error-handling",
+        quantity: 1,
+        condition: "NM",
+        collectionId: collection.id,
+        cardScryfallId: card.scryfallId,
+      });
 
       // The test database should handle this gracefully
       const result = await createCollectionItemQuery(db, collectionItem);
@@ -122,17 +127,21 @@ describe("createCollectionItemQuery", () => {
 
   it("should create a foil collection item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem =
-        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "test-foil-collection-item-id",
-          quantity: 1,
-          condition: "NM",
-          language: "en",
-          isFoil: true,
-          listingType: "trade",
-          customPrice: "50.00",
-          priceSource: "cardmarket",
-        });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db);
+      const card = await cardTestFactory.buildAndInsertOne(db);
+      const collectionItem = await collectionItemTestFactory.buildOne({
+        id: "test-foil-collection-item-id",
+        quantity: 1,
+        condition: "NM",
+        language: "en",
+        isFoil: true,
+        listingType: "trade",
+        customPrice: "50.00",
+        priceSource: "cardmarket",
+        collectionId: collection.id,
+        cardScryfallId: card.scryfallId,
+      });
 
       const result = await createCollectionItemQuery(db, collectionItem);
 

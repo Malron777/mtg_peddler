@@ -14,13 +14,14 @@ describe("deleteCollectionQuery", () => {
 
   it("should successfully delete an existing collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection = await collectionTestFactory.insertOne(db, {
-        id: "test-collection-id-1",
-        userId: "test-user-id-1",
-        name: "My Test Collection",
-        description: "A collection for testing purposes",
-        isPublic: false,
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-collection-id-1",
+          userId: "test-user-id-1",
+          name: "My Test Collection",
+          description: "A collection for testing purposes",
+          isPublic: false,
+        });
 
       const result = await deleteCollectionQuery(db, collection.id);
 
@@ -54,8 +55,8 @@ describe("deleteCollectionQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteCollectionQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 

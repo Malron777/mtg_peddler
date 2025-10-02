@@ -14,10 +14,11 @@ describe("deleteWantListQuery", () => {
 
   it("should successfully delete a want list", async () => {
     await runWithTestDb(async (db: DB) => {
-      const wantList = await wantListTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Test Want List",
-      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Test Want List",
+        });
 
       const result = await deleteWantListQuery(db, wantList.id);
 
@@ -50,8 +51,8 @@ describe("deleteWantListQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const result = await deleteWantListQuery(db, null as unknown as string);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 

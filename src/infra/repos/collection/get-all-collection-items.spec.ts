@@ -1,4 +1,6 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
+import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
@@ -15,13 +17,13 @@ describe("getAllCollectionItemsQuery", () => {
   it("should retrieve collection items with default pagination", async () => {
     await runWithTestDb(async (db: DB) => {
       // Create test collection items
-      await collectionItemTestFactory.buildAndInsertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
         collectionId: "test-collection-id-1",
         cardScryfallId: "test-card-scryfall-id-1",
         quantity: 1,
         isFoil: false,
       });
-      await collectionItemTestFactory.buildAndInsertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
         collectionId: "test-collection-id-2",
         cardScryfallId: "test-card-scryfall-id-2",
         quantity: 2,
@@ -60,9 +62,16 @@ describe("getAllCollectionItemsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 5 collection items
       for (let i = 1; i <= 5; i++) {
+        const card = await cardTestFactory.buildAndInsertOne(db, {
+          scryfallId: `test-card-scryfall-id-${i}`,
+        });
+        const collection =
+          await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+            id: `test-collection-id-${i}`,
+          });
         await collectionItemTestFactory.buildAndInsertOne(db, {
-          collectionId: `test-collection-id-${i}`,
-          cardScryfallId: `test-card-scryfall-id-${i}`,
+          collectionId: collection.id,
+          cardScryfallId: card.scryfallId,
           quantity: i,
         });
       }
@@ -82,7 +91,7 @@ describe("getAllCollectionItemsQuery", () => {
 
   it("should handle invalid pagination parameters", async () => {
     await runWithTestDb(async (db: DB) => {
-      await collectionItemTestFactory.buildAndInsertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
         collectionId: "test-collection-id-1",
         cardScryfallId: "test-card-scryfall-id-1",
         quantity: 1,
@@ -103,19 +112,21 @@ describe("getAllCollectionItemsQuery", () => {
 
   it("should order collection items by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const item1 = await collectionItemTestFactory.buildAndInsertOne(db, {
-        collectionId: "test-collection-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
-        quantity: 1,
-        createdAt: new Date("2023-01-01"),
-      });
+      const item1 =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          collectionId: "test-collection-id-1",
+          cardScryfallId: "test-card-scryfall-id-1",
+          quantity: 1,
+          createdAt: new Date("2023-01-01"),
+        });
 
-      const item2 = await collectionItemTestFactory.buildAndInsertOne(db, {
-        collectionId: "test-collection-id-2",
-        cardScryfallId: "test-card-scryfall-id-2",
-        quantity: 2,
-        createdAt: new Date("2023-01-02"),
-      });
+      const item2 =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
+          collectionId: "test-collection-id-2",
+          cardScryfallId: "test-card-scryfall-id-2",
+          quantity: 2,
+          createdAt: new Date("2023-01-02"),
+        });
 
       const result = await getAllCollectionItemsQuery(db);
 
@@ -129,9 +140,16 @@ describe("getAllCollectionItemsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // Create 3 collection items
       for (let i = 1; i <= 3; i++) {
+        const card = await cardTestFactory.buildAndInsertOne(db, {
+          scryfallId: `test-card-scryfall-id-${i}`,
+        });
+        const collection =
+          await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+            id: `test-collection-id-${i}`,
+          });
         await collectionItemTestFactory.buildAndInsertOne(db, {
-          collectionId: `test-collection-id-${i}`,
-          cardScryfallId: `test-card-scryfall-id-${i}`,
+          collectionId: collection.id,
+          cardScryfallId: card.scryfallId,
           quantity: i,
         });
       }

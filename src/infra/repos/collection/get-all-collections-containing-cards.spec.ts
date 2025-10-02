@@ -1,3 +1,4 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { collectionItemTestFactory } from "@/src/domain/tcg/collection-item.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
@@ -15,44 +16,48 @@ describe("getAllCollectionsContainingCardsQuery", () => {
 
   it("should retrieve collections containing a specific card", async () => {
     await runWithTestDb(async (db: DB) => {
-      const cardScryfallId = "test-card-scryfall-id-1";
+      const card = await cardTestFactory.buildAndInsertOne(db);
+      const card2 = await cardTestFactory.buildAndInsertOne(db);
 
       // Create collections
-      const collection1 = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Collection 1",
-      });
-      const collection2 = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-2",
-        name: "Collection 2",
-      });
-      const collection3 = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-3",
-        name: "Collection 3",
-      });
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Collection 1",
+        });
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-2",
+          name: "Collection 2",
+        });
+      const collection3 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-3",
+          name: "Collection 3",
+        });
 
       // Add the card to collections 1 and 2
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection1.id,
-        cardScryfallId,
+        cardScryfallId: card.scryfallId,
         quantity: 1,
       });
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection2.id,
-        cardScryfallId,
+        cardScryfallId: card.scryfallId,
         quantity: 2,
       });
 
       // Add different card to collection 3
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection3.id,
-        cardScryfallId: "test-card-scryfall-id-2",
+        cardScryfallId: card2.scryfallId,
         quantity: 1,
       });
 
       const result = await getAllCollectionsContainingCardsQuery(
         db,
-        cardScryfallId
+        card.scryfallId
       );
 
       expect(result.collections).toHaveLength(2);
@@ -67,22 +72,23 @@ describe("getAllCollectionsContainingCardsQuery", () => {
 
   it("should return empty results when no collections contain the card", async () => {
     await runWithTestDb(async (db: DB) => {
-      const cardScryfallId = "test-card-scryfall-id-not-found";
+      const card = await cardTestFactory.buildAndInsertOne(db);
 
       // Create collection with different card
-      const collection = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "Collection 1",
-      });
+      const collection =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "Collection 1",
+        });
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection.id,
-        cardScryfallId: "test-card-scryfall-id-1",
+        cardScryfallId: card.scryfallId,
         quantity: 1,
       });
 
       const result = await getAllCollectionsContainingCardsQuery(
         db,
-        cardScryfallId
+        "not-the-same-card-scryfall-id"
       );
 
       expect(result.collections).toHaveLength(0);
@@ -112,24 +118,25 @@ describe("getAllCollectionsContainingCardsQuery", () => {
 
   it("should handle custom pagination", async () => {
     await runWithTestDb(async (db: DB) => {
-      const cardScryfallId = "test-card-scryfall-id-1";
+      const card = await cardTestFactory.buildAndInsertOne(db);
 
       // Create 5 collections with the card
       for (let i = 1; i <= 5; i++) {
-        const collection = await collectionTestFactory.buildAndInsertOne(db, {
-          userId: `test-user-id-${i}`,
-          name: `Collection ${i}`,
-        });
+        const collection =
+          await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+            userId: `test-user-id-${i}`,
+            name: `Collection ${i}`,
+          });
         await collectionItemTestFactory.buildAndInsertOne(db, {
           collectionId: collection.id,
-          cardScryfallId,
+          cardScryfallId: card.scryfallId,
           quantity: i,
         });
       }
 
       const result = await getAllCollectionsContainingCardsQuery(
         db,
-        cardScryfallId,
+        card.scryfallId,
         {
           page: 2,
           pageSize: 2,
@@ -146,33 +153,35 @@ describe("getAllCollectionsContainingCardsQuery", () => {
 
   it("should order collections by createdAt descending", async () => {
     await runWithTestDb(async (db: DB) => {
-      const cardScryfallId = "test-card-scryfall-id-1";
+      const card = await cardTestFactory.buildAndInsertOne(db);
 
-      const collection1 = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-1",
-        name: "First Collection",
-        createdAt: new Date("2023-01-01"),
-      });
-      const collection2 = await collectionTestFactory.buildAndInsertOne(db, {
-        userId: "test-user-id-2",
-        name: "Second Collection",
-        createdAt: new Date("2023-01-02"),
-      });
+      const collection1 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-1",
+          name: "First Collection",
+          createdAt: new Date("2023-01-01"),
+        });
+      const collection2 =
+        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
+          userId: "test-user-id-2",
+          name: "Second Collection",
+          createdAt: new Date("2023-01-02"),
+        });
 
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection1.id,
-        cardScryfallId,
+        cardScryfallId: card.scryfallId,
         quantity: 1,
       });
       await collectionItemTestFactory.buildAndInsertOne(db, {
         collectionId: collection2.id,
-        cardScryfallId,
+        cardScryfallId: card.scryfallId,
         quantity: 1,
       });
 
       const result = await getAllCollectionsContainingCardsQuery(
         db,
-        cardScryfallId
+        card.scryfallId
       );
 
       expect(result.collections).toHaveLength(2);

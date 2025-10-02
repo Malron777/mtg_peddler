@@ -1,8 +1,9 @@
+import { cardTestFactory } from "@/src/domain/tcg/card.model.test-factory";
 import { wantListItemTestFactory } from "@/src/domain/tcg/want-list-item.model.test-factory";
+import { wantListTestFactory } from "@/src/domain/tcg/want-list.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
-import { wantListItems } from "../../db/schema/tcg";
 import { createWantListItemQuery } from "./create-want-list-item.query";
 
 describe("createWantListItemQuery", () => {
@@ -15,9 +16,16 @@ describe("createWantListItemQuery", () => {
 
   it("should successfully create a want list item", async () => {
     await runWithTestDb(async (db: DB) => {
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-want-list-id-1",
+        });
+      const card = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+      });
       const wantListItemData = wantListItemTestFactory.buildOne({
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
+        wantListId: wantList.id,
+        cardScryfallId: card.scryfallId,
         quantityWanted: 2,
         maxPrice: "25.00",
         conditionMinimum: "NM",
@@ -41,7 +49,8 @@ describe("createWantListItemQuery", () => {
   it("should fail when creating a want list item with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
       const duplicateId = "duplicate-want-list-item-id";
-      const wantListItemData1 = wantListItemTestFactory.buildOne({
+
+      await wantListItemTestFactory.buildAndInsertOneWithDependencies(db, {
         id: duplicateId,
         wantListId: "test-want-list-id-1",
         cardScryfallId: "test-card-scryfall-id-1",
@@ -52,9 +61,6 @@ describe("createWantListItemQuery", () => {
         wantListId: "test-want-list-id-2",
         cardScryfallId: "test-card-scryfall-id-2",
       });
-
-      // Insert first want list item
-      await db.insert(wantListItems).values(wantListItemData1);
 
       // Try to create second want list item with same id
       const result = await createWantListItemQuery(db, wantListItemData2);
@@ -109,12 +115,19 @@ describe("createWantListItemQuery", () => {
 
   it("should create a want list item with minimal required fields", async () => {
     await runWithTestDb(async (db: DB) => {
+      const card = await cardTestFactory.buildAndInsertOne(db, {
+        scryfallId: "test-card-scryfall-id-1",
+      });
+      const wantList =
+        await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+          id: "test-want-list-id-1",
+        });
       const minimalWantListItemData = wantListItemTestFactory.buildOne({
-        wantListId: "test-want-list-id-1",
-        cardScryfallId: "test-card-scryfall-id-1",
+        wantListId: wantList.id,
+        cardScryfallId: card.scryfallId,
         quantityWanted: 1,
         maxPrice: undefined,
-        conditionMinimum: undefined,
+        conditionMinimum: "NM",
       });
 
       const result = await createWantListItemQuery(db, minimalWantListItemData);

@@ -32,6 +32,14 @@ describe("getAllCollectionItemsForCollectionQuery", () => {
         isPublic: false,
       });
 
+      const collection2 = await collectionTestFactory.insertOne(db, {
+        id: "test-collection-id-2",
+        userId: user.id,
+        name: "Test Collection 2",
+        description: "A test collection",
+        isPublic: false,
+      });
+
       const card1 = await cardTestFactory.insertOne(db, {
         scryfallId: "test-card-scryfall-id-1",
         oracleId: "test-oracle-id-1",
@@ -84,7 +92,7 @@ describe("getAllCollectionItemsForCollectionQuery", () => {
 
       // Create collection item for different collection
       await collectionItemTestFactory.buildAndInsertOne(db, {
-        collectionId: "test-collection-id-2",
+        collectionId: collection2.id,
         cardScryfallId: card3.scryfallId,
         quantity: 1,
         isFoil: false,
@@ -110,7 +118,7 @@ describe("getAllCollectionItemsForCollectionQuery", () => {
       const collectionId = "test-collection-with-no-items";
 
       // Create collection item for different collection
-      await collectionItemTestFactory.buildAndInsertOne(db, {
+      await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
         collectionId: "test-collection-id-2",
         cardScryfallId: "test-card-scryfall-id-1",
         quantity: 1,

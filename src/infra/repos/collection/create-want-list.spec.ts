@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { wantListTestFactory } from "@/src/domain/tcg/want-list.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,8 +16,9 @@ describe("createWantListQuery", () => {
 
   it("should successfully create a want list", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db);
       const wantListData = wantListTestFactory.buildOne({
-        userId: "test-user-id-1",
+        userId: user.id,
         name: "Test Want List",
         description: "A test want list for testing purposes",
         priority: 1,
@@ -26,7 +28,7 @@ describe("createWantListQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.wantList).toBeDefined();
-      expect(result.wantList?.userId).toBe("test-user-id-1");
+      expect(result.wantList?.userId).toBe(user.id);
       expect(result.wantList?.name).toBe("Test Want List");
       expect(result.wantList?.description).toBe(
         "A test want list for testing purposes"
@@ -39,15 +41,17 @@ describe("createWantListQuery", () => {
   it("should fail when creating a want list with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
       const duplicateId = "duplicate-want-list-id";
+      const user1 = await userTestFactory.buildAndInsertOne(db);
+      const user2 = await userTestFactory.buildAndInsertOne(db);
       const wantListData1 = wantListTestFactory.buildOne({
         id: duplicateId,
-        userId: "test-user-id-1",
+        userId: user1.id,
         name: "First Want List",
       });
 
       const wantListData2 = wantListTestFactory.buildOne({
         id: duplicateId,
-        userId: "test-user-id-2",
+        userId: user2.id,
         name: "Second Want List",
       });
 
@@ -106,8 +110,9 @@ describe("createWantListQuery", () => {
 
   it("should create a want list with minimal required fields", async () => {
     await runWithTestDb(async (db: DB) => {
+      const user = await userTestFactory.buildAndInsertOne(db);
       const minimalWantListData = wantListTestFactory.buildOne({
-        userId: "test-user-id-1",
+        userId: user.id,
         name: "Minimal Want List",
         description: undefined,
         priority: undefined,
@@ -117,7 +122,7 @@ describe("createWantListQuery", () => {
 
       expect(result.success).toBe(true);
       expect(result.wantList).toBeDefined();
-      expect(result.wantList?.userId).toBe("test-user-id-1");
+      expect(result.wantList?.userId).toBe(user.id);
       expect(result.wantList?.name).toBe("Minimal Want List");
       expect(result.error).toBeUndefined();
     });

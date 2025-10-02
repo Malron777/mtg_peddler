@@ -1,3 +1,4 @@
+import { userTestFactory } from "@/src/domain/auth/user.model.test-factory";
 import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-factory";
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -14,13 +15,14 @@ describe("createCollectionQuery", () => {
 
   it("should successfully create a collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection =
-        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "test-collection-id-1",
-          name: "My Test Collection",
-          description: "A collection for testing purposes",
-          isPublic: false,
-        });
+      const user = await userTestFactory.buildAndInsertOne(db);
+      const collection = await collectionTestFactory.buildOne({
+        id: "test-collection-id-1",
+        name: "My Test Collection",
+        description: "A collection for testing purposes",
+        isPublic: false,
+        userId: user.id,
+      });
 
       const result = await createCollectionQuery(db, collection);
 
@@ -38,22 +40,23 @@ describe("createCollectionQuery", () => {
 
   it("should fail when trying to create a collection with duplicate id", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection1 =
-        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "duplicate-collection-id",
-          name: "First Collection",
-        });
+      const user = await userTestFactory.buildAndInsertOne(db);
+      const collection1 = await collectionTestFactory.buildOne({
+        id: "duplicate-collection-id",
+        name: "First Collection",
+        userId: user.id,
+      });
 
       // Create first collection
       const firstResult = await createCollectionQuery(db, collection1);
       expect(firstResult.success).toBe(true);
 
       // Try to create second collection with same id
-      const collection2 =
-        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "duplicate-collection-id",
-          name: "Second Collection",
-        });
+      const collection2 = await collectionTestFactory.buildOne({
+        id: "duplicate-collection-id",
+        name: "Second Collection",
+        userId: collection1.userId,
+      });
 
       const secondResult = await createCollectionQuery(db, collection2);
 
@@ -83,11 +86,12 @@ describe("createCollectionQuery", () => {
     await runWithTestDb(async (db: DB) => {
       // This test simulates a scenario where the database might be unavailable
       // In a real scenario, this would be tested with a mock or by closing the connection
-      const collection =
-        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "test-error-handling",
-          name: "Error Test Collection",
-        });
+      const user = await userTestFactory.buildAndInsertOne(db);
+      const collection = await collectionTestFactory.buildOne({
+        id: "test-error-handling",
+        name: "Error Test Collection",
+        userId: user.id,
+      });
 
       // The test database should handle this gracefully
       const result = await createCollectionQuery(db, collection);
@@ -99,13 +103,14 @@ describe("createCollectionQuery", () => {
 
   it("should create a public collection", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collection =
-        await collectionTestFactory.buildAndInsertOneWithDependencies(db, {
-          id: "test-public-collection-id",
-          name: "Public Collection",
-          description: "A public collection",
-          isPublic: true,
-        });
+      const user = await userTestFactory.buildAndInsertOne(db);
+      const collection = await collectionTestFactory.buildOne({
+        id: "test-public-collection-id",
+        name: "Public Collection",
+        description: "A public collection",
+        isPublic: true,
+        userId: user.id,
+      });
 
       const result = await createCollectionQuery(db, collection);
 

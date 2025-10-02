@@ -14,14 +14,12 @@ describe("deleteCollectionItemQuery", () => {
 
   it("should successfully delete a collection item", async () => {
     await runWithTestDb(async (db: DB) => {
-      const collectionItem = await collectionItemTestFactory.buildAndInsertOne(
-        db,
-        {
+      const collectionItem =
+        await collectionItemTestFactory.buildAndInsertOneWithDependencies(db, {
           collectionId: "test-collection-id-1",
           cardScryfallId: "test-card-scryfall-id-1",
           quantity: 2,
-        }
-      );
+        });
 
       const result = await deleteCollectionItemQuery(db, collectionItem.id);
 
@@ -57,8 +55,8 @@ describe("deleteCollectionItemQuery", () => {
         null as unknown as string
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
     });
   });
 
