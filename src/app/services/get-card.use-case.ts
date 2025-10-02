@@ -1,4 +1,4 @@
-import { ScryfallCard, ScryfallService } from "../services/scryfall.service";
+import { ScryfallCard, ScryfallService } from "./scryfall.service";
 
 export interface GetCardUseCase {
   getCardByName(cardName: string, exact?: boolean): Promise<ScryfallCard>;

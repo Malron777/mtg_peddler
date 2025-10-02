@@ -8,7 +8,7 @@ export interface GetAllCollectionsContainingCardsOptions {
   pageSize?: number;
 }
 
-export interface GetAllCollectionsContainingCardsResult {
+export interface GetAllCollectionsContainingCardResult {
   collections: Collection[];
   totalCount: number;
   page: number;
@@ -16,11 +16,11 @@ export interface GetAllCollectionsContainingCardsResult {
   totalPages: number;
 }
 
-export async function getAllCollectionsContainingCardsQuery(
+export async function getAllCollectionsContainingCardQuery(
   db: DB,
   cardScryfallId: string,
   options: GetAllCollectionsContainingCardsOptions = {}
-): Promise<GetAllCollectionsContainingCardsResult> {
+): Promise<GetAllCollectionsContainingCardResult> {
   const page = options.page ?? 1;
   const pageSize = options.pageSize ?? 50;
   const offset = (page - 1) * pageSize;

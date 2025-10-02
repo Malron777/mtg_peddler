@@ -4,7 +4,7 @@ import { collectionTestFactory } from "@/src/domain/tcg/collection.model.test-fa
 import { buildRunWithTestDb, migrateTestDb } from "@/test-db";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DB } from "../../db/db";
-import { getAllCollectionsContainingCardsQuery } from "./get-all-collections-containing-cards.query";
+import { getAllCollectionsContainingCardQuery } from "./get-all-collections-containing-cards.query";
 
 describe("getAllCollectionsContainingCardsQuery", () => {
   let runWithTestDb: Awaited<ReturnType<typeof buildRunWithTestDb>>;
@@ -55,7 +55,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllCollectionsContainingCardsQuery(
+      const result = await getAllCollectionsContainingCardQuery(
         db,
         card.scryfallId
       );
@@ -86,7 +86,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllCollectionsContainingCardsQuery(
+      const result = await getAllCollectionsContainingCardQuery(
         db,
         "not-the-same-card-scryfall-id"
       );
@@ -103,7 +103,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
     await runWithTestDb(async (db: DB) => {
       const nonExistentCardScryfallId = "non-existent-card-scryfall-id";
 
-      const result = await getAllCollectionsContainingCardsQuery(
+      const result = await getAllCollectionsContainingCardQuery(
         db,
         nonExistentCardScryfallId
       );
@@ -134,7 +134,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
         });
       }
 
-      const result = await getAllCollectionsContainingCardsQuery(
+      const result = await getAllCollectionsContainingCardQuery(
         db,
         card.scryfallId,
         {
@@ -179,7 +179,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
         quantity: 1,
       });
 
-      const result = await getAllCollectionsContainingCardsQuery(
+      const result = await getAllCollectionsContainingCardQuery(
         db,
         card.scryfallId
       );
@@ -192,7 +192,7 @@ describe("getAllCollectionsContainingCardsQuery", () => {
 
   it("should handle empty cardScryfallId", async () => {
     await runWithTestDb(async (db: DB) => {
-      const result = await getAllCollectionsContainingCardsQuery(db, "");
+      const result = await getAllCollectionsContainingCardQuery(db, "");
 
       expect(result.collections).toHaveLength(0);
       expect(result.totalCount).toBe(0);
