@@ -30,7 +30,8 @@ export async function getAllCardsQuery(
     cacheWindowDays = 1,
     forceRefresh = false,
   } = options;
-  const offset = (page - 1) * pageSize;
+  const limit = pageSize < 0 ? Number.MAX_SAFE_INTEGER : pageSize;
+  const offset = pageSize < 0 ? 0 : (page - 1) * pageSize;
   const refreshService = new RefreshCardFromScryfallService();
 
   // Get total count
@@ -41,17 +42,12 @@ export async function getAllCardsQuery(
   const totalCount = Number(countResult[0]?.count ?? 0);
 
   // Get paginated cards
-  let query = db.select().from(cards).orderBy(desc(cards.createdAt));
-
-  // Handle negative pageSize (treat as "no limit")
-  if (pageSize < 0) {
-    // When pageSize is negative, ignore offset to avoid skipping rows
-    query = query.limit(Number.MAX_SAFE_INTEGER);
-  } else {
-    query = query.limit(pageSize).offset(offset);
-  }
-
-  const cardsResult = await query;
+  const cardsResult = await db
+    .select()
+    .from(cards)
+    .orderBy(desc(cards.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   // Check for stale cards and refresh them
   let refreshedCards = 0;
