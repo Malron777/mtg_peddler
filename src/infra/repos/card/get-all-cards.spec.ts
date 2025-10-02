@@ -24,7 +24,7 @@ describe("getAllCardsQuery", () => {
         imageUris: { normal: "https://example.com/lightning-bolt.jpg" },
         pricesLastUpdated: new Date("2023-01-01"),
         cachedData: { manaCost: "{R}", type: "Instant" },
-        lastFetchedAt: new Date("2023-01-01"),
+        lastFetchedAt: new Date(),
       });
 
       const card2 = await cardTestFactory.buildAndInsertOne(db, {
@@ -36,7 +36,7 @@ describe("getAllCardsQuery", () => {
         imageUris: { normal: "https://example.com/counterspell.jpg" },
         pricesLastUpdated: new Date("2023-01-02"),
         cachedData: { manaCost: "{U}{U}", type: "Instant" },
-        lastFetchedAt: new Date("2023-01-02"),
+        lastFetchedAt: new Date(),
       });
 
       const result = await getAllCardsQuery(db);

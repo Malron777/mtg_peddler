@@ -2,10 +2,19 @@ import { InsertCard, UpdateCard } from "@/src/domain/tcg/card.model";
 import { DB } from "@/src/infra/db/db";
 import { createCardQuery } from "@/src/infra/repos/card/create-card.query";
 import { deleteCardQuery } from "@/src/infra/repos/card/delete-card.query";
-import { getAllCardsForCollectionQuery } from "@/src/infra/repos/card/get-all-cards-for-collection.query";
-import { getAllCardsQuery } from "@/src/infra/repos/card/get-all-cards.query";
+import {
+  GetAllCardsForCollectionOptions,
+  getAllCardsForCollectionQuery,
+} from "@/src/infra/repos/card/get-all-cards-for-collection.query";
+import {
+  GetAllCardsOptions,
+  getAllCardsQuery,
+} from "@/src/infra/repos/card/get-all-cards.query";
 import { getCardByIdQuery } from "@/src/infra/repos/card/get-card-by-id.query";
-import { getCardQuery } from "@/src/infra/repos/card/get-card.query";
+import {
+  GetCardOptions,
+  getCardQuery,
+} from "@/src/infra/repos/card/get-card.query";
 import { updateCardQuery } from "@/src/infra/repos/card/update-card.query";
 
 export class CardsUseCase {
@@ -19,20 +28,23 @@ export class CardsUseCase {
     return createCardQuery(this.db, insertCard);
   }
 
-  async getCard(scryfallId: string) {
-    return getCardQuery(this.db, scryfallId);
+  async getCard(scryfallId: string, options?: GetCardOptions) {
+    return getCardQuery(this.db, scryfallId, options);
   }
 
   async getCardById(cardId: string) {
     return getCardByIdQuery(this.db, cardId);
   }
 
-  async getAllCards() {
-    return getAllCardsQuery(this.db);
+  async getAllCards(options?: GetAllCardsOptions) {
+    return getAllCardsQuery(this.db, options);
   }
 
-  async getAllCardsForCollection(collectionId: string) {
-    return getAllCardsForCollectionQuery(this.db, collectionId);
+  async getAllCardsForCollection(
+    collectionId: string,
+    options?: GetAllCardsForCollectionOptions
+  ) {
+    return getAllCardsForCollectionQuery(this.db, collectionId, options);
   }
 
   async updateCard(updateData: UpdateCard) {
