@@ -1,109 +1,194 @@
 "use client";
 
-import MarketplaceSearchBar from "@/app/_components/marketplace-search-bar";
+import { CardGrid } from "@/app/_components/card-grid";
+import { CollectionCard } from "@/app/_components/collection-card";
 import {
-  CompactQuickActions,
-  FloatingActionButton,
-} from "@/app/_components/quick-actions";
-import { MarketplaceStats } from "@/app/_components/stats-cards";
-import { getCurrentUser } from "@/app/auth-actions";
+  CreateCollectionCard,
+  CreateWantListCard,
+  ImportCollectionCard,
+} from "@/app/_components/quick-action-card";
+import { RecentActivityItem } from "@/app/_components/recent-activity-item";
+import { SearchBar } from "@/app/_components/search-bar";
+import { StatsCard } from "@/app/_components/stats-card";
 import {
-  useGetManyCollectionsValue,
-  useGetWantListMatches,
-} from "@/app/lib/hooks/collection/use-collections.hook";
-import { useGetActiveTradesCount } from "@/app/lib/hooks/deals/use-deals.hook";
-import { useGetAllUserReportsForUser } from "@/app/lib/hooks/report/use-user-reports.hook";
-import { useEffect, useState } from "react";
+  useCollections,
+  useRecentActivity,
+  useUserStats,
+} from "@/app/lib/hooks/mock-data";
+import { DollarSign, Heart, MessageCircle, Package } from "lucide-react";
 
 export default function HubPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const { data: userStats } = useUserStats();
+  const { data: recentActivity } = useRecentActivity();
+  const { data: collections } = useCollections();
 
-  // Hooks for data fetching
-  const { count: activeTradesCount, getActiveTradesCount } =
-    useGetActiveTradesCount();
-  const { values: collectionValues, getManyCollectionsValue } =
-    useGetManyCollectionsValue();
-  const { matches: wantListMatches, getWantListMatches } =
-    useGetWantListMatches();
-  const { userReports, getAllUserReportsForUser } =
-    useGetAllUserReportsForUser();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-          // Fetch user-specific data
-          await getActiveTradesCount({ userId: currentUser.id });
-          await getAllUserReportsForUser(currentUser.id);
-          await getWantListMatches({ userId: currentUser.id });
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, [getActiveTradesCount, getAllUserReportsForUser, getWantListMatches]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to marketplace search with query
-      window.location.href = `/marketplace/search?q=${encodeURIComponent(
-        searchQuery
-      )}`;
-    }
+  const handleSearch = (query: string) => {
+    console.log("Searching for:", query);
+    // TODO: Implement search functionality
   };
 
-  const completedDealsCount =
-    userReports?.filter((report) => report.status === "completed").length || 0;
-  const wantListMatchesCount = wantListMatches?.length || 0;
-  const totalCollectionValue =
-    collectionValues?.reduce(
-      (sum: number, value: any) => sum + (value.totalValue || 0),
-      0
-    ) || 0;
+  const handleCreateCollection = () => {
+    console.log("Navigate to create collection");
+    // TODO: Navigate to create collection page
+  };
+
+  const handleImportCollection = () => {
+    console.log("Navigate to import collection");
+    // TODO: Navigate to import collection page
+  };
+
+  const handleCreateWantList = () => {
+    console.log("Navigate to create want list");
+    // TODO: Navigate to create want list page
+  };
 
   return (
-    <div className="w-full">
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--olive-600)] to-[var(--olive-800)] bg-clip-text text-transparent">
-            Your Gateway to Smart Trading
-          </h1>
-          <p className="text-lg text-[var(--slate-600)] max-w-2xl mx-auto mb-8">
-            Connect with thousands of traders, find the best deals, and manage
-            your collection with confidence.
-          </p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-olive-50 to-slate-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-olive-800 mb-4">
+              Welcome to MTG Peddler
+            </h1>
+            <p className="text-lg text-slate-600 mb-8">
+              Trade, buy, and sell Magic: The Gathering cards with collectors
+              worldwide
+            </p>
 
-          {/* Search Bar */}
-          <MarketplaceSearchBar
-            onSearch={(query) => {
-              console.log("Searching for:", query);
-            }}
-            className="max-w-2xl mx-auto"
-          />
+            <div className="max-w-2xl mx-auto">
+              <SearchBar
+                placeholder="Search cards, collections, or users..."
+                onSearch={handleSearch}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Your Trading Overview
+          </h2>
+          <CardGrid columns={4} className="mb-8">
+            <StatsCard
+              label="Total Cards"
+              value={userStats.totalCards.toLocaleString()}
+              icon={<Package className="h-6 w-6" />}
+              change={{ value: 12, positive: true }}
+            />
+            <StatsCard
+              label="Collection Value"
+              value={`$${userStats.collectionValue.toLocaleString()}`}
+              icon={<DollarSign className="h-6 w-6" />}
+              change={{ value: 8, positive: true }}
+            />
+            <StatsCard
+              label="Active Deals"
+              value={userStats.activeDeals}
+              icon={<MessageCircle className="h-6 w-6" />}
+            />
+            <StatsCard
+              label="Want Matches"
+              value={userStats.wantMatches}
+              icon={<Heart className="h-6 w-6" />}
+              change={{ value: 3, positive: true }}
+            />
+          </CardGrid>
         </div>
 
-        {/* Stats Bar */}
-        <MarketplaceStats
-          activeTradesCount={activeTradesCount || 0}
-          collectionValue={totalCollectionValue}
-          completedDealsCount={completedDealsCount}
-          wantListMatchesCount={wantListMatchesCount}
-          className="mb-12"
-        />
-
         {/* Quick Actions */}
-        <CompactQuickActions className="mb-12" />
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Quick Actions
+          </h2>
+          <CardGrid columns={3}>
+            <CreateCollectionCard onClick={handleCreateCollection} />
+            <ImportCollectionCard onClick={handleImportCollection} />
+            <CreateWantListCard onClick={handleCreateWantList} />
+          </CardGrid>
+        </div>
 
-        {/* Mobile Navigation */}
-        <FloatingActionButton />
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Recent Collections */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900">
+                Recent Collections
+              </h2>
+              <button className="text-olive-600 hover:text-olive-700 font-medium">
+                View All
+              </button>
+            </div>
+            <div className="space-y-4">
+              {collections.slice(0, 5).map((collection) => (
+                <CollectionCard key={collection.id} {...collection} />
+              ))}
+            </div>
+          </div>
+
+          {/* Active Deals Summary */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900">
+                Active Deals
+              </h2>
+              <button className="text-olive-600 hover:text-olive-700 font-medium">
+                View All
+              </button>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Negotiating</span>
+                  <span className="font-semibold text-yellow-600">2 deals</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Payment Pending</span>
+                  <span className="font-semibold text-orange-600">1 deal</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Shipping</span>
+                  <span className="font-semibold text-blue-600">3 deals</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Completed</span>
+                  <span className="font-semibold text-green-600">12 deals</span>
+                </div>
+              </div>
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">
+                    Total Value in Progress
+                  </span>
+                  <span className="font-semibold text-slate-900">
+                    $1,247.50
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity Feed */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-900">
+              Recent Activity
+            </h2>
+            <button className="text-olive-600 hover:text-olive-700 font-medium">
+              View All
+            </button>
+          </div>
+          <div className="space-y-4">
+            {recentActivity.map((activity) => (
+              <RecentActivityItem key={activity.id} {...activity} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,282 +1,319 @@
 "use client";
 
-import MarketplaceSearchBar from "@/app/_components/marketplace-search-bar";
+import { CardGrid } from "@/app/_components/card-grid";
+import { PageHeader } from "@/app/_components/page-header";
+import { SearchBar } from "@/app/_components/search-bar";
+import { useMarketplaceSearch } from "@/app/lib/hooks/mock-data";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
-  CompactQuickActions,
-  FloatingActionButton,
-} from "@/app/_components/quick-actions";
-import { MarketplaceStats } from "@/app/_components/stats-cards";
-import { getCurrentUser } from "@/app/auth-actions";
-import {
-  useGetManyCollectionsValue,
-  useGetWantListMatches,
-} from "@/app/lib/hooks/collection/use-collections.hook";
-import { useGetActiveTradesCount } from "@/app/lib/hooks/deals/use-deals.hook";
-import { useGetAllUserReportsForUser } from "@/app/lib/hooks/report/use-user-reports.hook";
-import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+  ChevronDown,
+  MapPin,
+  ShoppingCart,
+  SlidersHorizontal,
+  Star,
+} from "lucide-react";
+import { useState } from "react";
+
+interface MarketplaceCardProps {
+  item: {
+    id: string;
+    name: string;
+    set: string;
+    rarity: "common" | "uncommon" | "rare" | "mythic" | "special";
+    condition: "nm" | "lp" | "mp" | "hp" | "dmg";
+    price: number;
+    seller: {
+      name: string;
+      rating: number;
+      reviewCount: number;
+    };
+    location: string;
+    shipping: string;
+    imageUrl?: string;
+  };
+}
+
+function MarketplaceCard({ item }: MarketplaceCardProps) {
+  const rarityColors = {
+    common: "bg-slate-600",
+    uncommon: "bg-slate-500",
+    rare: "bg-gradient-to-r from-yellow-400 to-yellow-600",
+    mythic: "bg-gradient-to-r from-orange-500 to-orange-700",
+    special: "bg-gradient-to-r from-purple-500 to-purple-700",
+  };
+
+  const conditionLabels = {
+    nm: "Near Mint",
+    lp: "Lightly Played",
+    mp: "Moderately Played",
+    hp: "Heavily Played",
+    dmg: "Damaged",
+  };
+
+  const conditionColors = {
+    nm: "bg-green-100 text-green-700",
+    lp: "bg-blue-100 text-blue-700",
+    mp: "bg-yellow-100 text-yellow-700",
+    hp: "bg-orange-100 text-orange-700",
+    dmg: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className="relative">
+        <div className="aspect-[200/280] bg-slate-100 flex items-center justify-center">
+          {item.imageUrl ? (
+            <img
+              src={item.imageUrl}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-slate-400 text-sm">No Image</div>
+          )}
+        </div>
+
+        <Badge
+          className={`absolute top-2 left-2 ${
+            rarityColors[item.rarity]
+          } text-white`}
+        >
+          {item.rarity.toUpperCase()}
+        </Badge>
+
+        <Badge
+          className={`absolute top-2 right-2 ${
+            conditionColors[item.condition]
+          }`}
+        >
+          {conditionLabels[item.condition]}
+        </Badge>
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-semibold text-slate-900 mb-1 truncate">
+          {item.name}
+        </h3>
+        <p className="text-sm text-slate-600 mb-2">{item.set}</p>
+
+        <div className="flex items-center gap-1 mb-3">
+          <Star className="h-4 w-4 text-yellow-400 fill-current" />
+          <span className="text-sm font-medium text-slate-700">
+            {item.seller.rating}
+          </span>
+          <span className="text-sm text-slate-500">
+            ({item.seller.reviewCount})
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">
+          <MapPin className="h-4 w-4" />
+          <span>{item.location}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-lg font-bold text-slate-900">
+              ${item.price.toFixed(2)}
+            </div>
+            <div className="text-xs text-slate-500">{item.shipping}</div>
+          </div>
+
+          <Button
+            size="sm"
+            className="bg-olive-600 hover:bg-olive-700 text-white"
+          >
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            Buy
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const { data: marketplaceItems } = useMarketplaceSearch(searchQuery);
 
-  // Hooks for data fetching
-  const { count: activeTradesCount, getActiveTradesCount } =
-    useGetActiveTradesCount();
-  const { values: collectionValues, getManyCollectionsValue } =
-    useGetManyCollectionsValue();
-  const { matches: wantListMatches, getWantListMatches } =
-    useGetWantListMatches();
-  const { userReports, getAllUserReportsForUser } =
-    useGetAllUserReportsForUser();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-          // Fetch user-specific data
-          await getActiveTradesCount({ userId: currentUser.id });
-          await getAllUserReportsForUser(currentUser.id);
-          await getWantListMatches({ userId: currentUser.id });
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, [getActiveTradesCount, getAllUserReportsForUser, getWantListMatches]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to marketplace search with query
-      window.location.href = `/marketplace/search?q=${encodeURIComponent(
-        searchQuery
-      )}`;
-    }
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
   };
 
-  const completedDealsCount =
-    userReports?.filter((report) => report.status === "completed").length || 0;
-  const wantListMatchesCount = wantListMatches?.length || 0;
-  const totalCollectionValue =
-    collectionValues?.reduce(
-      (sum: number, value: any) => sum + (value.totalValue || 0),
-      0
-    ) || 0;
+  const handleToggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
 
   return (
-    <div className="w-full">
-      {/* Main Content */}
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--olive-600)] to-[var(--olive-800)] bg-clip-text text-transparent">
-            Marketplace
-          </h1>
-          <p className="text-lg text-[var(--slate-600)] max-w-2xl mx-auto mb-8">
-            Discover cards from public collections, find the best deals, and
-            connect with traders worldwide.
-          </p>
-
-          {/* Search Bar */}
-          <MarketplaceSearchBar
-            onSearch={(query) => {
-              console.log("Searching for:", query);
-            }}
-            className="max-w-2xl mx-auto"
-          />
-        </div>
-
-        {/* Stats Bar */}
-        <MarketplaceStats
-          activeTradesCount={activeTradesCount || 0}
-          collectionValue={totalCollectionValue}
-          completedDealsCount={completedDealsCount}
-          wantListMatchesCount={wantListMatchesCount}
-          className="mb-12"
+        <PageHeader
+          title="Marketplace"
+          description="Find and buy Magic: The Gathering cards from sellers worldwide"
         />
 
-        {/* Quick Actions */}
-        <CompactQuickActions className="mb-12" />
+        {/* Search and Filters */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <SearchBar
+                placeholder="Search for cards, sets, or sellers..."
+                onSearch={handleSearch}
+                filters={
+                  <Button
+                    variant="outline"
+                    onClick={handleToggleFilters}
+                    className="flex items-center gap-2"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filters
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        showFilters ? "rotate-180" : ""
+                      }`}
+                    />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
 
-        {/* Featured Cards Section */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-[var(--slate-800)] mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-[var(--olive-500)] rounded"></div>
-            Featured Cards
-          </h2>
+          {/* Filter Sidebar */}
+          {showFilters && (
+            <Card className="mt-4 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-3">
+                    Price Range
+                  </h3>
+                  <div className="space-y-2">
+                    <input type="range" min="0" max="1000" className="w-full" />
+                    <div className="flex justify-between text-sm text-slate-600">
+                      <span>$0</span>
+                      <span>$1000+</span>
+                    </div>
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Sample Featured Cards */}
-            <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-              <div className="relative">
-                <div className="h-48 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-t-lg"></div>
-                <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[var(--rarity-mythic)] to-[var(--rarity-mythic)] text-white text-xs font-semibold rounded-full">
-                  Mythic
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-3">Condition</h3>
+                  <div className="space-y-2">
+                    {["nm", "lp", "mp", "hp", "dmg"].map((condition) => (
+                      <label key={condition} className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm text-slate-700 capitalize">
+                          {condition === "nm"
+                            ? "Near Mint"
+                            : condition === "lp"
+                            ? "Lightly Played"
+                            : condition === "mp"
+                            ? "Moderately Played"
+                            : condition === "hp"
+                            ? "Heavily Played"
+                            : "Damaged"}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-3">Sets</h3>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Search sets..."
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                    />
+                    <div className="max-h-32 overflow-y-auto space-y-1">
+                      {[
+                        "Alpha",
+                        "Beta",
+                        "Unlimited",
+                        "Revised",
+                        "Fourth Edition",
+                      ].map((set) => (
+                        <label key={set} className="flex items-center">
+                          <input type="checkbox" className="mr-2" />
+                          <span className="text-sm text-slate-700">{set}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-3">Location</h3>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="City, State"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                    />
+                    <div className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span className="text-sm text-slate-700">
+                        Online Only
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-[var(--slate-800)] mb-1">
-                  Ragavan, Nimble Pilferer
-                </h3>
-                <p className="text-sm text-[var(--slate-500)] mb-2">
-                  Modern Horizons 2
-                </p>
-                <p className="text-xl font-bold text-[var(--olive-600)] mb-3">
-                  $65.00
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-2 py-1 bg-[var(--condition-nm)]/10 text-[var(--condition-nm)] text-xs rounded-md">
-                    NM
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--olive-100)] text-[var(--olive-700)] text-xs rounded-md">
-                    Trade
-                  </span>
-                </div>
-              </CardContent>
             </Card>
+          )}
+        </div>
 
-            <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-              <div className="relative">
-                <div className="h-48 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-t-lg"></div>
-                <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[var(--rarity-rare)] to-[var(--rarity-rare)] text-[var(--slate-900)] text-xs font-semibold rounded-full">
-                  Rare
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-[var(--slate-800)] mb-1">
-                  Sheoldred, the Apocalypse
-                </h3>
-                <p className="text-sm text-[var(--slate-500)] mb-2">
-                  Dominaria United
-                </p>
-                <p className="text-xl font-bold text-[var(--olive-600)] mb-3">
-                  $85.00
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-2 py-1 bg-[var(--condition-lp)]/10 text-[var(--condition-lp)] text-xs rounded-md">
-                    LP
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--info)]/10 text-[var(--info)] text-xs rounded-md">
-                    Sale
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Results Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">
+              {searchQuery
+                ? `Search Results for "${searchQuery}"`
+                : "Featured Cards"}
+            </h2>
+            <p className="text-slate-600">
+              {marketplaceItems.length} cards found
+            </p>
+          </div>
 
-            <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-              <div className="relative">
-                <div className="h-48 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-t-lg"></div>
-                <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[var(--rarity-uncommon)] to-[var(--rarity-uncommon)] text-white text-xs font-semibold rounded-full">
-                  Uncommon
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-[var(--slate-800)] mb-1">
-                  Lightning Bolt
-                </h3>
-                <p className="text-sm text-[var(--slate-500)] mb-2">
-                  Double Masters 2022
-                </p>
-                <p className="text-xl font-bold text-[var(--olive-600)] mb-3">
-                  $2.50
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-2 py-1 bg-[var(--condition-nm)]/10 text-[var(--condition-nm)] text-xs rounded-md">
-                    NM
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--olive-100)] text-[var(--olive-700)] text-xs rounded-md">
-                    Trade
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--info)]/10 text-[var(--info)] text-xs rounded-md">
-                    Sale
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-              <div className="relative">
-                <div className="h-48 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-t-lg"></div>
-                <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[var(--rarity-rare)] to-[var(--rarity-rare)] text-[var(--slate-900)] text-xs font-semibold rounded-full">
-                  Rare
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-[var(--slate-800)] mb-1">
-                  The One Ring
-                </h3>
-                <p className="text-sm text-[var(--slate-500)] mb-2">
-                  Lord of the Rings
-                </p>
-                <p className="text-xl font-bold text-[var(--olive-600)] mb-3">
-                  $125.00
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-2 py-1 bg-[var(--condition-mp)]/10 text-[var(--condition-mp)] text-xs rounded-md">
-                    MP
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--info)]/10 text-[var(--info)] text-xs rounded-md">
-                    Sale
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600">Sort by:</span>
+            <select className="px-3 py-2 border border-slate-300 rounded-md text-sm">
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Newest First</option>
+              <option>Seller Rating</option>
+            </select>
           </div>
         </div>
 
-        {/* Daily Deals Section */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-[var(--slate-800)] mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-[var(--gold-500)] rounded"></div>
-            🎯 Daily Deals
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-2 border-[var(--gold-400)]">
-              <div className="relative">
-                <div className="h-48 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-t-lg"></div>
-                <div className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[var(--gold-500)] to-[var(--gold-600)] text-[var(--slate-900)] text-xs font-semibold rounded-full">
-                  -25% TODAY
-                </div>
-                <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[var(--rarity-rare)] to-[var(--rarity-rare)] text-[var(--slate-900)] text-xs font-semibold rounded-full">
-                  Rare
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-[var(--slate-800)] mb-1">
-                  Force of Will
-                </h3>
-                <p className="text-sm text-[var(--slate-500)] mb-2">
-                  Double Masters
-                </p>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm text-[var(--slate-400)] line-through">
-                    $80.00
-                  </span>
-                  <span className="text-xl font-bold text-[var(--olive-600)]">
-                    $60.00
-                  </span>
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-2 py-1 bg-[var(--condition-lp)]/10 text-[var(--condition-lp)] text-xs rounded-md">
-                    LP
-                  </span>
-                  <span className="px-2 py-1 bg-[var(--gold-100)] text-[var(--gold-700)] text-xs rounded-md">
-                    GameShop Pro
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Marketplace Cards */}
+        {marketplaceItems.length > 0 ? (
+          <CardGrid>
+            {marketplaceItems.map((item) => (
+              <MarketplaceCard key={item.id} item={item} />
+            ))}
+          </CardGrid>
+        ) : (
+          <div className="text-center py-12">
+            <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart className="h-12 w-12 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              No cards found
+            </h3>
+            <p className="text-slate-600 mb-6">
+              Try adjusting your search terms or filters to find what
+              you&apos;re looking for.
+            </p>
+            <Button onClick={() => setSearchQuery("")} variant="outline">
+              Clear Search
+            </Button>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <FloatingActionButton />
+        )}
       </div>
     </div>
   );
