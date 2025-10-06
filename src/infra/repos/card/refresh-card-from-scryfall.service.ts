@@ -47,6 +47,7 @@ export class RefreshCardFromScryfallService {
         setCode: scryfallCard.set,
         setName: scryfallCard.set_name,
         imageUris: scryfallCard.image_uris || null,
+        cachedData: JSON.parse(JSON.stringify(scryfallCard)), // Store the full Scryfall data
         lastFetchedAt: new Date(),
       };
 
@@ -93,6 +94,7 @@ export class RefreshCardFromScryfallService {
         setCode: scryfallCard.set,
         setName: scryfallCard.set_name,
         imageUris: scryfallCard.image_uris || null,
+        cachedData: JSON.parse(JSON.stringify(scryfallCard)), // Store the full Scryfall data
         lastFetchedAt: new Date(),
       };
 

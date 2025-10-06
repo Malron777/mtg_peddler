@@ -95,19 +95,19 @@ export default function HubPage() {
           </h2>
           <div className="flex flex-wrap gap-4">
             <Link href="/collections/create">
-              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+              <Button className="bg-olive-600 hover:bg-olive-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Create Collection
               </Button>
             </Link>
             <Link href="/collections/create">
-              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+              <Button className="bg-olive-600 hover:bg-olive-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                 <Upload className="h-4 w-4 mr-2" />
                 Import Collection
               </Button>
             </Link>
             <Link href="/wants/create">
-              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+              <Button className="bg-olive-600 hover:bg-olive-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                 <Heart className="h-4 w-4 mr-2" />
                 Create Want List
               </Button>
