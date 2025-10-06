@@ -1,5 +1,6 @@
 import { UpdateDeal } from "@/src/domain/tcg/deal.model";
 import { DB } from "@/src/infra/db/db";
+import { getActiveTradesCountQuery } from "@/src/infra/repos/deals/get-active-trades-count.query";
 import { getAllDealsForCardQuery } from "@/src/infra/repos/deals/get-all-deals-for-card.query";
 import { getAllDealsForCollectionQuery } from "@/src/infra/repos/deals/get-all-deals-for-collection.query";
 import { getAllDealsForUserQuery } from "@/src/infra/repos/deals/get-all-deals-for-user.query";
@@ -36,5 +37,12 @@ export class DealsUseCase {
 
   async updateDeal(updateData: UpdateDeal) {
     return updateDealQuery(this.db, updateData);
+  }
+
+  async getActiveTradesCount(options?: {
+    userId?: string;
+    userIds?: string[];
+  }) {
+    return getActiveTradesCountQuery(this.db, options);
   }
 }

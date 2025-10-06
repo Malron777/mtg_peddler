@@ -15,6 +15,7 @@ import {
   GetCardOptions,
   getCardQuery,
 } from "@/src/infra/repos/card/get-card.query";
+import { getCardsByPriceQuery } from "@/src/infra/repos/card/get-cards-by-price.query";
 import { updateCardQuery } from "@/src/infra/repos/card/update-card.query";
 
 export class CardsUseCase {
@@ -53,5 +54,19 @@ export class CardsUseCase {
 
   async deleteCard(cardId: string) {
     return deleteCardQuery(this.db, cardId);
+  }
+
+  async getCardsByPrice(options?: {
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+    pageSize?: number;
+    priceSource?: "tcg" | "scg" | "custom" | "mtggoldfish" | "cardmarket";
+    includeFoil?: boolean;
+    sortBy?: "price" | "name" | "setName";
+    sortOrder?: "asc" | "desc";
+    onlyAvailable?: boolean;
+  }) {
+    return getCardsByPriceQuery(this.db, options);
   }
 }

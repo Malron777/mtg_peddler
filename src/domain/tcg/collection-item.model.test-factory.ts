@@ -15,7 +15,7 @@ export const collectionItemTestFactory = {
       language: "en",
       isFoil: false,
       listingType: "sale",
-      customPrice: "10.00",
+      customPrice: null,
       priceSource: "tcg",
       createdAt: new Date(),
       updatedAt: new Date(),

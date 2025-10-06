@@ -327,6 +327,99 @@ export function useDeleteCard() {
   };
 }
 
+// Hook for getting cards by price
+export function useGetCardsByPrice() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<Array<{
+    card: Card;
+    currentPrice: number;
+    priceSource: string;
+    availableQuantity?: number;
+    collectionsWithCard?: Array<{
+      collectionId: string;
+      collectionName: string;
+      quantity: number;
+      condition: string;
+      isFoil: boolean;
+      listingType: string;
+    }>;
+  }> | null>(null);
+
+  const getCardsByPrice = useCallback(
+    async (options?: {
+      minPrice?: number;
+      maxPrice?: number;
+      page?: number;
+      pageSize?: number;
+      priceSource?: "tcg" | "scg" | "custom" | "mtggoldfish" | "cardmarket";
+      includeFoil?: boolean;
+      sortBy?: "price" | "name" | "setName";
+      sortOrder?: "asc" | "desc";
+      onlyAvailable?: boolean;
+    }) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const queryParams = new URLSearchParams();
+        if (options?.minPrice !== undefined)
+          queryParams.append("minPrice", options.minPrice.toString());
+        if (options?.maxPrice !== undefined)
+          queryParams.append("maxPrice", options.maxPrice.toString());
+        if (options?.page !== undefined)
+          queryParams.append("page", options.page.toString());
+        if (options?.pageSize !== undefined)
+          queryParams.append("pageSize", options.pageSize.toString());
+        if (options?.priceSource)
+          queryParams.append("priceSource", options.priceSource);
+        if (options?.includeFoil !== undefined)
+          queryParams.append("includeFoil", options.includeFoil.toString());
+        if (options?.sortBy) queryParams.append("sortBy", options.sortBy);
+        if (options?.sortOrder)
+          queryParams.append("sortOrder", options.sortOrder);
+        if (options?.onlyAvailable !== undefined)
+          queryParams.append("onlyAvailable", options.onlyAvailable.toString());
+
+        const response = await fetch(
+          `/api/cards/by-price?${queryParams.toString()}`
+        );
+        const result = await response.json();
+
+        if (result.success && result.cards) {
+          setCards(result.cards);
+          return result;
+        } else {
+          setError(result.error || "Failed to get cards by price");
+          return null;
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const reset = useCallback(() => {
+    setCards(null);
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  return {
+    cards,
+    loading,
+    error,
+    getCardsByPrice,
+    reset,
+  };
+}
+
 // Combined hook that provides all card operations
 export function useCards() {
   const createCard = useCreateCard();
@@ -334,6 +427,7 @@ export function useCards() {
   const getCardById = useGetCardById();
   const getAllCards = useGetAllCards();
   const getAllCardsForCollection = useGetAllCardsForCollection();
+  const getCardsByPrice = useGetCardsByPrice();
   const updateCard = useUpdateCard();
   const deleteCard = useDeleteCard();
 
@@ -371,6 +465,13 @@ export function useCards() {
     getAllCardsForCollectionError: getAllCardsForCollection.error,
     getAllCardsForCollectionData: getAllCardsForCollection.cards,
     resetGetAllCardsForCollection: getAllCardsForCollection.reset,
+
+    // Get cards by price
+    getCardsByPrice: getCardsByPrice.getCardsByPrice,
+    getCardsByPriceLoading: getCardsByPrice.loading,
+    getCardsByPriceError: getCardsByPrice.error,
+    getCardsByPriceData: getCardsByPrice.cards,
+    resetGetCardsByPrice: getCardsByPrice.reset,
 
     // Update
     updateCard: updateCard.updateCard,
