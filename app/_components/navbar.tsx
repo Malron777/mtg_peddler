@@ -64,7 +64,7 @@ export default function Navbar() {
               Deals
             </Link>
             <Link
-              href="/marketplace/stores"
+              href="/stores"
               className="text-[var(--slate-700)] hover:text-[var(--olive-700)] font-medium transition-colors"
             >
               Stores

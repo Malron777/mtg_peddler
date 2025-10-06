@@ -6,6 +6,7 @@ export const storeSchema = createSelectSchema(stores);
 export const insertStoreSchema = createInsertSchema(stores);
 
 export type Store = z.infer<typeof storeSchema>;
+export type InsertStore = z.infer<typeof insertStoreSchema>;
 
 export const updateStoreSchema = insertStoreSchema
   .omit({

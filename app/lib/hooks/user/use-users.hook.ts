@@ -61,13 +61,22 @@ export function useGetAllUsersFromUseCase() {
 
     try {
       const response = await fetch("/api/users");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (result.success && result.users) {
+      // Handle the actual API response structure
+      if (result.users && Array.isArray(result.users)) {
         setUsers(result.users);
         return result.users;
+      } else if (result.error) {
+        setError(result.error);
+        return null;
       } else {
-        setError(result.error || "Failed to get users");
+        setError("Invalid response format");
         return null;
       }
     } catch (err) {

@@ -3,6 +3,61 @@
 import { Store, UpdateStore } from "@/src/domain/auth/stores.model";
 import { useCallback, useState } from "react";
 
+type CreateStoreFormData = {
+  name: string;
+  description?: string;
+  websiteUrl?: string;
+  physicalAddress?: string;
+};
+
+// Hook for creating a store
+export function useCreateStore() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createStore = useCallback(async (formData: CreateStoreFormData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create store");
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  return {
+    loading,
+    error,
+    createStore,
+    reset,
+  };
+}
+
 // Hook for getting a store
 export function useGetStore() {
   const [loading, setLoading] = useState(false);
@@ -61,13 +116,22 @@ export function useGetAllStores() {
 
     try {
       const response = await fetch("/api/stores");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (result.success && result.stores) {
+      // Handle the actual API response structure
+      if (result.stores && Array.isArray(result.stores)) {
         setStores(result.stores);
         return result.stores;
+      } else if (result.error) {
+        setError(result.error);
+        return null;
       } else {
-        setError(result.error || "Failed to get stores");
+        setError("Invalid response format");
         return null;
       }
     } catch (err) {
@@ -145,11 +209,18 @@ export function useUpdateStore() {
 
 // Combined hook that provides all store operations
 export function useStores() {
+  const createStore = useCreateStore();
   const getStore = useGetStore();
   const getAllStores = useGetAllStores();
   const updateStore = useUpdateStore();
 
   return {
+    // Create
+    createStore: createStore.createStore,
+    createStoreLoading: createStore.loading,
+    createStoreError: createStore.error,
+    resetCreateStore: createStore.reset,
+
     // Get by ID
     getStore: getStore.getStore,
     getStoreLoading: getStore.loading,
