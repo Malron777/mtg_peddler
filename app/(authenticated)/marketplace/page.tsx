@@ -7,6 +7,7 @@ import { useMarketplaceSearch } from "@/app/lib/hooks/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   ChevronDown,
   MapPin,
@@ -133,6 +134,10 @@ function MarketplaceCard({ item }: MarketplaceCardProps) {
 export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [province, setProvince] = useState("");
   const { data: marketplaceItems } = useMarketplaceSearch(searchQuery);
 
   const handleSearch = (query: string) => {
@@ -141,6 +146,33 @@ export default function MarketplacePage() {
 
   const handleToggleFilters = () => {
     setShowFilters(!showFilters);
+  };
+
+  const handleConditionToggle = (condition: string) => {
+    setSelectedConditions((prev) =>
+      prev.includes(condition)
+        ? prev.filter((c) => c !== condition)
+        : [...prev, condition]
+    );
+  };
+
+  const handleSelectAllConditions = () => {
+    const allConditions = ["nm", "lp", "mp", "hp", "dmg"];
+    setSelectedConditions(
+      selectedConditions.length === allConditions.length ? [] : allConditions
+    );
+  };
+
+  const handleClearPriceFilters = () => {
+    setPriceMin("");
+    setPriceMax("");
+  };
+
+  const handleClearAllFilters = () => {
+    setPriceMin("");
+    setPriceMax("");
+    setSelectedConditions([]);
+    setProvince("");
   };
 
   return (
@@ -180,26 +212,76 @@ export default function MarketplacePage() {
           {/* Filter Sidebar */}
           {showFilters && (
             <Card className="mt-4 p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Filters
+                </h3>
+                <Button
+                  onClick={handleClearAllFilters}
+                  variant="outline"
+                  size="sm"
+                  className="text-slate-600 hover:text-slate-800"
+                >
+                  Clear All
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <h3 className="font-medium text-slate-900 mb-3">
                     Price Range
                   </h3>
-                  <div className="space-y-2">
-                    <input type="range" min="0" max="1000" className="w-full" />
-                    <div className="flex justify-between text-sm text-slate-600">
-                      <span>$0</span>
-                      <span>$1000+</span>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={priceMin}
+                        onChange={(e) => setPriceMin(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        className="flex-1"
+                      />
                     </div>
+                    {(priceMin || priceMax) && (
+                      <Button
+                        onClick={handleClearPriceFilters}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Clear Price Filters
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-slate-900 mb-3">Condition</h3>
                   <div className="space-y-2">
+                    <Button
+                      onClick={handleSelectAllConditions}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mb-2"
+                    >
+                      {selectedConditions.length === 5
+                        ? "Deselect All"
+                        : "Select All"}
+                    </Button>
                     {["nm", "lp", "mp", "hp", "dmg"].map((condition) => (
                       <label key={condition} className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={selectedConditions.includes(condition)}
+                          onChange={() => handleConditionToggle(condition)}
+                        />
                         <span className="text-sm text-slate-700 capitalize">
                           {condition === "nm"
                             ? "Near Mint"
@@ -217,44 +299,15 @@ export default function MarketplacePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-medium text-slate-900 mb-3">Sets</h3>
+                  <h3 className="font-medium text-slate-900 mb-3">Province</h3>
                   <div className="space-y-2">
-                    <input
+                    <Input
                       type="text"
-                      placeholder="Search sets..."
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                      placeholder="Enter Province"
+                      value={province}
+                      onChange={(e) => setProvince(e.target.value)}
+                      className="w-full"
                     />
-                    <div className="max-h-32 overflow-y-auto space-y-1">
-                      {[
-                        "Alpha",
-                        "Beta",
-                        "Unlimited",
-                        "Revised",
-                        "Fourth Edition",
-                      ].map((set) => (
-                        <label key={set} className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span className="text-sm text-slate-700">{set}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium text-slate-900 mb-3">Location</h3>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      placeholder="City, State"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                    />
-                    <div className="flex items-center">
-                      <input type="checkbox" className="mr-2" />
-                      <span className="text-sm text-slate-700">
-                        Online Only
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
