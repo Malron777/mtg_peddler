@@ -148,7 +148,7 @@ export default function MarketplaceSearchBar({
             placeholder={placeholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-20 py-4 text-lg border-2 border-[var(--olive-200)] rounded-xl focus:border-[var(--olive-400)] focus:ring-4 focus:ring-[var(--olive-100)] transition-all"
+            className="pl-12 pr-20 py-4 text-lg border-2 border-[var(--olive-200)] rounded-md focus:border-[var(--olive-400)] focus:ring-4 focus:ring-[var(--olive-100)] transition-all"
           />
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
             {searchQuery && (
@@ -177,7 +177,7 @@ export default function MarketplaceSearchBar({
 
       {/* Filters */}
       {showFilters && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-lg">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-lg rounded-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Search Filters</CardTitle>
           </CardHeader>
@@ -245,7 +245,7 @@ export default function MarketplaceSearchBar({
 
       {/* Search Results */}
       {showResults && isSearching && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-40 shadow-lg max-h-96 overflow-y-auto">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-40 shadow-lg max-h-96 overflow-y-auto rounded-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Search Results</CardTitle>
           </CardHeader>
@@ -264,7 +264,7 @@ export default function MarketplaceSearchBar({
                   <Link
                     key={`${result.card.scryfallId}-${index}`}
                     href={`/marketplace/search?card=${result.card.scryfallId}`}
-                    className="block p-3 hover:bg-[var(--olive-50)] rounded-lg transition-colors"
+                    className="block p-3 hover:bg-[var(--olive-50)] rounded-md transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-16 bg-gradient-to-br from-[var(--slate-200)] to-[var(--slate-300)] rounded-md flex-shrink-0">
