@@ -32,7 +32,7 @@ export default function SignInPage() {
         email: email,
         password: password,
       });
-      router.push("/dashboard");
+      router.push("/hub");
     } catch (error) {
       console.error("Sign in failed:", error);
       setError("Invalid email or password. Please try again.");
@@ -49,7 +49,7 @@ export default function SignInPage() {
       await authClient.signIn.social({
         provider: "google",
       });
-      router.push("/dashboard");
+      router.push("/hub");
     } catch (error) {
       console.error("Google sign in failed:", error);
       setError("Google sign in failed. Please try again.");

@@ -1,15 +1,23 @@
-import Image from "next/image";
 import Link from "next/link";
-import froggy from "../../froggy.png";
+import { useEffect, useState } from "react";
+import { getCurrentUser } from "../auth-actions";
 
 export default function Avatar() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    fetchUser();
+  }, []);
+
   return (
     <Link href="/profile">
-      <Image
-        alt="Profile"
-        src={froggy}
-        className="bg-green-200 w-15 h-15 border-4 border-black rounded-full hover:opacity-80 transition-opacity cursor-pointer"
-      />
+      <div className="w-10 h-10 bg-gradient-to-br from-[var(--olive-400)] to-[var(--olive-600)] rounded-full flex items-center justify-center text-white font-bold text-sm hover:opacity-80 transition-opacity cursor-pointer">
+        {user?.name?.charAt(0) || "U"}
+      </div>
     </Link>
   );
 }

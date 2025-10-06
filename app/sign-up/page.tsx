@@ -47,7 +47,7 @@ export default function SignUpPage() {
         password: password,
         name: name,
       });
-      router.push("/dashboard");
+      router.push("/hub");
     } catch (error) {
       console.error("Sign up failed:", error);
       setError("Failed to create account. Please try again.");
@@ -64,7 +64,7 @@ export default function SignUpPage() {
       await authClient.signIn.social({
         provider: "google",
       });
-      router.push("/dashboard");
+      router.push("/hub");
     } catch (error) {
       console.error("Google sign up failed:", error);
       setError("Google sign up failed. Please try again.");
