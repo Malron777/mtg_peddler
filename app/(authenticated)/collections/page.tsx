@@ -10,7 +10,7 @@ import { Folder, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-type FilterType = "all" | "public" | "private" | "trade" | "sale";
+type FilterType = "all" | "public" | "private" | "trade" | "sale" | "both";
 
 export default function CollectionsPage() {
   const { data: collections } = useCollections();
@@ -26,6 +26,8 @@ export default function CollectionsPage() {
         return collection.status === "trade";
       case "sale":
         return collection.status === "sale";
+      case "both":
+        return collection.status === "both";
       default:
         return true;
     }
@@ -55,6 +57,11 @@ export default function CollectionsPage() {
       key: "sale",
       label: "For Sale",
       count: collections.filter((c) => c.status === "sale").length,
+    },
+    {
+      key: "both",
+      label: "Trade & Sale",
+      count: collections.filter((c) => c.status === "both").length,
     },
   ];
 

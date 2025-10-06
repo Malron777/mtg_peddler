@@ -61,18 +61,14 @@ function MarketplaceCard({ item }: MarketplaceCardProps) {
   };
 
   return (
-    <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden p-1">
       <div className="relative">
         <div className="aspect-[200/280] bg-slate-100 flex items-center justify-center">
-          {item.imageUrl ? (
-            <img
-              src={item.imageUrl}
-              alt={item.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="text-slate-400 text-sm">No Image</div>
-          )}
+          <img
+            src={item.imageUrl || "/card_back.png"}
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <Badge

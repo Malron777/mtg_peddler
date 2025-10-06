@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { DollarSign, Globe, Lock, Package } from "lucide-react";
+import { DollarSign, Globe, Lock, Package, Target } from "lucide-react";
 
 interface CollectionCardProps {
   id: string;
@@ -66,11 +66,18 @@ export function CollectionCard({
           )}
           <h3 className="font-semibold text-slate-900 truncate">{name}</h3>
         </div>
-        {pendingDeals > 0 && (
-          <Badge className="bg-gold-100 text-gold-700 hover:bg-gold-100">
-            {pendingDeals} deals
-          </Badge>
-        )}
+        <Badge
+          className={cn(
+            "text-xs",
+            status === "trade" && "bg-olive-100 text-olive-700",
+            status === "sale" && "bg-cyan-100 text-cyan-700",
+            status === "both" && "bg-violet-100 text-violet-700"
+          )}
+        >
+          {status === "both"
+            ? "Trade & Sale"
+            : status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
       </div>
 
       <div className="space-y-2">
@@ -83,6 +90,13 @@ export function CollectionCard({
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <DollarSign className="h-4 w-4" />
             <span className="font-medium">{formatValue(value)}</span>
+          </div>
+        )}
+
+        {pendingDeals > 0 && (
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Target className="h-4 w-4" />
+            <span>{pendingDeals} deals</span>
           </div>
         )}
 

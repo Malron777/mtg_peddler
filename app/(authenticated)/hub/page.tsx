@@ -2,11 +2,6 @@
 
 import { CardGrid } from "@/app/_components/card-grid";
 import { CollectionCard } from "@/app/_components/collection-card";
-import {
-  CreateCollectionCard,
-  CreateWantListCard,
-  ImportCollectionCard,
-} from "@/app/_components/quick-action-card";
 import { RecentActivityItem } from "@/app/_components/recent-activity-item";
 import { SearchBar } from "@/app/_components/search-bar";
 import { StatsCard } from "@/app/_components/stats-card";
@@ -15,7 +10,16 @@ import {
   useRecentActivity,
   useUserStats,
 } from "@/app/lib/hooks/mock-data";
-import { DollarSign, Heart, MessageCircle, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DollarSign,
+  Heart,
+  MessageCircle,
+  Package,
+  PlusCircle,
+  Upload,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function HubPage() {
   const { data: userStats } = useUserStats();
@@ -25,21 +29,6 @@ export default function HubPage() {
   const handleSearch = (query: string) => {
     console.log("Searching for:", query);
     // TODO: Implement search functionality
-  };
-
-  const handleCreateCollection = () => {
-    console.log("Navigate to create collection");
-    // TODO: Navigate to create collection page
-  };
-
-  const handleImportCollection = () => {
-    console.log("Navigate to import collection");
-    // TODO: Navigate to import collection page
-  };
-
-  const handleCreateWantList = () => {
-    console.log("Navigate to create want list");
-    // TODO: Navigate to create want list page
   };
 
   return (
@@ -104,11 +93,26 @@ export default function HubPage() {
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Quick Actions
           </h2>
-          <CardGrid columns={3}>
-            <CreateCollectionCard onClick={handleCreateCollection} />
-            <ImportCollectionCard onClick={handleImportCollection} />
-            <CreateWantListCard onClick={handleCreateWantList} />
-          </CardGrid>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/collections/create">
+              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Collection
+              </Button>
+            </Link>
+            <Link href="/collections/create">
+              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+                <Upload className="h-4 w-4 mr-2" />
+                Import Collection
+              </Button>
+            </Link>
+            <Link href="/wants/create">
+              <Button className="bg-gradient-to-r from-olive-500 to-olive-600 hover:from-olive-600 hover:to-olive-700 text-white border-2 border-olive-700 shadow-lg hover:shadow-xl transition-all duration-200">
+                <Heart className="h-4 w-4 mr-2" />
+                Create Want List
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Two Column Layout */}

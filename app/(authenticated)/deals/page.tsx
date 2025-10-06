@@ -15,6 +15,7 @@ import {
   Package,
   Star,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface DealCardProps {
@@ -117,15 +118,11 @@ function DealCard({ deal }: DealCardProps) {
           {deal.cards.slice(0, 3).map((card, index) => (
             <div key={index} className="relative">
               <div className="w-12 h-16 bg-slate-100 rounded border flex items-center justify-center">
-                {card.imageUrl ? (
-                  <img
-                    src={card.imageUrl}
-                    alt={card.name}
-                    className="w-full h-full object-cover rounded"
-                  />
-                ) : (
-                  <span className="text-xs text-slate-400">?</span>
-                )}
+                <img
+                  src={card.imageUrl || "/card_back.png"}
+                  alt={card.name}
+                  className="w-full h-full object-cover rounded"
+                />
               </div>
               {card.quantity > 1 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
@@ -167,10 +164,10 @@ function DealCard({ deal }: DealCardProps) {
           {deal.status === "payment-pending" && (
             <Button
               size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <DollarSign className="h-4 w-4 mr-1" />
-              Pay Now
+              <MessageCircle className="h-4 w-4 mr-1" />
+              Message
             </Button>
           )}
           {deal.status === "shipping" && (
@@ -320,7 +317,11 @@ export default function DealsPage() {
         {activeTab === "active" ? (
           <div className="space-y-4">
             {activeDeals.length > 0 ? (
-              activeDeals.map((deal) => <DealCard key={deal.id} deal={deal} />)
+              activeDeals.map((deal) => (
+                <Link key={deal.id} href={`/deals/${deal.id}`}>
+                  <DealCard deal={deal} />
+                </Link>
+              ))
             ) : (
               <div className="text-center py-12">
                 <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4">
@@ -342,7 +343,9 @@ export default function DealsPage() {
           <div className="space-y-4">
             {completedDeals.length > 0 ? (
               completedDeals.map((deal) => (
-                <DealCard key={deal.id} deal={deal} />
+                <Link key={deal.id} href={`/deals/${deal.id}`}>
+                  <DealCard deal={deal} />
+                </Link>
               ))
             ) : (
               <div className="text-center py-12">

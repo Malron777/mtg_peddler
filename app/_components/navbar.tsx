@@ -11,6 +11,7 @@ import Avatar from "./avatar";
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -18,6 +19,10 @@ export default function Navbar() {
       setUser(currentUser);
     };
     fetchUser();
+
+    // TODO: Replace with actual notification check
+    // For now, set to false to hide the red dot
+    setHasNotifications(false);
   }, []);
 
   return (
@@ -75,7 +80,9 @@ export default function Navbar() {
                     className="relative p-2 rounded-md hover:bg-[var(--olive-50)] transition-colors"
                   >
                     <Bell className="w-5 h-5 text-[var(--slate-700)] hover:text-[var(--olive-700)] transition-colors" />
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-[var(--error)] rounded-full"></div>
+                    {hasNotifications && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-[var(--error)] rounded-full"></div>
+                    )}
                   </button>
 
                   {/* Notifications Dropdown */}
