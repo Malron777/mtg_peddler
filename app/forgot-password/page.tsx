@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            No worries, we'll help you reset it
+            {`No worries, we'll help you reset it`}
           </p>
         </div>
 

@@ -1,0 +1,21 @@
+import { userReports } from "@/src/infra/db/schema";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import z from "zod";
+
+export const userReportSchema = createSelectSchema(userReports);
+export const insertUserReportSchema = createInsertSchema(userReports);
+
+export type UserReport = z.infer<typeof userReportSchema>;
+export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
+
+export const updateUserReportSchema = insertUserReportSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial()
+  .required({
+    id: true,
+  });
+
+export type UpdateUserReport = z.infer<typeof updateUserReportSchema>;

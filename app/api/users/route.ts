@@ -2,7 +2,7 @@ import { dependencies } from "@/src/config/dependencies";
 import {
   GetAllUsersOptions,
   getAllUsersQuery,
-} from "@/src/infra/repos/get-all-users.query";
+} from "@/src/infra/repos/user/get-all-users.query";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

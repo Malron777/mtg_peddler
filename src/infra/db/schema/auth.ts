@@ -1,4 +1,27 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  json,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { deals } from "./tcg";
+
+// Enums
+export const userRoleEnum = pgEnum("user_role", ["admin", "user", "store"]);
+export const storeStaffRoleEnum = pgEnum("store_staff_role", [
+  "owner",
+  "manager",
+  "staff",
+]);
+export const reportStatusEnum = pgEnum("report_status", [
+  "pending",
+  "investigating",
+  "resolved",
+  "dismissed",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -6,6 +29,13 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  reputationScore: text("reputation_score").default("0").notNull(),
+  role: userRoleEnum("role").default("user").notNull(),
+  preferredCurrency: text("preferred_currency").default("USD").notNull(),
+  notificationPreferences: json("notification_preferences")
+    .$type<Record<string, boolean>>()
+    .default({})
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -57,5 +87,63 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const stores = pgTable("stores", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  websiteUrl: text("website_url"),
+  physicalAddress: text("physical_address"),
+  description: text("description"),
+  isVerified: boolean("is_verified").default(false).notNull(),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const storeStaff = pgTable(
+  "store_staff",
+  {
+    storeId: text("store_id")
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: storeStaffRoleEnum("role").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.storeId, table.userId] }),
+  })
+);
+
+export const userReports = pgTable("user_reports", {
+  id: text("id").primaryKey(),
+  reporterId: text("reporter_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  reportedUserId: text("reported_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  dealId: text("deal_id").references(() => deals.id, { onDelete: "set null" }),
+  reason: text("reason").notNull(),
+  description: text("description"),
+  status: reportStatusEnum("status").default("pending").notNull(),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
     .notNull(),
 });

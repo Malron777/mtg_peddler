@@ -1,0 +1,64 @@
+import { DB } from "@/src/infra/db/db";
+import { wantListItems } from "@/src/infra/db/schema/tcg";
+import { cardTestFactory } from "./card.model.test-factory";
+import { WantListItem } from "./want-list-item.model";
+import { wantListTestFactory } from "./want-list.model.test-factory";
+
+export const wantListItemTestFactory = {
+  buildOne(overrides: Partial<WantListItem>): WantListItem {
+    return {
+      id: crypto.randomUUID(),
+      wantListId: crypto.randomUUID(),
+      cardScryfallId: crypto.randomUUID(),
+      quantityWanted: 1,
+      maxPrice: "15.00",
+      conditionMinimum: "NM",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...overrides,
+    };
+  },
+
+  async insertOne(
+    db: DB,
+    overrides: Partial<WantListItem>
+  ): Promise<WantListItem> {
+    const item = this.buildOne(overrides);
+    const result = await db.insert(wantListItems).values(item).returning();
+    return result[0];
+  },
+
+  async buildAndInsertOne(
+    db: DB,
+    overrides: Partial<WantListItem>
+  ): Promise<WantListItem> {
+    const item = this.buildOne(overrides);
+    const result = await db.insert(wantListItems).values(item).returning();
+    return result[0];
+  },
+
+  async buildAndInsertOneWithDependencies(
+    db: DB,
+    overrides: Partial<WantListItem>
+  ): Promise<WantListItem> {
+    // Create dependencies if not provided
+    const wantList =
+      await wantListTestFactory.buildAndInsertOneWithDependencies(db, {
+        ...(overrides.wantListId ? { id: overrides.wantListId } : {}),
+      });
+    const card = await cardTestFactory.buildAndInsertOne(db, {
+      ...(overrides.cardScryfallId
+        ? { scryfallId: overrides.cardScryfallId }
+        : {}),
+    });
+
+    // Build and insert with dependencies
+    const item = this.buildOne({
+      ...overrides,
+      wantListId: wantList.id,
+      cardScryfallId: card.scryfallId,
+    });
+    const result = await db.insert(wantListItems).values(item).returning();
+    return result[0];
+  },
+};

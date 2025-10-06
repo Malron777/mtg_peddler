@@ -1,7 +1,7 @@
 "use client";
 
 import { getCurrentUser } from "@/app/auth-actions";
-import { useUpdateUser } from "@/app/lib/hooks/use-user-queries";
+import { useUpdateUser } from "@/app/lib/hooks/user/use-user-queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function ProfilePage() {
     const fetchUser = async () => {
       try {
         const currentUser = await getCurrentUser();
-        setUser(currentUser);
+        setUser(currentUser as User);
         if (currentUser) {
           setEditForm({
             id: currentUser.id,

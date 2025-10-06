@@ -1,7 +1,7 @@
 "use client";
 
-import { createGetCardUseCase } from "@/src/domain/services/get-card.use-case";
-import { ScryfallCard } from "@/src/domain/services/scryfall.service";
+import { createGetCardUseCase } from "@/src/app/services/get-card.use-case";
+import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import Image from "next/image";
 import { useState } from "react";
 

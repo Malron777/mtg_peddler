@@ -6,7 +6,21 @@
       "idx": 0,
       "version": "7",
       "when": 1757344969192,
-      "tag": "0000_Add_Auth",
+      "tag": "0000_add_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759241476169,
+      "tag": "0001_extend_auth_user",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759246827655,
+      "tag": "0002_add_tables",
       "breakpoints": true
     }
   ]

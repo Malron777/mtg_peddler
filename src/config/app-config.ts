@@ -1,5 +1,6 @@
 export type AppConfig = {
   DATABASE_URL: string;
+  TEST_DATABASE_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   GOOGLE_CLIENT_ID: string;
