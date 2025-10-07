@@ -1,7 +1,8 @@
 "use client";
 
 import { SearchBar } from "@/app/_components/search-bar";
-import { useCollection } from "@/app/lib/hooks/mock-data";
+import { useGetAllCollectionItemsForCollection } from "@/app/lib/hooks/collection/use-collection-items.hook";
+import { useGetCollection } from "@/app/lib/hooks/collection/use-collections-data.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CollectionDetailPageProps {
   params: {
@@ -32,13 +33,70 @@ interface CollectionDetailPageProps {
 export default function CollectionDetailPage({
   params,
 }: CollectionDetailPageProps) {
-  const { data: collection, error } = useCollection(params.id);
+  const {
+    collection,
+    loading: collectionLoading,
+    error: collectionError,
+    getCollection,
+  } = useGetCollection();
+  const {
+    collectionItems,
+    loading: itemsLoading,
+    error: itemsError,
+    getAllCollectionItemsForCollection,
+  } = useGetAllCollectionItemsForCollection();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [, setSearchQuery] = useState("");
 
-  if (error || !collection) {
+  // Load collection and items on component mount
+  useEffect(() => {
+    getCollection(params.id);
+    getAllCollectionItemsForCollection(params.id);
+  }, [params.id, getCollection, getAllCollectionItemsForCollection]);
+
+  // Show loading state
+  if (collectionLoading || itemsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse">
+            <div className="h-6 bg-slate-200 rounded w-1/4 mb-6"></div>
+            <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
+              <div className="h-8 bg-slate-200 rounded w-1/3 mb-4"></div>
+              <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+              <div className="flex gap-4">
+                <div className="h-4 bg-slate-200 rounded w-24"></div>
+                <div className="h-4 bg-slate-200 rounded w-24"></div>
+                <div className="h-4 bg-slate-200 rounded w-24"></div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="h-6 bg-slate-200 rounded w-1/4 mb-6"></div>
+              <div className="text-center py-12">
+                <div className="bg-slate-100 rounded-full w-24 h-24 mx-auto mb-4"></div>
+                <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto mb-2"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/2 mx-auto"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state or not found
+  if (collectionError || itemsError || !collection) {
     notFound();
   }
+
+  // Calculate card count and value
+  const cardCount =
+    collectionItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+  const totalValue =
+    collectionItems?.reduce((sum) => {
+      // TODO: Calculate actual value based on card prices
+      return sum + 0; // Placeholder
+    }, 0) || 0;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -122,29 +180,27 @@ export default function CollectionDetailPage({
               <div className="flex flex-wrap gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4 text-slate-500" />
-                  <span className="text-slate-600">
-                    {collection.cardCount} cards
-                  </span>
+                  <span className="text-slate-600">{cardCount} cards</span>
                 </div>
-                {collection.value && (
+                {totalValue > 0 && (
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-slate-500" />
                     <span className="text-slate-600">
-                      ${collection.value.toLocaleString()}
+                      ${totalValue.toLocaleString()}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-slate-500" />
-                  <span className="text-slate-600">
-                    {collection.pendingDeals} pending deals
-                  </span>
+                  <span className="text-slate-600">0 pending deals</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-slate-500" />
                   <span className="text-slate-600">
                     Updated{" "}
-                    {new Date(collection.lastUpdated).toLocaleDateString()}
+                    {new Date(
+                      collection.updatedAt || collection.createdAt
+                    ).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -239,7 +295,7 @@ export default function CollectionDetailPage({
             <h2 className="text-xl font-semibold text-slate-900">
               Collection Items
             </h2>
-            <Badge variant="secondary">{collection.cardCount} cards</Badge>
+            <Badge variant="secondary">{cardCount} cards</Badge>
           </div>
 
           {/* Empty State */}
