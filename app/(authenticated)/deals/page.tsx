@@ -77,7 +77,10 @@ function DealCard({ deal }: DealCardProps) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={deal.otherParty.avatar} />
+            <AvatarImage
+              src={deal.otherParty.avatar}
+              alt={deal.otherParty.name}
+            />
             <AvatarFallback>
               {deal.otherParty.name.charAt(0).toUpperCase()}
             </AvatarFallback>

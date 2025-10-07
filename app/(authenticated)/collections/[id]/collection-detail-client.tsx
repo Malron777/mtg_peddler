@@ -177,6 +177,29 @@ export function CollectionDetailClient({
         }, 0)
       : 0;
 
+  // Calculate collection listing type (most common among items)
+  const getCollectionListingType = () => {
+    if (
+      !collectionItems ||
+      !Array.isArray(collectionItems) ||
+      collectionItems.length === 0
+    ) {
+      return "both";
+    }
+
+    const listingTypeCounts = collectionItems.reduce((acc, item) => {
+      acc[item.listingType] = (acc[item.listingType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Return the most common listing type
+    return Object.entries(listingTypeCounts).reduce((a, b) =>
+      listingTypeCounts[a[0]] > listingTypeCounts[b[0]] ? a : b
+    )[0] as "trade" | "sale" | "both";
+  };
+
+  const collectionListingType = getCollectionListingType();
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
       searchCards(query);
@@ -363,6 +386,20 @@ export function CollectionDetailClient({
                         </>
                       )}
                     </Button>
+                    <Badge
+                      variant={
+                        collectionListingType === "trade"
+                          ? "default"
+                          : collectionListingType === "sale"
+                          ? "secondary"
+                          : "outline"
+                      }
+                      className="flex items-center gap-1"
+                    >
+                      {collectionListingType === "trade" && "🔄 Trade"}
+                      {collectionListingType === "sale" && "💰 Sale"}
+                      {collectionListingType === "both" && "🔄💰 Trade & Sale"}
+                    </Badge>
                   </div>
                   <Textarea
                     defaultValue={collection.description || ""}
@@ -408,6 +445,20 @@ export function CollectionDetailClient({
                         </>
                       )}
                     </Button>
+                    <Badge
+                      variant={
+                        collectionListingType === "trade"
+                          ? "default"
+                          : collectionListingType === "sale"
+                          ? "secondary"
+                          : "outline"
+                      }
+                      className="flex items-center gap-1"
+                    >
+                      {collectionListingType === "trade" && "🔄 Trade"}
+                      {collectionListingType === "sale" && "💰 Sale"}
+                      {collectionListingType === "both" && "🔄💰 Trade & Sale"}
+                    </Badge>
                   </div>
 
                   {collection.description && (

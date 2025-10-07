@@ -182,7 +182,10 @@ export default function DealDetailPage({ params }: DealDetailPageProps) {
             <Card className="p-6 h-full flex flex-col">
               <div className="flex items-center gap-3 mb-6">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={deal.otherParty.avatar} />
+                  <AvatarImage
+                    src={deal.otherParty.avatar}
+                    alt={deal.otherParty.name}
+                  />
                   <AvatarFallback>
                     <User className="h-5 w-5" />
                   </AvatarFallback>

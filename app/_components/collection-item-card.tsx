@@ -38,19 +38,6 @@ export function CollectionItemCard({
     }
   };
 
-  const getListingTypeColor = (listingType: string) => {
-    switch (listingType) {
-      case "trade":
-        return "bg-blue-100 text-blue-800";
-      case "sale":
-        return "bg-purple-100 text-purple-800";
-      case "both":
-        return "bg-indigo-100 text-indigo-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   return (
     <UICard className="p-4 hover:shadow-md transition-shadow">
       <div className="flex gap-4">
@@ -62,7 +49,7 @@ export function CollectionItemCard({
               card.imageUris?.small ||
               "/card_back.png"
             }
-            alt={card.name}
+            alt={card.oracleId}
             fill
             className="object-contain rounded"
           />
@@ -109,13 +96,6 @@ export function CollectionItemCard({
                 )}`}
               >
                 {collectionItem.condition}
-              </Badge>
-              <Badge
-                className={`text-xs ${getListingTypeColor(
-                  collectionItem.listingType
-                )}`}
-              >
-                {collectionItem.listingType}
               </Badge>
               {collectionItem.isFoil && (
                 <Badge variant="outline" className="text-xs">

@@ -262,7 +262,7 @@ function UserCard({ user }: UserCardProps) {
     <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 min-h-[200px]">
       <div className="flex items-start gap-4 mb-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={user.image || undefined} />
+          <AvatarImage src={user.image || undefined} alt={user.name} />
           <AvatarFallback className="bg-slate-100 text-slate-700">
             {user.name.charAt(0).toUpperCase()}
           </AvatarFallback>
