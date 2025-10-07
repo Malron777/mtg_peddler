@@ -67,7 +67,7 @@ export class ScryfallService {
   private readonly baseUrl = "https://api.scryfall.com";
   private readonly userAgent = "MTG-Peddler/1.0";
 
-  private async makeRequest<T>(endpoint: string): Promise<T> {
+  async makeRequest<T>(endpoint: string): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const response = await fetch(url, {

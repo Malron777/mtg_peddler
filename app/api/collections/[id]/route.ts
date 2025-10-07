@@ -13,20 +13,20 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const collection = await dependencies.useCases.collections.getCollection(
+    const result = await dependencies.useCases.collections.getCollection(
       params.id
     );
 
-    if (!collection) {
+    if (!result.success || !result.collection) {
       return NextResponse.json(
-        { error: "Collection not found" },
+        { error: result.error || "Collection not found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      collection,
+      collection: result.collection,
     });
   } catch (error) {
     console.error("Error fetching collection:", error);
