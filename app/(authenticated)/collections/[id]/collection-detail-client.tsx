@@ -1,6 +1,5 @@
 "use client";
 
-import { CardSearchModal } from "@/app/_components/card-search-modal";
 import { CardVersionModal } from "@/app/_components/card-version-modal";
 import { CollectionItemCard } from "@/app/_components/collection-item-card";
 import { SearchBar } from "@/app/_components/search-bar";
@@ -39,6 +38,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -85,7 +85,7 @@ export function CollectionDetailClient({
 
   // State management
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showCardSearch, setShowCardSearch] = useState(false);
+  const [showCardSearchPanel, setShowCardSearchPanel] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
@@ -203,7 +203,7 @@ export function CollectionDetailClient({
   const handleSearch = (query: string) => {
     if (query.trim()) {
       searchCards(query);
-      setShowCardSearch(true);
+      setShowCardSearchPanel(true);
     }
   };
 
@@ -235,7 +235,7 @@ export function CollectionDetailClient({
 
       // Refresh collection items
       getAllCollectionItemsForCollection(collectionId);
-      setShowCardSearch(false);
+      setShowCardSearchPanel(false);
     } catch (error) {
       console.error("Failed to add card:", error);
     }
@@ -512,7 +512,7 @@ export function CollectionDetailClient({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowCardSearch(true)}
+                  onClick={() => setShowCardSearchPanel(!showCardSearchPanel)}
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
@@ -600,6 +600,133 @@ export function CollectionDetailClient({
           </div>
         )}
 
+        {/* Card Search Panel */}
+        {showCardSearchPanel && (
+          <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Add Cards to Collection</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCardSearchPanel(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="card-search">Search for Cards</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="card-search"
+                    placeholder="Enter card name to search..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearch(e.currentTarget.value);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={() => {
+                      const input = document.getElementById(
+                        "card-search"
+                      ) as HTMLInputElement;
+                      if (input?.value) {
+                        handleSearch(input.value);
+                      }
+                    }}
+                    className="bg-olive-600 hover:bg-olive-700 text-white"
+                  >
+                    Search
+                  </Button>
+                </div>
+              </div>
+
+              {searchLoading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
+                  <p className="mt-2 text-slate-600">Searching cards...</p>
+                </div>
+              )}
+
+              {searchError && (
+                <div className="text-center py-8">
+                  <p className="text-red-600">{searchError}</p>
+                </div>
+              )}
+
+              {!searchLoading &&
+                !searchError &&
+                searchResults &&
+                searchResults.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-slate-600">
+                      No cards found. Try a different search term.
+                    </p>
+                  </div>
+                )}
+
+              {!searchLoading &&
+                !searchError &&
+                searchResults &&
+                searchResults.length > 0 && (
+                  <div>
+                    <p className="text-sm text-slate-600 mb-4">
+                      Found {searchResults.length} cards. Click on a card to add
+                      it to your collection:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                      {searchResults.map((card) => (
+                        <div
+                          key={card.id}
+                          className="p-4 border rounded-lg cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => handleSelectCard(card)}
+                        >
+                          <div className="aspect-[488/680] relative mb-3">
+                            <Image
+                              src={
+                                card.image_uris?.normal ||
+                                card.image_uris?.small ||
+                                "/card_back.png"
+                              }
+                              alt={card.name}
+                              fill
+                              className="object-contain rounded"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-sm line-clamp-2">
+                              {card.name}
+                            </h3>
+                            <div className="flex items-center justify-between">
+                              <Badge variant="secondary" className="text-xs">
+                                {card.set_name}
+                              </Badge>
+                              <span className="text-xs text-slate-600">
+                                {card.collector_number}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Badge variant="outline" className="text-xs">
+                                {card.rarity}
+                              </Badge>
+                              {card.prices?.usd && (
+                                <span className="text-xs font-medium">
+                                  ${card.prices.usd}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </div>
+        )}
+
         {/* Search and Filter Bar */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -680,7 +807,7 @@ export function CollectionDetailClient({
               </p>
               <div className="flex gap-4 justify-center">
                 <Button
-                  onClick={() => setShowCardSearch(true)}
+                  onClick={() => setShowCardSearchPanel(true)}
                   className="bg-olive-600 hover:bg-olive-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -700,15 +827,6 @@ export function CollectionDetailClient({
       </div>
 
       {/* Modals */}
-      <CardSearchModal
-        isOpen={showCardSearch}
-        onClose={() => setShowCardSearch(false)}
-        onSelectCard={handleSelectCard}
-        cards={searchResults || []}
-        loading={searchLoading}
-        error={searchError}
-      />
-
       <CardVersionModal
         isOpen={showVersionModal}
         onClose={() => {
