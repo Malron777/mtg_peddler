@@ -49,9 +49,18 @@ export function CollectionItemCard({
               card.imageUris?.small ||
               "/card_back.png"
             }
-            alt={card.oracleId}
+            alt={card.name}
             fill
             className="object-contain rounded"
+            onError={(e) => {
+              console.log(
+                "Image failed to load for card:",
+                card.name,
+                "imageUris:",
+                card.imageUris
+              );
+              e.currentTarget.src = "/card_back.png";
+            }}
           />
         </div>
 

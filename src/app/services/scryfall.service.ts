@@ -16,6 +16,7 @@ export interface ScryfallCard {
   rarity: string;
   artist?: string;
   oracle_id: string;
+  image_status?: "missing" | "placeholder" | "lowres" | "highres_scan";
   image_uris?: {
     small: string;
     normal: string;

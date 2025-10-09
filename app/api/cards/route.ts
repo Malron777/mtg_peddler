@@ -55,11 +55,18 @@ export async function POST(request: NextRequest) {
       cachedData: body.cachedData,
     };
 
-    const card = await dependencies.useCases.cards.createCard(insertCard);
+    const result = await dependencies.useCases.cards.createCard(insertCard);
+
+    if (!result.success || !result.card) {
+      return NextResponse.json(
+        { error: result.error || "Failed to create card" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      card,
+      card: result.card,
     });
   } catch (error) {
     console.error("Error creating card:", error);

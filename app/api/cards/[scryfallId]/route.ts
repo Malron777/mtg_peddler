@@ -17,17 +17,20 @@ export async function GET(
     const includeCollectionItems =
       searchParams.get("includeCollectionItems") === "true";
 
-    const card = await dependencies.useCases.cards.getCard(params.scryfallId, {
-      includeCollectionItems,
-    });
+    const result = await dependencies.useCases.cards.getCard(
+      params.scryfallId,
+      {
+        includeCollectionItems,
+      }
+    );
 
-    if (!card) {
+    if (!result.success || !result.card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      card,
+      card: result.card,
     });
   } catch (error) {
     console.error("Error fetching card:", error);
