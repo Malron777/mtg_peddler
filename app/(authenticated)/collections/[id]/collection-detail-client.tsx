@@ -4,6 +4,7 @@ import { CardVersionModal } from "@/app/_components/card-version-modal";
 import { BulkImportPanel } from "@/app/_components/collection/bulk-import-panel";
 import { CardSearchPanel } from "@/app/_components/collection/card-search-panel";
 import { CollectionHeader } from "@/app/_components/collection/collection-header";
+import { CollectionItemEditModal } from "@/app/_components/collection/collection-item-edit-modal";
 import { CollectionItemsGrid } from "@/app/_components/collection/collection-items-grid";
 import { CollectionSearchBar } from "@/app/_components/collection/collection-search-bar";
 import { useCards } from "@/app/lib/hooks/card/use-cards.hook";
@@ -73,6 +74,7 @@ export function CollectionDetailClient({
   const [showCardSearchPanel, setShowCardSearchPanel] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
   const [bulkImportText, setBulkImportText] = useState("");
   const [isEditingCollection, setIsEditingCollection] = useState(false);
@@ -272,6 +274,11 @@ export function CollectionDetailClient({
 
   const handleEditItem = (item: CollectionItem) => {
     setEditingItem(item);
+    setShowEditModal(true);
+  };
+
+  const handleEditVersion = (item: CollectionItem) => {
+    setEditingItem(item);
     // Load card versions for editing
     const card = collectionCards.get(item.cardScryfallId);
     if (card) {
@@ -407,6 +414,70 @@ export function CollectionDetailClient({
       // Revert optimistic update on error
       setLocalCollectionItems((prev) =>
         prev ? prev.map((i) => (i.id === item.id ? item : i)) : null
+      );
+    }
+  };
+
+  const handleSaveItemDetails = async (
+    updatedData: Partial<CollectionItem>
+  ) => {
+    if (!editingItem) return;
+
+    console.log("=== SAVE ITEM DETAILS METHOD ===");
+    console.log("Updating item:", editingItem.id, "with data:", updatedData);
+
+    // Optimistically update the UI first
+    const updatedItem = { ...editingItem, ...updatedData };
+    setLocalCollectionItems((prev) =>
+      prev ? prev.map((i) => (i.id === editingItem.id ? updatedItem : i)) : null
+    );
+
+    try {
+      const result = await updateCollectionItem({
+        id: editingItem.id,
+        collectionId: collectionId,
+        cardScryfallId: editingItem.cardScryfallId,
+        quantity: editingItem.quantity,
+        condition: updatedData.condition || editingItem.condition,
+        language: updatedData.language || editingItem.language,
+        isFoil:
+          updatedData.isFoil !== undefined
+            ? updatedData.isFoil
+            : editingItem.isFoil,
+        listingType: updatedData.listingType || editingItem.listingType,
+        customPrice:
+          updatedData.customPrice !== undefined
+            ? updatedData.customPrice
+            : editingItem.customPrice,
+        priceSource: updatedData.priceSource || editingItem.priceSource,
+      });
+
+      // Update with the actual result from server
+      if (result && result.collectionItem) {
+        setLocalCollectionItems((prev) =>
+          prev
+            ? prev.map((i) =>
+                i.id === editingItem.id ? result.collectionItem : i
+              )
+            : null
+        );
+      }
+
+      setShowEditModal(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Failed to update item details:", error);
+      // Revert optimistic update on error
+      setLocalCollectionItems((prev) =>
+        prev
+          ? prev.map((i) => (i.id === editingItem.id ? editingItem : i))
+          : null
+      );
+      // Show user-friendly error message
+      alert(
+        `Failed to update card details: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   };
@@ -550,6 +621,7 @@ export function CollectionDetailClient({
           collectionCards={collectionCards}
           viewMode={viewMode}
           onEditItem={handleEditItem}
+          onEditVersion={handleEditVersion}
           onDeleteItem={handleDeleteItem}
           onQuantityChange={handleQuantityChange}
           onAddCards={() => setShowCardSearchPanel(true)}
@@ -569,6 +641,22 @@ export function CollectionDetailClient({
         loading={versionsLoading}
         error={versionsError}
         currentCard={undefined}
+      />
+
+      <CollectionItemEditModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingItem(null);
+        }}
+        onSave={handleSaveItemDetails}
+        collectionItem={editingItem}
+        card={
+          editingItem
+            ? collectionCards.get(editingItem.cardScryfallId) || null
+            : null
+        }
+        loading={false}
       />
     </div>
   );

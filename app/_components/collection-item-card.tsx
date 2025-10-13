@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card as UICard } from "@/components/ui/card";
 import { Card } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
-import { Edit, Minus, Plus, Trash2 } from "lucide-react";
+import { Edit, Minus, Plus, RefreshCw, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface CollectionItemCardProps {
@@ -13,6 +13,7 @@ interface CollectionItemCardProps {
   card: Card;
   viewMode?: "grid" | "list";
   onEdit: (collectionItem: CollectionItem) => void;
+  onEditVersion?: (collectionItem: CollectionItem) => void;
   onDelete: (collectionItem: CollectionItem) => void;
   onQuantityChange?: (
     collectionItem: CollectionItem,
@@ -25,6 +26,7 @@ export function CollectionItemCard({
   card,
   viewMode = "list",
   onEdit,
+  onEditVersion,
   onDelete,
   onQuantityChange,
 }: CollectionItemCardProps) {
@@ -121,14 +123,27 @@ export function CollectionItemCard({
               size="sm"
               onClick={() => onEdit(collectionItem)}
               className="h-6 w-6 p-0"
+              title="Edit card details"
             >
               <Edit className="h-3 w-3" />
             </Button>
+            {onEditVersion && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEditVersion(collectionItem)}
+                className="h-6 w-6 p-0"
+                title="Change card version"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onDelete(collectionItem)}
               className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+              title="Delete card"
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -175,14 +190,27 @@ export function CollectionItemCard({
                 size="sm"
                 onClick={() => onEdit(collectionItem)}
                 className="h-8 w-8 p-0"
+                title="Edit card details"
               >
                 <Edit className="h-4 w-4" />
               </Button>
+              {onEditVersion && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditVersion(collectionItem)}
+                  className="h-8 w-8 p-0"
+                  title="Change card version"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(collectionItem)}
                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                title="Delete card"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
