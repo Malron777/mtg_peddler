@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { oracleId: string } }
+  { params }: { params: Promise<{ oracleId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -12,8 +12,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const scryfallService = new ScryfallService();
-    const versions = await scryfallService.getCardVersions(params.oracleId);
+    const versions = await scryfallService.getCardVersions(
+      resolvedParams.oracleId
+    );
 
     return NextResponse.json({
       success: true,

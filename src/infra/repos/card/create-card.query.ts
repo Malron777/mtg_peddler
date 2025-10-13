@@ -1,6 +1,7 @@
 import { Card, InsertCard } from "@/src/domain/tcg/card.model";
 import { DB } from "@/src/infra/db/db";
 import { cards } from "@/src/infra/db/schema";
+import { eq } from "drizzle-orm";
 
 export interface CreateCardResult {
   success: boolean;
@@ -21,6 +22,22 @@ export async function createCardQuery(
       };
     }
 
+    // First, try to find if the card already exists
+    const existingCard = await db
+      .select()
+      .from(cards)
+      .where(eq(cards.scryfallId, insertCard.scryfallId))
+      .limit(1);
+
+    if (existingCard.length > 0) {
+      // Card already exists, return it
+      return {
+        success: true,
+        card: existingCard[0],
+      };
+    }
+
+    // Card doesn't exist, create it
     const result = await db.insert(cards).values(insertCard).returning();
 
     return {

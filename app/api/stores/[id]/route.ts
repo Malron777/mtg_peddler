@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const result = await getStoreQuery(dependencies.db, params.id);
+    const resolvedParams = await params;
+    const result = await getStoreQuery(dependencies.db, resolvedParams.id);
 
     if (!result.success) {
       return NextResponse.json(

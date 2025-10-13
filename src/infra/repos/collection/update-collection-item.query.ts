@@ -11,13 +11,15 @@ export async function updateCollectionItemQuery(
   db: DB,
   updateCollectionItem: UpdateCollectionItem
 ): Promise<CollectionItem> {
+  const { id, ...updateData } = updateCollectionItem;
+
   const result = await db
     .update(collectionItems)
     .set({
-      ...filterUndefined(updateCollectionItem),
+      ...filterUndefined(updateData),
       updatedAt: new Date(),
     })
-    .where(eq(collectionItems.id, updateCollectionItem.id))
+    .where(eq(collectionItems.id, id))
     .returning();
 
   return result[0];

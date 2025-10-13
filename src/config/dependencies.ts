@@ -6,6 +6,7 @@ import { CardsUseCase } from "../app/use cases/card/cards.use-case";
 import { PriceHistoryUseCase } from "../app/use cases/card/price-history.use-case";
 
 // Collection domain use cases
+import { ChangeCardVersionUseCase } from "../app/use cases/collection/change-card-version.use-case";
 import { CollectionItemsUseCase } from "../app/use cases/collection/collection-items.use-case";
 import { CollectionsUseCase } from "../app/use cases/collection/collections.use-case";
 import { WantListItemsUseCase } from "../app/use cases/collection/want-list-items.use-case";
@@ -45,6 +46,7 @@ function buildDependencyContainer() {
   const priceHistoryUseCase = new PriceHistoryUseCase(db);
   const collectionsUseCase = new CollectionsUseCase(db);
   const collectionItemsUseCase = new CollectionItemsUseCase(db);
+  const changeCardVersionUseCase = new ChangeCardVersionUseCase(db);
   const wantListsUseCase = new WantListsUseCase(db);
   const wantListItemsUseCase = new WantListItemsUseCase(db);
   const dealsUseCase = new DealsUseCase(db);
@@ -70,6 +72,7 @@ function buildDependencyContainer() {
       // Collection domain
       collections: collectionsUseCase,
       collectionItems: collectionItemsUseCase,
+      changeCardVersion: changeCardVersionUseCase,
       wantLists: wantListsUseCase,
       wantListItems: wantListItemsUseCase,
 

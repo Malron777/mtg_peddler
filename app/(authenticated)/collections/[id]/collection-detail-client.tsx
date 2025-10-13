@@ -8,6 +8,10 @@ import { CollectionItemsGrid } from "@/app/_components/collection/collection-ite
 import { CollectionSearchBar } from "@/app/_components/collection/collection-search-bar";
 import { useCards } from "@/app/lib/hooks/card/use-cards.hook";
 import {
+  scryfallCardToChangeRequest,
+  useChangeCardVersion,
+} from "@/app/lib/hooks/collection/use-change-card-version.hook";
+import {
   useCollectionItems,
   useGetAllCollectionItemsForCollection,
 } from "@/app/lib/hooks/collection/use-collection-items.hook";
@@ -45,6 +49,7 @@ export function CollectionDetailClient({
   const { createCollectionItem, updateCollectionItem, deleteCollectionItem } =
     useCollectionItems();
   const { createCard } = useCards();
+  const { changeCardVersion } = useChangeCardVersion();
   const {
     searchCards,
     cards: searchResults,
@@ -279,22 +284,28 @@ export function CollectionDetailClient({
     if (!editingItem) return;
 
     try {
-      // Update the collection item with new card version
-      const result = await updateCollectionItem({
-        id: editingItem.id,
-        cardScryfallId: card.id,
-        quantity: editingItem.quantity,
-        condition: editingItem.condition,
-        language: editingItem.language,
-        isFoil: editingItem.isFoil,
-        listingType: editingItem.listingType,
-        customPrice: editingItem.customPrice,
-        priceSource: editingItem.priceSource,
-      });
+      console.log("=== NEW VERSION CHANGE METHOD ===");
+      console.log(
+        "Changing card version from",
+        editingItem.cardScryfallId,
+        "to",
+        card.id
+      );
 
-      // Update local state with the new card version
-      if (result && result.collectionItem) {
-        const updatedItem = result.collectionItem;
+      const changeRequest = scryfallCardToChangeRequest(card, editingItem.id);
+      console.log("Change request:", changeRequest);
+
+      const result = await changeCardVersion(changeRequest);
+      console.log("Change result:", result);
+
+      if (!result || !result.success) {
+        throw new Error(result?.error || "Failed to change card version");
+      }
+
+      console.log("Card version changed successfully");
+
+      // Update local state with the new collection item
+      if (result.newCollectionItem) {
         const newCard: CardModel = {
           scryfallId: card.id,
           oracleId: card.oracle_id,
@@ -309,11 +320,13 @@ export function CollectionDetailClient({
           updatedAt: new Date(),
         };
 
-        // Update collection items state
+        // Remove the old item and add the new one
         setLocalCollectionItems((prev) =>
           prev
-            ? prev.map((i) => (i.id === editingItem.id ? updatedItem : i))
-            : null
+            ? prev
+                .filter((i) => i.id !== editingItem.id)
+                .concat(result.newCollectionItem!)
+            : [result.newCollectionItem!]
         );
 
         // Update collection cards state
@@ -323,7 +336,13 @@ export function CollectionDetailClient({
       setShowVersionModal(false);
       setEditingItem(null);
     } catch (error) {
-      console.error("Failed to update card version:", error);
+      console.error("Failed to change card version:", error);
+      // Show user-friendly error message
+      alert(
+        `Failed to change card version: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -352,6 +371,9 @@ export function CollectionDetailClient({
     item: CollectionItem,
     newQuantity: number
   ) => {
+    console.log("=== QUANTITY CHANGE METHOD ===");
+    console.log("Changing quantity for item:", item.id, "to:", newQuantity);
+
     // Optimistically update the UI first
     const updatedItem = { ...item, quantity: newQuantity };
     setLocalCollectionItems((prev) =>
@@ -361,6 +383,7 @@ export function CollectionDetailClient({
     try {
       const result = await updateCollectionItem({
         id: item.id,
+        collectionId: collectionId,
         cardScryfallId: item.cardScryfallId,
         quantity: newQuantity,
         condition: item.condition,

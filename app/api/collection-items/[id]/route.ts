@@ -64,10 +64,19 @@ export async function PUT(
       priceSource: body.priceSource,
     };
 
-    const collectionItem =
+    const result =
       await dependencies.useCases.collectionItems.updateCollectionItem(
         updateData
       );
+
+    if (!result) {
+      return NextResponse.json(
+        { error: "Failed to update collection item" },
+        { status: 500 }
+      );
+    }
+
+    const collectionItem = result;
 
     return NextResponse.json({
       success: true,
