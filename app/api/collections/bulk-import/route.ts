@@ -1,6 +1,5 @@
 import { getCurrentUser } from "@/app/auth-actions";
 import {
-  ScryfallCard,
   ScryfallSearchResult,
   ScryfallService,
 } from "@/src/app/services/scryfall.service";
@@ -21,13 +20,32 @@ interface ScryfallCollectionRequest {
   }>;
 }
 
-export async function POST(request: NextRequest) {
+interface BulkImportResult {
+  success: boolean;
+  results: Array<{
+    cardName: string;
+    success: boolean;
+    collectionItem?: any;
+    error?: string;
+  }>;
+  summary: {
+    total: number;
+    successful: number;
+    failed: number;
+  };
+}
+
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<BulkImportResult | { error: string }>> {
   try {
+    // 1. Authentication check
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // 2. Parse and validate request body
     const body = await request.json();
     const {
       collectionId,
@@ -41,189 +59,151 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (items.length === 0) {
+      return NextResponse.json({
+        success: true,
+        results: [],
+        summary: { total: 0, successful: 0, failed: 0 },
+      });
+    }
+
+    // 3. Validate collection exists and belongs to user
+    const collectionResult =
+      await dependencies.useCases.collections.getCollection(collectionId);
+    if (!collectionResult.success || !collectionResult.collection) {
+      return NextResponse.json(
+        { error: "Collection not found" },
+        { status: 404 }
+      );
+    }
+
+    if (collectionResult.collection.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Access denied to this collection" },
+        { status: 403 }
+      );
+    }
+
+    // 4. Process items individually to ensure proper error handling
     const scryfallService = new ScryfallService();
-    const results = [];
-    const errors = [];
+    const results: Array<{
+      cardName: string;
+      success: boolean;
+      collectionItem?: any;
+      error?: string;
+    }> = [];
 
-    // Process items in batches of 75 (Scryfall's limit for collection endpoint)
-    const batchSize = 75;
-    for (let i = 0; i < items.length; i += batchSize) {
-      const batch = items.slice(i, i + batchSize);
-
+    for (const item of items) {
       try {
-        // Use Scryfall's collection endpoint for bulk card lookup
-        const collectionRequest: ScryfallCollectionRequest = {
-          identifiers: batch.map((item) => ({ name: item.cardName })),
+        // 5. Search for card by name
+        const searchResult =
+          await scryfallService.makeRequest<ScryfallSearchResult>(
+            `/cards/search?q=!"${encodeURIComponent(item.cardName)}"&order=name`
+          );
+
+        if (!searchResult.data || searchResult.data.length === 0) {
+          results.push({
+            cardName: item.cardName,
+            success: false,
+            error: "Card not found",
+          });
+          continue;
+        }
+
+        const scryfallCard = searchResult.data[0];
+
+        // 6. Ensure card exists in database
+        let cardResult = await dependencies.useCases.cards.getCard(
+          scryfallCard.id
+        );
+        let card = cardResult.success ? cardResult.card : null;
+        if (!card) {
+          const insertCard: InsertCard = {
+            scryfallId: scryfallCard.id,
+            oracleId: scryfallCard.oracle_id,
+            name: scryfallCard.name,
+            setCode: scryfallCard.set,
+            setName: scryfallCard.set_name,
+            imageUris: scryfallCard.image_uris,
+            cachedData: scryfallCard as unknown as Record<string, unknown>,
+          };
+
+          const cardResult = await dependencies.useCases.cards.createCard(
+            insertCard
+          );
+          if (!cardResult.success || !cardResult.card) {
+            results.push({
+              cardName: item.cardName,
+              success: false,
+              error: "Failed to create card in database",
+            });
+            continue;
+          }
+          card = cardResult.card;
+        }
+
+        // 7. Create collection item
+        const insertCollectionItem: InsertCollectionItem = {
+          id: randomUUID(),
+          collectionId: collectionId,
+          cardScryfallId: scryfallCard.id,
+          quantity: item.quantity,
+          condition: "NM",
+          language: "en",
+          isFoil: false,
+          listingType: "both",
+          priceSource: "tcg",
         };
 
-        const foundCards = await scryfallService.getCardCollection(
-          collectionRequest.identifiers
-        );
+        const collectionItemResult =
+          await dependencies.useCases.collectionItems.createCollectionItem(
+            insertCollectionItem
+          );
 
-        // Process found cards
-
-        // Process each item in the batch
-        for (const item of batch) {
-          try {
-            // Find the card in the batch results
-            const scryfallCard = foundCards.find(
-              (card: ScryfallCard) =>
-                card.name.toLowerCase() === item.cardName.toLowerCase()
-            );
-
-            if (!scryfallCard) {
-              errors.push({
-                cardName: item.cardName,
-                error: "Card not found",
-              });
-              continue;
-            }
-
-            // Check if card already exists in database
-            let card = await dependencies.useCases.cards.getCard(
-              scryfallCard.id
-            );
-
-            if (!card) {
-              // Create card if it doesn't exist
-              const insertCard: InsertCard = {
-                scryfallId: scryfallCard.id,
-                oracleId: scryfallCard.oracle_id,
-                name: scryfallCard.name,
-                setCode: scryfallCard.set,
-                setName: scryfallCard.set_name,
-                imageUris: scryfallCard.image_uris,
-                cachedData: scryfallCard,
-              };
-
-              card = await dependencies.useCases.cards.createCard(insertCard);
-            }
-
-            // Create collection item
-            const insertCollectionItem: InsertCollectionItem = {
-              id: randomUUID(),
-              collectionId,
-              cardScryfallId: scryfallCard.id,
-              quantity: item.quantity,
-              condition: "NM",
-              language: "en",
-              isFoil: false,
-              listingType: "both",
-              priceSource: "tcg",
-            };
-
-            const collectionItem =
-              await dependencies.useCases.collectionItems.createCollectionItem(
-                insertCollectionItem
-              );
-
-            results.push({
-              cardName: item.cardName,
-              card: card,
-              collectionItem: collectionItem,
-            });
-          } catch (error) {
-            errors.push({
-              cardName: item.cardName,
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
+        if (
+          collectionItemResult.success &&
+          collectionItemResult.collectionItem
+        ) {
+          results.push({
+            cardName: item.cardName,
+            success: true,
+            collectionItem: collectionItemResult.collectionItem,
+          });
+        } else {
+          results.push({
+            cardName: item.cardName,
+            success: false,
+            error:
+              collectionItemResult.error || "Failed to create collection item",
+          });
         }
       } catch (error) {
-        // If bulk request fails, fall back to individual requests
-        console.warn(
-          "Bulk request failed, falling back to individual requests:",
-          error
-        );
-
-        for (const item of batch) {
-          try {
-            // Search for the card by name (fallback method)
-            const searchResult =
-              await scryfallService.makeRequest<ScryfallSearchResult>(
-                `/cards/search?q=${encodeURIComponent(
-                  item.cardName
-                )}&order=name`
-              );
-
-            if (!searchResult.data || searchResult.data.length === 0) {
-              errors.push({
-                cardName: item.cardName,
-                error: "Card not found",
-              });
-              continue;
-            }
-
-            // Use the first result (most relevant)
-            const scryfallCard = searchResult.data[0];
-
-            // Check if card already exists in database
-            let card = await dependencies.useCases.cards.getCard(
-              scryfallCard.id
-            );
-
-            if (!card) {
-              // Create card if it doesn't exist
-              const insertCard: InsertCard = {
-                scryfallId: scryfallCard.id,
-                oracleId: scryfallCard.oracle_id,
-                name: scryfallCard.name,
-                setCode: scryfallCard.set,
-                setName: scryfallCard.set_name,
-                imageUris: scryfallCard.image_uris,
-                cachedData: scryfallCard,
-              };
-
-              card = await dependencies.useCases.cards.createCard(insertCard);
-            }
-
-            // Create collection item
-            const insertCollectionItem: InsertCollectionItem = {
-              id: randomUUID(),
-              collectionId,
-              cardScryfallId: scryfallCard.id,
-              quantity: item.quantity,
-              condition: "NM",
-              language: "en",
-              isFoil: false,
-              listingType: "both",
-              priceSource: "tcg",
-            };
-
-            const collectionItem =
-              await dependencies.useCases.collectionItems.createCollectionItem(
-                insertCollectionItem
-              );
-
-            results.push({
-              cardName: item.cardName,
-              card: card,
-              collectionItem: collectionItem,
-            });
-          } catch (error) {
-            errors.push({
-              cardName: item.cardName,
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
-        }
+        results.push({
+          cardName: item.cardName,
+          success: false,
+          error:
+            error instanceof Error ? error.message : "Unknown error occurred",
+        });
       }
     }
+
+    // 8. Calculate summary
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
 
     return NextResponse.json({
       success: true,
       results,
-      errors,
       summary: {
         total: items.length,
-        successful: results.length,
-        failed: errors.length,
+        successful,
+        failed,
       },
     });
   } catch (error) {
-    console.error("Error bulk importing cards:", error);
+    console.error("Error in bulk import:", error);
     return NextResponse.json(
-      { error: "Failed to bulk import cards" },
+      { error: "Internal server error during bulk import" },
       { status: 500 }
     );
   }

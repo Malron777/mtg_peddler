@@ -88,6 +88,7 @@ export function CollectionDetailClient({
   const [filteredCollectionItems, setFilteredCollectionItems] = useState<
     CollectionItem[] | null
   >(null);
+  const [shouldRefetchItems, setShouldRefetchItems] = useState(false);
 
   // Load collection and items on component mount
   useEffect(() => {
@@ -132,6 +133,21 @@ export function CollectionDetailClient({
       });
     }
   }, [localCollectionItems]);
+
+  // Refetch collection items when bulk import is complete
+  useEffect(() => {
+    if (shouldRefetchItems) {
+      console.log("Refetching collection items after bulk import...");
+      const refetchItems = async () => {
+        const items = await getAllCollectionItemsForCollection(collectionId);
+        console.log("Refetched collection items:", items?.length || 0, "items");
+        console.log("Refetched items:", items);
+        setLocalCollectionItems(items);
+        setShouldRefetchItems(false);
+      };
+      refetchItems();
+    }
+  }, [shouldRefetchItems, collectionId, getAllCollectionItemsForCollection]);
 
   // Filter collection items based on search query
   useEffect(() => {
@@ -504,28 +520,8 @@ export function CollectionDetailClient({
     try {
       const result = await bulkImport(collectionId, items);
       if (result && result.results) {
-        // Extract collection items and cards from results
-        const newCollectionItems = result.results.map(
-          (r: { collectionItem: CollectionItem; card: CardModel }) =>
-            r.collectionItem
-        );
-        const newCards = result.results.map(
-          (r: { collectionItem: CollectionItem; card: CardModel }) => r.card
-        );
-
-        // Update local state with bulk imported items
-        setLocalCollectionItems((prev) =>
-          prev ? [...prev, ...newCollectionItems] : newCollectionItems
-        );
-
-        // Update collection cards with new cards
-        setCollectionCards((prev) => {
-          const newMap = new Map(prev);
-          newCards.forEach((card: CardModel) => {
-            newMap.set(card.scryfallId, card);
-          });
-          return newMap;
-        });
+        // Trigger refetch of collection items
+        setShouldRefetchItems(true);
 
         setBulkImportText("");
         setShowBulkImport(false);

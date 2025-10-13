@@ -135,7 +135,7 @@ export default function DealDetailPage({ params }: DealDetailPageProps) {
               <div className="space-y-4">
                 {deal.cards.map((card, index) => (
                   <div
-                    key={index}
+                    key={`${card.id || card.name}-${index}`}
                     className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg"
                   >
                     <div className="w-16 h-20 bg-slate-200 rounded flex items-center justify-center">

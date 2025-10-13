@@ -3,6 +3,7 @@ import {
   UpdateCollectionItem,
 } from "@/src/domain/tcg/collection-item.model";
 import { DB } from "@/src/infra/db/db";
+import { createBulkCollectionItemsQuery } from "@/src/infra/repos/collection/create-bulk-collection-items.query";
 import { createCollectionItemQuery } from "@/src/infra/repos/collection/create-collection-item.query";
 import { deleteCollectionItemQuery } from "@/src/infra/repos/collection/delete-collection-item.query";
 import { getAllCollectionItemsForCollectionQuery } from "@/src/infra/repos/collection/get-all-collection-items-for-collection.query";
@@ -20,6 +21,12 @@ export class CollectionItemsUseCase {
 
   async createCollectionItem(insertCollectionItem: InsertCollectionItem) {
     return createCollectionItemQuery(this.db, insertCollectionItem);
+  }
+
+  async createBulkCollectionItems(
+    insertCollectionItems: InsertCollectionItem[]
+  ) {
+    return createBulkCollectionItemsQuery(this.db, insertCollectionItems);
   }
 
   async getCollectionItem(collectionItemId: string) {

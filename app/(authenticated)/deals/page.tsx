@@ -119,7 +119,7 @@ function DealCard({ deal }: DealCardProps) {
         </div>
         <div className="flex gap-2">
           {deal.cards.slice(0, 3).map((card, index) => (
-            <div key={index} className="relative">
+            <div key={`${card.id || card.name}-${index}`} className="relative">
               <div className="w-12 h-16 bg-slate-100 rounded border flex items-center justify-center">
                 <img
                   src={card.imageUrl || "/card_back.png"}

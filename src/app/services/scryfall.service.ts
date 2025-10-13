@@ -57,6 +57,17 @@ export interface ScryfallSearchResult {
   data: ScryfallCard[];
 }
 
+export interface ScryfallCollectionResult {
+  object: "list";
+  not_found: Array<{
+    name?: string;
+    id?: string;
+    set?: string;
+    collector_number?: string;
+  }>;
+  data: ScryfallCard[];
+}
+
 export interface ScryfallError {
   object: "error";
   code: string;
@@ -120,7 +131,7 @@ export class ScryfallService {
   ): Promise<ScryfallCard[]> {
     const requestBody = { identifiers };
 
-    const result = await this.makeRequest<ScryfallSearchResult>(
+    const result = await this.makeRequest<ScryfallCollectionResult>(
       "/cards/collection",
       {
         method: "POST",

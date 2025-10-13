@@ -7,6 +7,59 @@ import {
 } from "@/src/domain/tcg/collection-item.model";
 import { useCallback, useState } from "react";
 
+// Hook for creating multiple collection items
+export function useCreateBulkCollectionItems() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createBulkCollectionItems = useCallback(
+    async (insertCollectionItems: InsertCollectionItem[]) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/collection-items/bulk", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ items: insertCollectionItems }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error || "Failed to create bulk collection items"
+          );
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const reset = useCallback(() => {
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  return {
+    loading,
+    error,
+    createBulkCollectionItems,
+    reset,
+  };
+}
+
 // Hook for creating a collection item
 export function useCreateCollectionItem() {
   const [loading, setLoading] = useState(false);
