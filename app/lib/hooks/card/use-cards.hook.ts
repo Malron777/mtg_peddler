@@ -195,30 +195,47 @@ export function useGetAllCardsForCollection() {
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<Card[] | null>(null);
 
-  const getAllCardsForCollection = useCallback(async (collectionId: string) => {
-    setLoading(true);
-    setError(null);
+  const getAllCardsForCollection = useCallback(
+    async (
+      collectionId: string,
+      options?: { pageSize?: number; page?: number }
+    ) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/cards/collection/${collectionId}`);
-      const result = await response.json();
+      try {
+        const url = new URL(
+          `/api/cards/collection/${collectionId}`,
+          window.location.origin
+        );
+        if (options?.pageSize) {
+          url.searchParams.set("pageSize", options.pageSize.toString());
+        }
+        if (options?.page) {
+          url.searchParams.set("page", options.page.toString());
+        }
 
-      if (result.success && result.cards) {
-        setCards(result.cards);
-        return result.cards;
-      } else {
-        setError(result.error || "Failed to get cards for collection");
+        const response = await fetch(url.toString());
+        const result = await response.json();
+
+        if (result.success && result.cards) {
+          setCards(result.cards);
+          return result.cards;
+        } else {
+          setError(result.error || "Failed to get cards for collection");
+          return null;
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        setError(errorMessage);
         return null;
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Unknown error occurred";
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const reset = useCallback(() => {
     setCards(null);

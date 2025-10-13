@@ -7,7 +7,10 @@ import { CollectionHeader } from "@/app/_components/collection/collection-header
 import { CollectionItemEditModal } from "@/app/_components/collection/collection-item-edit-modal";
 import { CollectionItemsGrid } from "@/app/_components/collection/collection-items-grid";
 import { CollectionSearchBar } from "@/app/_components/collection/collection-search-bar";
-import { useCards } from "@/app/lib/hooks/card/use-cards.hook";
+import {
+  useCards,
+  useGetAllCardsForCollection,
+} from "@/app/lib/hooks/card/use-cards.hook";
 import {
   scryfallCardToChangeRequest,
   useChangeCardVersion,
@@ -50,6 +53,12 @@ export function CollectionDetailClient({
   const { createCollectionItem, updateCollectionItem, deleteCollectionItem } =
     useCollectionItems();
   const { createCard } = useCards();
+  const {
+    cards: collectionCardsData,
+    loading: cardsLoading,
+    error: cardsError,
+    getAllCardsForCollection,
+  } = useGetAllCardsForCollection();
   const { changeCardVersion } = useChangeCardVersion();
   const {
     searchCards,
@@ -100,54 +109,48 @@ export function CollectionDetailClient({
     loadItems();
   }, [collectionId, getCollection, getAllCollectionItemsForCollection]);
 
-  // Load card data for collection items
+  // Load cards for collection in bulk
   useEffect(() => {
-    if (localCollectionItems) {
-      const cardPromises = localCollectionItems.map(async (item) => {
-        try {
-          const response = await fetch(`/api/cards/${item.cardScryfallId}`);
-          const result = await response.json();
-          if (result.success) {
-            return { scryfallId: item.cardScryfallId, card: result.card };
-          }
-        } catch (error) {
-          console.error(`Failed to load card ${item.cardScryfallId}:`, error);
-        }
-        return null;
-      });
-
-      Promise.all(cardPromises).then((results) => {
-        const cardMap = new Map<string, CardModel>();
-        results.forEach((result) => {
-          if (result) {
-            console.log(
-              "Loaded card:",
-              result.card.name,
-              "imageUris:",
-              result.card.imageUris
-            );
-            cardMap.set(result.scryfallId, result.card);
-          }
-        });
-        setCollectionCards(cardMap);
-      });
+    if (collectionId) {
+      getAllCardsForCollection(collectionId, { pageSize: 1000 }); // Get all cards at once
     }
-  }, [localCollectionItems]);
+  }, [collectionId, getAllCardsForCollection]);
 
-  // Refetch collection items when bulk import is complete
+  // Convert bulk cards data to map for easy lookup
+  useEffect(() => {
+    if (collectionCardsData) {
+      const cardMap = new Map<string, CardModel>();
+      collectionCardsData.forEach((card) => {
+        console.log("Loaded card:", card.name, "imageUris:", card.imageUris);
+        cardMap.set(card.scryfallId, card);
+      });
+      setCollectionCards(cardMap);
+    }
+  }, [collectionCardsData]);
+
+  // Refetch collection items and cards when bulk import is complete
   useEffect(() => {
     if (shouldRefetchItems) {
-      console.log("Refetching collection items after bulk import...");
-      const refetchItems = async () => {
+      console.log("Refetching collection items and cards after bulk import...");
+      const refetchData = async () => {
         const items = await getAllCollectionItemsForCollection(collectionId);
         console.log("Refetched collection items:", items?.length || 0, "items");
         console.log("Refetched items:", items);
         setLocalCollectionItems(items);
+
+        // Also refetch cards
+        await getAllCardsForCollection(collectionId, { pageSize: 1000 });
+
         setShouldRefetchItems(false);
       };
-      refetchItems();
+      refetchData();
     }
-  }, [shouldRefetchItems, collectionId, getAllCollectionItemsForCollection]);
+  }, [
+    shouldRefetchItems,
+    collectionId,
+    getAllCollectionItemsForCollection,
+    getAllCardsForCollection,
+  ]);
 
   // Filter collection items based on search query
   useEffect(() => {
@@ -178,7 +181,7 @@ export function CollectionDetailClient({
   }, [localCollectionItems, collectionCards, searchQuery]);
 
   // Show loading state
-  if (collectionLoading || itemsLoading || !collection) {
+  if (collectionLoading || itemsLoading || cardsLoading || !collection) {
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -208,7 +211,7 @@ export function CollectionDetailClient({
   }
 
   // Show error state or not found
-  if (collectionError || itemsError) {
+  if (collectionError || itemsError || cardsError) {
     notFound();
   }
 
