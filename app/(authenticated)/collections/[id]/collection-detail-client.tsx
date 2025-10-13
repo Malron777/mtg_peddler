@@ -25,6 +25,7 @@ import {
   useCardVersions,
   useScryfallSearch,
 } from "@/app/lib/hooks/scryfall/use-scryfall.hook";
+import { parseBulkImportText } from "@/app/lib/utils/bulk-import-parser";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import { Card as CardModel } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
@@ -504,21 +505,7 @@ export function CollectionDetailClient({
   const handleBulkImport = async () => {
     if (!bulkImportText.trim()) return;
 
-    const lines = bulkImportText.split("\n").filter((line) => line.trim());
-    const items = lines.map((line) => {
-      // Parse format: "2x Lightning Bolt" or "2 Lightning Bolt"
-      const match = line.match(/^(\d+)(?:x)?\s+(.+)$/);
-      if (match) {
-        return {
-          quantity: parseInt(match[1]),
-          cardName: match[2].trim(),
-        };
-      }
-      return {
-        quantity: 1,
-        cardName: line.trim(),
-      };
-    });
+    const items = parseBulkImportText(bulkImportText);
 
     try {
       const result = await bulkImport(collectionId, items);

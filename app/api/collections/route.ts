@@ -46,13 +46,20 @@ export async function POST(request: NextRequest) {
       isPublic: body.isPublic || false,
     };
 
-    const collection = await dependencies.useCases.collections.createCollection(
+    const result = await dependencies.useCases.collections.createCollection(
       insertCollection
     );
 
+    if (!result.success || !result.collection) {
+      return NextResponse.json(
+        { error: result.error || "Failed to create collection" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      collection,
+      collection: result.collection,
     });
   } catch (error) {
     console.error("Error creating collection:", error);

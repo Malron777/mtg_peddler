@@ -1,5 +1,8 @@
 "use client";
 
+import { useCreateCollection } from "@/app/lib/hooks/collection/use-collections-data.hook";
+import { useBulkImport } from "@/app/lib/hooks/scryfall/use-scryfall.hook";
+import { parseBulkImportText } from "@/app/lib/utils/bulk-import-parser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +19,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Step = "basic" | "import" | "review";
@@ -24,11 +28,23 @@ interface CollectionForm {
   name: string;
   description: string;
   isPublic: boolean;
-  importMethod: "manual" | "csv" | "text";
+  importMethod: "manual" | "text";
   importData?: string;
 }
 
 export default function CreateCollectionPage() {
+  const router = useRouter();
+  const {
+    createCollection,
+    loading: createLoading,
+    error: createError,
+  } = useCreateCollection();
+  const {
+    bulkImport,
+    loading: bulkImportLoading,
+    error: bulkImportError,
+  } = useBulkImport();
+
   const [currentStep, setCurrentStep] = useState<Step>("basic");
   const [formData, setFormData] = useState<CollectionForm>({
     name: "",
@@ -63,9 +79,41 @@ export default function CreateCollectionPage() {
     }
   };
 
-  const handleCreateCollection = () => {
-    // TODO: Implement collection creation
-    console.log("Creating collection:", formData);
+  const handleCreateCollection = async () => {
+    try {
+      // Create the collection first
+      const collection = await createCollection({
+        name: formData.name,
+        description: formData.description,
+        isPublic: formData.isPublic,
+      });
+
+      if (!collection) {
+        throw new Error(createError || "Failed to create collection");
+      }
+
+      // If we have import data, try to bulk import
+      if (formData.importMethod === "text" && formData.importData?.trim()) {
+        try {
+          const items = parseBulkImportText(formData.importData);
+
+          // Attempt bulk import - if it fails, we still redirect to the collection
+          await bulkImport(collection.id, items);
+        } catch (bulkError) {
+          console.warn(
+            "Bulk import failed, but collection was created:",
+            bulkError
+          );
+          // Continue to redirect even if bulk import fails
+        }
+      }
+
+      // Redirect to the collection page
+      router.push(`/collections/${collection.id}`);
+    } catch (error) {
+      console.error("Failed to create collection:", error);
+      // Error handling is managed by the hook
+    }
   };
 
   const isStepValid = () => {
@@ -73,13 +121,19 @@ export default function CreateCollectionPage() {
       case "basic":
         return formData.name.trim().length > 0;
       case "import":
-        return true; // Import method is optional
+        // If text import is selected, require import data
+        if (formData.importMethod === "text") {
+          return formData.importData?.trim().length > 0;
+        }
+        return true;
       case "review":
         return formData.name.trim().length > 0;
       default:
         return false;
     }
   };
+
+  const isLoading = createLoading || bulkImportLoading;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -275,27 +329,6 @@ export default function CreateCollectionPage() {
                   <input
                     type="radio"
                     name="importMethod"
-                    checked={formData.importMethod === "csv"}
-                    onChange={() => handleInputChange("importMethod", "csv")}
-                    className="mr-3 mt-1"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Upload className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium text-slate-900">
-                        Import CSV File
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600">
-                      Upload a CSV file with your card data
-                    </p>
-                  </div>
-                </label>
-
-                <label className="flex items-start p-4 border border-slate-200 rounded-lg hover:border-olive-300 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="importMethod"
                     checked={formData.importMethod === "text"}
                     onChange={() => handleInputChange("importMethod", "text")}
                     className="mr-3 mt-1"
@@ -313,6 +346,27 @@ export default function CreateCollectionPage() {
                   </div>
                 </label>
               </div>
+
+              {/* Text Import Input */}
+              {formData.importMethod === "text" && (
+                <div className="mt-6 p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <Label htmlFor="importData">Card List</Label>
+                    <Textarea
+                      id="importData"
+                      value={formData.importData || ""}
+                      onChange={(e) =>
+                        handleInputChange("importData", e.target.value)
+                      }
+                      placeholder="Enter cards in the format:&#10;2x Lightning Bolt&#10;1x Black Lotus&#10;3 Counterspell"
+                      className="mt-2 min-h-[120px]"
+                    />
+                    <p className="text-sm text-slate-600 mt-2">
+                      Format: quantity (optional "x") card name, one per line
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -353,9 +407,37 @@ export default function CreateCollectionPage() {
                   <h3 className="font-medium text-slate-900">Import Method</h3>
                   <p className="text-slate-600">
                     {formData.importMethod === "manual" && "Add cards manually"}
-                    {formData.importMethod === "csv" && "Import from CSV file"}
                     {formData.importMethod === "text" && "Paste card list"}
                   </p>
+                  {formData.importMethod === "text" && formData.importData && (
+                    <div className="mt-2">
+                      <h4 className="text-sm font-medium text-slate-700 mb-1">
+                        Cards to Import:
+                      </h4>
+                      <div className="bg-slate-100 rounded p-3 text-sm text-slate-600 max-h-32 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap">
+                          {formData.importData}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {(createError || bulkImportError) && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Error</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    {createError && <p>{createError}</p>}
+                    {bulkImportError && (
+                      <p>Bulk import failed: {bulkImportError}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -374,9 +456,10 @@ export default function CreateCollectionPage() {
             {currentStep === "review" ? (
               <Button
                 onClick={handleCreateCollection}
+                disabled={isLoading}
                 className="bg-olive-600 hover:bg-olive-700 text-white"
               >
-                Create Collection
+                {isLoading ? "Creating..." : "Create Collection"}
               </Button>
             ) : (
               <Button
