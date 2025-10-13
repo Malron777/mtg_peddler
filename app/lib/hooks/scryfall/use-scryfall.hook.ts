@@ -112,6 +112,54 @@ export function useCardVersions() {
   };
 }
 
+// Hook for fetching card variants
+export function useCardVariants() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [variants, setVariants] = useState<ScryfallCard[] | null>(null);
+
+  const getCardVariants = useCallback(async (cardName: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/cards/variants?name=${encodeURIComponent(cardName)}`
+      );
+      const result = await response.json();
+
+      if (result.success) {
+        setVariants(result.variants);
+        return result.variants;
+      } else {
+        setError(result.error || "Failed to fetch card variants");
+        return null;
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    setVariants(null);
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  return {
+    variants,
+    loading,
+    error,
+    getCardVariants,
+    reset,
+  };
+}
+
 // Hook for bulk importing cards
 export function useBulkImport() {
   const [loading, setLoading] = useState(false);

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { collectionId: string } }
+  { params }: { params: Promise<{ collectionId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -12,12 +12,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "50");
 
     const result = await dependencies.useCases.cards.getAllCardsForCollection(
-      params.collectionId,
+      resolvedParams.collectionId,
       {
         page,
         pageSize,

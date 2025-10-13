@@ -75,6 +75,10 @@ export function CollectionDetailClient({
   const [collectionCards, setCollectionCards] = useState<
     Map<string, CardModel>
   >(new Map());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCollectionItems, setFilteredCollectionItems] = useState<
+    CollectionItem[] | null
+  >(null);
 
   // Load collection and items on component mount
   useEffect(() => {
@@ -116,6 +120,34 @@ export function CollectionDetailClient({
     }
   }, [collectionItems]);
 
+  // Filter collection items based on search query
+  useEffect(() => {
+    if (!collectionItems) {
+      setFilteredCollectionItems(null);
+      return;
+    }
+
+    if (!searchQuery.trim()) {
+      setFilteredCollectionItems(collectionItems);
+      return;
+    }
+
+    const filtered = collectionItems.filter((item) => {
+      const card = collectionCards.get(item.cardScryfallId);
+      if (!card) return false;
+
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        card.name.toLowerCase().includes(searchLower) ||
+        card.setName.toLowerCase().includes(searchLower) ||
+        card.setCode.toLowerCase().includes(searchLower) ||
+        item.condition.toLowerCase().includes(searchLower)
+      );
+    });
+
+    setFilteredCollectionItems(filtered);
+  }, [collectionItems, collectionCards, searchQuery]);
+
   // Show loading state
   if (collectionLoading || itemsLoading || !collection) {
     return (
@@ -152,6 +184,10 @@ export function CollectionDetailClient({
   }
 
   const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleAddCardsSearch = (query: string) => {
     if (query.trim()) {
       searchCards(query);
       setShowCardSearchPanel(true);
@@ -348,7 +384,7 @@ export function CollectionDetailClient({
           loading={searchLoading}
           error={searchError}
           onClose={() => setShowCardSearchPanel(false)}
-          onSearch={handleSearch}
+          onSearch={handleAddCardsSearch}
           onSelectCard={handleSelectCard}
         />
 
@@ -361,7 +397,7 @@ export function CollectionDetailClient({
 
         {/* Collection Items */}
         <CollectionItemsGrid
-          collectionItems={collectionItems}
+          collectionItems={filteredCollectionItems}
           collectionCards={collectionCards}
           viewMode={viewMode}
           onEditItem={handleEditItem}

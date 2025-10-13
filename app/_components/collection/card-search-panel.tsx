@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface CardSearchPanelProps {
   isOpen: boolean;
@@ -27,12 +28,24 @@ export function CardSearchPanel({
   onSearch,
   onSelectCard,
 }: CardSearchPanelProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Debounced search effect
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+
+    const timeoutId = setTimeout(() => {
+      onSearch(searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, onSearch]);
+
   if (!isOpen) return null;
 
   const handleSearch = () => {
-    const input = document.getElementById("card-search") as HTMLInputElement;
-    if (input?.value) {
-      onSearch(input.value);
+    if (searchQuery.trim()) {
+      onSearch(searchQuery);
     }
   };
 
@@ -51,9 +64,11 @@ export function CardSearchPanel({
             <Input
               id="card-search"
               placeholder="Enter card name to search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  onSearch(e.currentTarget.value);
+                  handleSearch();
                 }
               }}
               className="flex-1"

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { scryfallId: string } }
+  { params }: { params: Promise<{ scryfallId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -13,12 +13,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const { searchParams } = new URL(request.url);
     const includeCollectionItems =
       searchParams.get("includeCollectionItems") === "true";
 
     const result = await dependencies.useCases.cards.getCard(
-      params.scryfallId,
+      resolvedParams.scryfallId,
       {
         includeCollectionItems,
       }
@@ -43,7 +44,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { scryfallId: string } }
+  { params }: { params: Promise<{ scryfallId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -51,9 +52,10 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const updateData: UpdateCard = {
-      scryfallId: params.scryfallId,
+      scryfallId: resolvedParams.scryfallId,
       oracleId: body.oracleId,
       name: body.name,
       setCode: body.setCode,
@@ -80,7 +82,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { scryfallId: string } }
+  { params }: { params: Promise<{ scryfallId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -88,7 +90,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await dependencies.useCases.cards.deleteCard(params.scryfallId);
+    const resolvedParams = await params;
+    await dependencies.useCases.cards.deleteCard(resolvedParams.scryfallId);
 
     return NextResponse.json({
       success: true,

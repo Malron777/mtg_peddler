@@ -68,14 +68,16 @@ export class ScryfallService {
   private readonly baseUrl = "https://api.scryfall.com";
   private readonly userAgent = "MTG-Peddler/1.0";
 
-  async makeRequest<T>(endpoint: string): Promise<T> {
+  async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const response = await fetch(url, {
       headers: {
         "User-Agent": this.userAgent,
         Accept: "application/json",
+        ...options?.headers,
       },
+      ...options,
     });
 
     if (!response.ok) {
@@ -108,6 +110,33 @@ export class ScryfallService {
   async getCardVersions(oracleId: string): Promise<ScryfallCard[]> {
     const encodedOracleId = encodeURIComponent(oracleId);
     const endpoint = `/cards/search?q=oracleid:${encodedOracleId}&unique=prints`;
+
+    const result = await this.makeRequest<ScryfallSearchResult>(endpoint);
+    return result.data;
+  }
+
+  async getCardCollection(
+    identifiers: Array<{ name: string }>
+  ): Promise<ScryfallCard[]> {
+    const requestBody = { identifiers };
+
+    const result = await this.makeRequest<ScryfallSearchResult>(
+      "/cards/collection",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    return result.data;
+  }
+
+  async getCardWithAllVariants(cardName: string): Promise<ScryfallCard[]> {
+    const encodedName = encodeURIComponent(cardName);
+    const endpoint = `/cards/search?q=!"${encodedName}"&unique=prints&include_variations=true`;
 
     const result = await this.makeRequest<ScryfallSearchResult>(endpoint);
     return result.data;
