@@ -38,7 +38,6 @@ export function CollectionDetailClient({
     getCollection,
   } = useGetCollection();
   const {
-    collectionItems,
     loading: itemsLoading,
     error: itemsError,
     getAllCollectionItemsForCollection,
@@ -76,6 +75,9 @@ export function CollectionDetailClient({
     Map<string, CardModel>
   >(new Map());
   const [searchQuery, setSearchQuery] = useState("");
+  const [localCollectionItems, setLocalCollectionItems] = useState<
+    CollectionItem[] | null
+  >(null);
   const [filteredCollectionItems, setFilteredCollectionItems] = useState<
     CollectionItem[] | null
   >(null);
@@ -83,13 +85,17 @@ export function CollectionDetailClient({
   // Load collection and items on component mount
   useEffect(() => {
     getCollection(collectionId);
-    getAllCollectionItemsForCollection(collectionId);
+    const loadItems = async () => {
+      const items = await getAllCollectionItemsForCollection(collectionId);
+      setLocalCollectionItems(items);
+    };
+    loadItems();
   }, [collectionId, getCollection, getAllCollectionItemsForCollection]);
 
   // Load card data for collection items
   useEffect(() => {
-    if (collectionItems) {
-      const cardPromises = collectionItems.map(async (item) => {
+    if (localCollectionItems) {
+      const cardPromises = localCollectionItems.map(async (item) => {
         try {
           const response = await fetch(`/api/cards/${item.cardScryfallId}`);
           const result = await response.json();
@@ -118,21 +124,21 @@ export function CollectionDetailClient({
         setCollectionCards(cardMap);
       });
     }
-  }, [collectionItems]);
+  }, [localCollectionItems]);
 
   // Filter collection items based on search query
   useEffect(() => {
-    if (!collectionItems) {
+    if (!localCollectionItems) {
       setFilteredCollectionItems(null);
       return;
     }
 
     if (!searchQuery.trim()) {
-      setFilteredCollectionItems(collectionItems);
+      setFilteredCollectionItems(localCollectionItems);
       return;
     }
 
-    const filtered = collectionItems.filter((item) => {
+    const filtered = localCollectionItems.filter((item) => {
       const card = collectionCards.get(item.cardScryfallId);
       if (!card) return false;
 
@@ -146,7 +152,7 @@ export function CollectionDetailClient({
     });
 
     setFilteredCollectionItems(filtered);
-  }, [collectionItems, collectionCards, searchQuery]);
+  }, [localCollectionItems, collectionCards, searchQuery]);
 
   // Show loading state
   if (collectionLoading || itemsLoading || !collection) {
@@ -215,7 +221,7 @@ export function CollectionDetailClient({
       });
 
       // Create collection item
-      await createCollectionItem({
+      const result = await createCollectionItem({
         id: crypto.randomUUID(),
         collectionId: collectionId,
         cardScryfallId: card.id,
@@ -227,8 +233,32 @@ export function CollectionDetailClient({
         priceSource: "tcg",
       });
 
-      // Refresh collection items
-      getAllCollectionItemsForCollection(collectionId);
+      // Optimistically update local state instead of refetching
+      if (result && result.collectionItem) {
+        const newItem = result.collectionItem;
+        const newCard: CardModel = {
+          scryfallId: card.id,
+          oracleId: card.oracle_id,
+          name: card.name,
+          setCode: card.set,
+          setName: card.set_name,
+          imageUris: card.image_uris || null,
+          pricesLastUpdated: null,
+          cachedData: card as unknown as Record<string, unknown>,
+          lastFetchedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        // Update collection items state
+        setLocalCollectionItems((prev) =>
+          prev ? [...prev, newItem] : [newItem]
+        );
+
+        // Update collection cards state
+        setCollectionCards((prev) => new Map(prev).set(card.id, newCard));
+      }
+
       setShowCardSearchPanel(false);
     } catch (error) {
       console.error("Failed to add card:", error);
@@ -250,7 +280,7 @@ export function CollectionDetailClient({
 
     try {
       // Update the collection item with new card version
-      await updateCollectionItem({
+      const result = await updateCollectionItem({
         id: editingItem.id,
         cardScryfallId: card.id,
         quantity: editingItem.quantity,
@@ -262,8 +292,34 @@ export function CollectionDetailClient({
         priceSource: editingItem.priceSource,
       });
 
-      // Refresh collection items
-      getAllCollectionItemsForCollection(collectionId);
+      // Update local state with the new card version
+      if (result && result.collectionItem) {
+        const updatedItem = result.collectionItem;
+        const newCard: CardModel = {
+          scryfallId: card.id,
+          oracleId: card.oracle_id,
+          name: card.name,
+          setCode: card.set,
+          setName: card.set_name,
+          imageUris: card.image_uris || null,
+          pricesLastUpdated: null,
+          cachedData: card as unknown as Record<string, unknown>,
+          lastFetchedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        // Update collection items state
+        setLocalCollectionItems((prev) =>
+          prev
+            ? prev.map((i) => (i.id === editingItem.id ? updatedItem : i))
+            : null
+        );
+
+        // Update collection cards state
+        setCollectionCards((prev) => new Map(prev).set(card.id, newCard));
+      }
+
       setShowVersionModal(false);
       setEditingItem(null);
     } catch (error) {
@@ -275,11 +331,19 @@ export function CollectionDetailClient({
     if (
       confirm("Are you sure you want to delete this card from the collection?")
     ) {
+      // Optimistically remove from UI first
+      const originalItems = localCollectionItems;
+      setLocalCollectionItems((prev) =>
+        prev ? prev.filter((i) => i.id !== item.id) : null
+      );
+
       try {
         await deleteCollectionItem(item.id);
-        getAllCollectionItemsForCollection(collectionId);
+        // Success - item is already removed from UI
       } catch (error) {
         console.error("Failed to delete collection item:", error);
+        // Revert optimistic update on error
+        setLocalCollectionItems(originalItems);
       }
     }
   };
@@ -288,8 +352,14 @@ export function CollectionDetailClient({
     item: CollectionItem,
     newQuantity: number
   ) => {
+    // Optimistically update the UI first
+    const updatedItem = { ...item, quantity: newQuantity };
+    setLocalCollectionItems((prev) =>
+      prev ? prev.map((i) => (i.id === item.id ? updatedItem : i)) : null
+    );
+
     try {
-      await updateCollectionItem({
+      const result = await updateCollectionItem({
         id: item.id,
         cardScryfallId: item.cardScryfallId,
         quantity: newQuantity,
@@ -300,9 +370,21 @@ export function CollectionDetailClient({
         customPrice: item.customPrice,
         priceSource: item.priceSource,
       });
-      getAllCollectionItemsForCollection(collectionId);
+
+      // Update with the actual result from server
+      if (result && result.collectionItem) {
+        setLocalCollectionItems((prev) =>
+          prev
+            ? prev.map((i) => (i.id === item.id ? result.collectionItem : i))
+            : null
+        );
+      }
     } catch (error) {
       console.error("Failed to update quantity:", error);
+      // Revert optimistic update on error
+      setLocalCollectionItems((prev) =>
+        prev ? prev.map((i) => (i.id === item.id ? item : i)) : null
+      );
     }
   };
 
@@ -327,8 +409,30 @@ export function CollectionDetailClient({
 
     try {
       const result = await bulkImport(collectionId, items);
-      if (result) {
-        getAllCollectionItemsForCollection(collectionId);
+      if (result && result.results) {
+        // Extract collection items and cards from results
+        const newCollectionItems = result.results.map(
+          (r: { collectionItem: CollectionItem; card: CardModel }) =>
+            r.collectionItem
+        );
+        const newCards = result.results.map(
+          (r: { collectionItem: CollectionItem; card: CardModel }) => r.card
+        );
+
+        // Update local state with bulk imported items
+        setLocalCollectionItems((prev) =>
+          prev ? [...prev, ...newCollectionItems] : newCollectionItems
+        );
+
+        // Update collection cards with new cards
+        setCollectionCards((prev) => {
+          const newMap = new Map(prev);
+          newCards.forEach((card: CardModel) => {
+            newMap.set(card.scryfallId, card);
+          });
+          return newMap;
+        });
+
         setBulkImportText("");
         setShowBulkImport(false);
       }
@@ -376,7 +480,7 @@ export function CollectionDetailClient({
         {/* Collection Header */}
         <CollectionHeader
           collection={collection}
-          collectionItems={collectionItems}
+          collectionItems={localCollectionItems}
           isEditingCollection={isEditingCollection}
           onToggleVisibility={handleToggleVisibility}
           onEditCollection={handleEditCollection}
