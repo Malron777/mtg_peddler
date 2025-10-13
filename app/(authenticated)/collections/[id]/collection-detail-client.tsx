@@ -284,6 +284,28 @@ export function CollectionDetailClient({
     }
   };
 
+  const handleQuantityChange = async (
+    item: CollectionItem,
+    newQuantity: number
+  ) => {
+    try {
+      await updateCollectionItem({
+        id: item.id,
+        cardScryfallId: item.cardScryfallId,
+        quantity: newQuantity,
+        condition: item.condition,
+        language: item.language,
+        isFoil: item.isFoil,
+        listingType: item.listingType,
+        customPrice: item.customPrice,
+        priceSource: item.priceSource,
+      });
+      getAllCollectionItemsForCollection(collectionId);
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+    }
+  };
+
   const handleBulkImport = async () => {
     if (!bulkImportText.trim()) return;
 
@@ -402,6 +424,7 @@ export function CollectionDetailClient({
           viewMode={viewMode}
           onEditItem={handleEditItem}
           onDeleteItem={handleDeleteItem}
+          onQuantityChange={handleQuantityChange}
           onAddCards={() => setShowCardSearchPanel(true)}
           onBulkImport={() => setShowBulkImport(true)}
         />

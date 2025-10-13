@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card as UICard } from "@/components/ui/card";
 import { Card } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface CollectionItemCardProps {
@@ -14,6 +14,10 @@ interface CollectionItemCardProps {
   viewMode?: "grid" | "list";
   onEdit: (collectionItem: CollectionItem) => void;
   onDelete: (collectionItem: CollectionItem) => void;
+  onQuantityChange?: (
+    collectionItem: CollectionItem,
+    newQuantity: number
+  ) => void;
 }
 
 export function CollectionItemCard({
@@ -22,6 +26,7 @@ export function CollectionItemCard({
   viewMode = "list",
   onEdit,
   onDelete,
+  onQuantityChange,
 }: CollectionItemCardProps) {
   const getConditionColor = (condition: string) => {
     switch (condition) {
@@ -37,6 +42,18 @@ export function CollectionItemCard({
         return "bg-red-200 text-red-900";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleQuantityIncrease = () => {
+    if (onQuantityChange) {
+      onQuantityChange(collectionItem, collectionItem.quantity + 1);
+    }
+  };
+
+  const handleQuantityDecrease = () => {
+    if (onQuantityChange && collectionItem.quantity > 1) {
+      onQuantityChange(collectionItem, collectionItem.quantity - 1);
     }
   };
 
@@ -73,11 +90,28 @@ export function CollectionItemCard({
             )}
           </div>
 
-          {/* Quantity */}
-          <div className="text-center">
-            <span className="text-sm font-medium">
+          {/* Quantity with adjustment buttons */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleQuantityDecrease}
+              disabled={collectionItem.quantity <= 1}
+              className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <span className="text-sm font-medium min-w-[20px] text-center">
               {collectionItem.quantity}
             </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleQuantityIncrease}
+              className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
           </div>
 
           {/* Action buttons */}
@@ -181,10 +215,31 @@ export function CollectionItemCard({
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">
-                Qty:{" "}
-                <span className="font-medium">{collectionItem.quantity}</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-600">Qty:</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleQuantityDecrease}
+                    disabled={collectionItem.quantity <= 1}
+                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="font-medium min-w-[20px] text-center">
+                    {collectionItem.quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleQuantityIncrease}
+                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
               {collectionItem.customPrice && (
                 <span className="font-medium">
                   ${collectionItem.customPrice}

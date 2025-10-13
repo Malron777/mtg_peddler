@@ -13,6 +13,7 @@ interface CollectionItemsGridProps {
   viewMode: "grid" | "list";
   onEditItem: (item: CollectionItem) => void;
   onDeleteItem: (item: CollectionItem) => void;
+  onQuantityChange?: (item: CollectionItem, newQuantity: number) => void;
   onAddCards: () => void;
   onBulkImport: () => void;
 }
@@ -23,6 +24,7 @@ export function CollectionItemsGrid({
   viewMode,
   onEditItem,
   onDeleteItem,
+  onQuantityChange,
   onAddCards,
   onBulkImport,
 }: CollectionItemsGridProps) {
@@ -60,6 +62,7 @@ export function CollectionItemsGrid({
                 viewMode={viewMode}
                 onEdit={onEditItem}
                 onDelete={onDeleteItem}
+                onQuantityChange={onQuantityChange}
               />
             );
           })}

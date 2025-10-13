@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import { X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface CardSearchPanelProps {
   isOpen: boolean;
@@ -29,25 +29,77 @@ export function CardSearchPanel({
   onSelectCard,
 }: CardSearchPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastSuccessfulQuery, setLastSuccessfulQuery] = useState<string | null>(
+    null
+  );
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const DEBOUNCE_DELAY = 500; // Debounce delay to prevent excessive requests
+
+  // Track successful searches to prevent redundant API calls
+  useEffect(() => {
+    if (searchResults && !loading && !error && searchQuery.trim()) {
+      setLastSuccessfulQuery(searchQuery.trim());
+    }
+  }, [searchResults, loading, error, searchQuery]);
 
   // Debounced search effect
   useEffect(() => {
     if (!searchQuery.trim()) return;
 
-    const timeoutId = setTimeout(() => {
+    // Don't search again if we already have successful results for this query
+    if (
+      lastSuccessfulQuery === searchQuery.trim() &&
+      searchResults &&
+      !loading &&
+      !error
+    ) {
+      return;
+    }
+
+    // Clear previous timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
       onSearch(searchQuery);
-    }, 300); // 300ms debounce
+    }, DEBOUNCE_DELAY);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, onSearch]);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [
+    searchQuery,
+    onSearch,
+    lastSuccessfulQuery,
+    searchResults,
+    loading,
+    error,
+  ]);
 
-  if (!isOpen) return null;
-
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
+      // Reset the last successful query to allow immediate search
+      setLastSuccessfulQuery(null);
       onSearch(searchQuery);
     }
-  };
+  }, [searchQuery, onSearch]);
+
+  // Reset state when panel is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery("");
+      setLastSuccessfulQuery(null);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
@@ -75,7 +127,8 @@ export function CardSearchPanel({
             />
             <Button
               onClick={handleSearch}
-              className="bg-olive-600 hover:bg-olive-700 text-white"
+              disabled={loading}
+              className="bg-olive-600 hover:bg-olive-700 text-white disabled:opacity-50"
             >
               Search
             </Button>
