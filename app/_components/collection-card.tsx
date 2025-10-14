@@ -1,9 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { DollarSign, Globe, Lock, Package, Target } from "lucide-react";
+import Link from "next/link";
 
 interface CollectionCardProps {
   id: string;
@@ -50,21 +52,20 @@ export function CollectionCard({
   };
 
   return (
-    <Card
-      className={cn(
-        "bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-slate-100 border-l-4",
-        statusColors[status],
-        className
-      )}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          {isPublic ? (
-            <Globe className="h-4 w-4 text-slate-500" />
-          ) : (
-            <Lock className="h-4 w-4 text-slate-500" />
-          )}
-          <h3 className="font-semibold text-slate-900 truncate">{name}</h3>
+    <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 h-full flex flex-col">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h3 className="font-semibold text-slate-900 mb-1">{name}</h3>
+          <div className="flex items-center gap-2">
+            {isPublic ? (
+              <Globe className="h-4 w-4 text-slate-500" />
+            ) : (
+              <Lock className="h-4 w-4 text-slate-500" />
+            )}
+            <span className="text-sm text-slate-600">
+              {isPublic ? "Public" : "Private"}
+            </span>
+          </div>
         </div>
         <Badge
           className={cn(
@@ -80,7 +81,7 @@ export function CollectionCard({
         </Badge>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 flex-1">
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <Package className="h-4 w-4" />
           <span>{cardCount} cards</span>
@@ -103,6 +104,14 @@ export function CollectionCard({
         <div className="text-xs text-slate-500">
           Updated {formatDate(lastUpdated)}
         </div>
+      </div>
+
+      <div className="pt-4 border-t border-slate-200">
+        <Link href={`/collections/${id}`}>
+          <Button className="w-full bg-olive-600 hover:bg-olive-700 text-white">
+            View Collection
+          </Button>
+        </Link>
       </div>
     </Card>
   );

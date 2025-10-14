@@ -1,5 +1,6 @@
 "use client";
 
+import { CardGrid } from "@/app/_components/card-grid";
 import { CollectionItemCard } from "@/app/_components/collection-item-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,31 +46,47 @@ export function CollectionItemsGrid({
       </div>
 
       {collectionItems && collectionItems.length > 0 ? (
-        <div
-          className={
-            viewMode === "grid"
-              ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4"
-              : "space-y-4"
-          }
-        >
-          {collectionItems.map((item) => {
-            const card = collectionCards.get(item.cardScryfallId);
-            if (!card) return null;
+        viewMode === "grid" ? (
+          <CardGrid columns={5}>
+            {collectionItems.map((item) => {
+              const card = collectionCards.get(item.cardScryfallId);
+              if (!card) return null;
 
-            return (
-              <CollectionItemCard
-                key={item.id}
-                collectionItem={item}
-                card={card}
-                viewMode={viewMode}
-                onEdit={onEditItem}
-                onEditVersion={onEditVersion}
-                onDelete={onDeleteItem}
-                onQuantityChange={onQuantityChange}
-              />
-            );
-          })}
-        </div>
+              return (
+                <CollectionItemCard
+                  key={item.id}
+                  collectionItem={item}
+                  card={card}
+                  viewMode={viewMode}
+                  onEdit={onEditItem}
+                  onEditVersion={onEditVersion}
+                  onDelete={onDeleteItem}
+                  onQuantityChange={onQuantityChange}
+                />
+              );
+            })}
+          </CardGrid>
+        ) : (
+          <div className="space-y-4">
+            {collectionItems.map((item) => {
+              const card = collectionCards.get(item.cardScryfallId);
+              if (!card) return null;
+
+              return (
+                <CollectionItemCard
+                  key={item.id}
+                  collectionItem={item}
+                  card={card}
+                  viewMode={viewMode}
+                  onEdit={onEditItem}
+                  onEditVersion={onEditVersion}
+                  onDelete={onDeleteItem}
+                  onQuantityChange={onQuantityChange}
+                />
+              );
+            })}
+          </div>
+        )
       ) : (
         /* Empty State */
         <div className="text-center py-12">

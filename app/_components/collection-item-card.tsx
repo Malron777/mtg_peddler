@@ -61,92 +61,127 @@ export function CollectionItemCard({
 
   if (viewMode === "grid") {
     return (
-      <UICard className="p-3 hover:shadow-md transition-shadow">
-        <div className="flex flex-col items-center space-y-2">
-          {/* Card Image */}
-          <div className="w-24 h-32 relative">
-            <Image
-              src={
-                card.imageUris?.normal ||
-                card.imageUris?.small ||
-                "/card_back.png"
-              }
-              alt={card.name}
-              fill
-              className="object-contain rounded"
-              onError={(e) => {
-                console.log(
-                  "Image failed to load for card:",
-                  card.name,
-                  "imageUris:",
-                  card.imageUris
-                );
-                e.currentTarget.src = "/card_back.png";
-              }}
-            />
-            {/* Foil indicator */}
-            {collectionItem.isFoil && (
-              <div className="absolute top-1 right-1 bg-yellow-400 text-black text-xs font-bold px-1 rounded">
-                F
+      <UICard className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 h-full flex flex-col">
+        {/* Card Image */}
+        <div className="w-full h-40 relative">
+          <Image
+            src={
+              card.imageUris?.normal ||
+              card.imageUris?.small ||
+              "/card_back.png"
+            }
+            alt={card.name}
+            fill
+            className="object-contain rounded-lg"
+            onError={(e) => {
+              console.log(
+                "Image failed to load for card:",
+                card.name,
+                "imageUris:",
+                card.imageUris
+              );
+              e.currentTarget.src = "/card_back.png";
+            }}
+          />
+          {/* Foil indicator */}
+          {collectionItem.isFoil && (
+            <div className="absolute top-2 right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">
+              Foil
+            </div>
+          )}
+        </div>
+
+        {/* Card Details */}
+        <div className="flex-1 flex flex-col">
+          <div className="mb-3">
+            <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2 text-sm">
+              {card.name}
+            </h3>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="secondary" className="text-xs">
+                {card.setCode}
+              </Badge>
+              <Badge
+                className={`text-xs ${getConditionColor(
+                  collectionItem.condition
+                )}`}
+              >
+                {collectionItem.condition}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Quantity and Price Info */}
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center justify-between text-sm text-slate-600">
+              <span>Quantity:</span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleQuantityDecrease}
+                  disabled={collectionItem.quantity <= 1}
+                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="font-medium min-w-[20px] text-center">
+                  {collectionItem.quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleQuantityIncrease}
+                  className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            {collectionItem.customPrice && (
+              <div className="text-sm text-slate-600">
+                <span className="font-medium">
+                  ${collectionItem.customPrice}
+                </span>
               </div>
             )}
           </div>
 
-          {/* Quantity with adjustment buttons */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleQuantityDecrease}
-              disabled={collectionItem.quantity <= 1}
-              className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
-            <span className="text-sm font-medium min-w-[20px] text-center">
-              {collectionItem.quantity}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleQuantityIncrease}
-              className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
-
           {/* Action buttons */}
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(collectionItem)}
-              className="h-6 w-6 p-0"
-              title="Edit card details"
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            {onEditVersion && (
+          <div className="mt-auto pt-3 border-t border-slate-200">
+            <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onEditVersion(collectionItem)}
-                className="h-6 w-6 p-0"
-                title="Change card version"
+                onClick={() => onEdit(collectionItem)}
+                className="flex-1 h-8 text-xs"
+                title="Edit card details"
               >
-                <RefreshCw className="h-3 w-3" />
+                <Edit className="h-3 w-3 mr-1" />
+                Edit
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(collectionItem)}
-              className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
-              title="Delete card"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+              {onEditVersion && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditVersion(collectionItem)}
+                  className="flex-1 h-8 text-xs"
+                  title="Change card version"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Version
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(collectionItem)}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                title="Delete card"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
         </div>
       </UICard>
@@ -155,7 +190,7 @@ export function CollectionItemCard({
 
   // List view (existing implementation)
   return (
-    <UICard className="p-4 hover:shadow-md transition-shadow">
+    <UICard className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
       <div className="flex gap-4">
         {/* Card Image */}
         <div className="w-20 h-28 relative flex-shrink-0">
@@ -167,7 +202,7 @@ export function CollectionItemCard({
             }
             alt={card.name}
             fill
-            className="object-contain rounded"
+            className="object-contain rounded-lg"
             onError={(e) => {
               console.log(
                 "Image failed to load for card:",
@@ -178,12 +213,39 @@ export function CollectionItemCard({
               e.currentTarget.src = "/card_back.png";
             }}
           />
+          {/* Foil indicator */}
+          {collectionItem.isFoil && (
+            <div className="absolute top-1 right-1 bg-yellow-400 text-black text-xs font-bold px-1 rounded">
+              F
+            </div>
+          )}
         </div>
 
         {/* Card Details */}
         <div className="flex-1 min-w-0 overflow-hidden">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold text-sm line-clamp-2">{card.name}</h3>
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2">
+                {card.name}
+              </h3>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary" className="text-xs">
+                  {card.setCode}
+                </Badge>
+                <Badge
+                  className={`text-xs ${getConditionColor(
+                    collectionItem.condition
+                  )}`}
+                >
+                  {collectionItem.condition}
+                </Badge>
+                {collectionItem.isFoil && (
+                  <Badge variant="outline" className="text-xs">
+                    Foil
+                  </Badge>
+                )}
+              </div>
+            </div>
             <div className="flex gap-1 ml-2">
               <Button
                 variant="ghost"
@@ -217,63 +279,39 @@ export function CollectionItemCard({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-xs flex-1 min-w-0">
-                <span className="truncate">{card.setName}</span>
-              </Badge>
-              <Badge variant="outline" className="text-xs flex-shrink-0">
-                {card.setCode}
-              </Badge>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge
-                className={`text-xs flex-shrink-0 ${getConditionColor(
-                  collectionItem.condition
-                )}`}
-              >
-                {collectionItem.condition}
-              </Badge>
-              {collectionItem.isFoil && (
-                <Badge variant="outline" className="text-xs flex-shrink-0">
-                  Foil
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600">Qty:</span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleQuantityDecrease}
-                    disabled={collectionItem.quantity <= 1}
-                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="font-medium min-w-[20px] text-center">
-                    {collectionItem.quantity}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleQuantityIncrease}
-                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm text-slate-600">
+              <span>Quantity:</span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleQuantityDecrease}
+                  disabled={collectionItem.quantity <= 1}
+                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="font-medium min-w-[20px] text-center">
+                  {collectionItem.quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleQuantityIncrease}
+                  className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
               </div>
-              {collectionItem.customPrice && (
+            </div>
+            {collectionItem.customPrice && (
+              <div className="text-sm text-slate-600">
                 <span className="font-medium">
                   ${collectionItem.customPrice}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

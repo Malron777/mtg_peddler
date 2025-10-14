@@ -229,23 +229,19 @@ export default function CollectionsPage() {
             {filteredCollections.map((collection) => {
               const collectionMetadata = getCollectionMetadata(collection.id);
               return (
-                <Link
+                <CollectionCard
                   key={collection.id}
-                  href={`/collections/${collection.id}`}
-                >
-                  <CollectionCard
-                    id={collection.id}
-                    name={collection.name}
-                    cardCount={collectionMetadata?.cardCount || 0}
-                    value={collectionMetadata?.totalValue}
-                    isPublic={collection.isPublic}
-                    pendingDeals={collectionMetadata?.dealCount || 0}
-                    lastUpdated={
-                      new Date(collection.updatedAt || collection.createdAt)
-                    }
-                    status="trade" // Default status
-                  />
-                </Link>
+                  id={collection.id}
+                  name={collection.name}
+                  cardCount={collectionMetadata?.cardCount || 0}
+                  value={collectionMetadata?.totalValue}
+                  isPublic={collection.isPublic}
+                  pendingDeals={collectionMetadata?.dealCount || 0}
+                  lastUpdated={
+                    new Date(collection.updatedAt || collection.createdAt)
+                  }
+                  status="trade" // Default status
+                />
               );
             })}
           </CardGrid>
