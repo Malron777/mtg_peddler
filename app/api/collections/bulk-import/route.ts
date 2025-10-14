@@ -118,13 +118,19 @@ export async function POST(
         );
         let card = cardResult.success ? cardResult.card : null;
         if (!card) {
+          // For 2-faced cards, use the first face's image_uris if main image_uris is null
+          const imageUris =
+            scryfallCard.image_uris ||
+            scryfallCard.card_faces?.[0]?.image_uris ||
+            null;
+
           const insertCard: InsertCard = {
             scryfallId: scryfallCard.id,
             oracleId: scryfallCard.oracle_id,
             name: scryfallCard.name,
             setCode: scryfallCard.set,
             setName: scryfallCard.set_name,
-            imageUris: scryfallCard.image_uris,
+            imageUris: imageUris,
             cachedData: scryfallCard as unknown as Record<string, unknown>,
           };
 

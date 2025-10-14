@@ -268,13 +268,17 @@ export function CollectionDetailClient({
       });
 
       // First, ensure the card exists in our database
+      // For 2-faced cards, use the first face's image_uris if main image_uris is null
+      const imageUris =
+        card.image_uris || card.card_faces?.[0]?.image_uris || null;
+
       await createCard({
         scryfallId: card.id,
         oracleId: card.oracle_id,
         name: card.name,
         setCode: card.set,
         setName: card.set_name,
-        imageUris: card.image_uris,
+        imageUris: imageUris,
         cachedData: card as unknown as Record<string, unknown>,
       });
 
@@ -300,7 +304,7 @@ export function CollectionDetailClient({
           name: card.name,
           setCode: card.set,
           setName: card.set_name,
-          imageUris: card.image_uris || null,
+          imageUris: imageUris,
           pricesLastUpdated: null,
           cachedData: card as unknown as Record<string, unknown>,
           lastFetchedAt: new Date(),

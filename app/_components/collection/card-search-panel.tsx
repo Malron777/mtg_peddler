@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
+import { getCardImageFallback } from "@/src/app/utils/card-image.utils";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -182,8 +183,7 @@ export function CardSearchPanel({
                   <div className="aspect-[488/680] relative mb-3">
                     <Image
                       src={
-                        card.image_uris?.normal ||
-                        card.image_uris?.small ||
+                        getCardImageFallback(card as any, card) ||
                         "/card_back.png"
                       }
                       alt={card.name}
@@ -194,7 +194,9 @@ export function CardSearchPanel({
                           "Search panel image failed to load for card:",
                           card.name,
                           "image_uris:",
-                          card.image_uris
+                          card.image_uris,
+                          "card_faces:",
+                          card.card_faces
                         );
                         e.currentTarget.src = "/card_back.png";
                       }}

@@ -40,13 +40,19 @@ export class RefreshCardFromScryfallService {
       );
 
       // Convert Scryfall card to our card format
+      // For 2-faced cards, use the first face's image_uris if main image_uris is null
+      const imageUris =
+        scryfallCard.image_uris ||
+        scryfallCard.card_faces?.[0]?.image_uris ||
+        null;
+
       const cardData: UpdateCard = {
         scryfallId: scryfallCard.id,
         name: scryfallCard.name,
         oracleId: scryfallCard.oracle_id,
         setCode: scryfallCard.set,
         setName: scryfallCard.set_name,
-        imageUris: scryfallCard.image_uris || null,
+        imageUris: imageUris,
         cachedData: JSON.parse(JSON.stringify(scryfallCard)), // Store the full Scryfall data
         lastFetchedAt: new Date(),
       };
@@ -87,13 +93,19 @@ export class RefreshCardFromScryfallService {
       const scryfallCard = await this.scryfallService.getCardByName(cardName);
 
       // Convert Scryfall card to our card format
+      // For 2-faced cards, use the first face's image_uris if main image_uris is null
+      const imageUris =
+        scryfallCard.image_uris ||
+        scryfallCard.card_faces?.[0]?.image_uris ||
+        null;
+
       const cardData: UpdateCard = {
         scryfallId: scryfallCard.id,
         name: scryfallCard.name,
         oracleId: scryfallCard.oracle_id,
         setCode: scryfallCard.set,
         setName: scryfallCard.set_name,
-        imageUris: scryfallCard.image_uris || null,
+        imageUris: imageUris,
         cachedData: JSON.parse(JSON.stringify(scryfallCard)), // Store the full Scryfall data
         lastFetchedAt: new Date(),
       };

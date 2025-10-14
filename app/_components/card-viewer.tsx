@@ -2,6 +2,7 @@
 
 import { createGetCardUseCase } from "@/src/app/services/get-card.use-case";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
+import { getCardImageFallback } from "@/src/app/utils/card-image.utils";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -107,10 +108,11 @@ export default function CardViewer() {
               {selectedVersion?.image_uris || card.image_uris ? (
                 <Image
                   src={
-                    selectedVersion?.image_uris?.large ||
-                    card.image_uris?.large ||
-                    (card.card_faces &&
-                      card.card_faces[0]?.image_uris?.large) ||
+                    getCardImageFallback(
+                      selectedVersion as any,
+                      selectedVersion
+                    ) ||
+                    getCardImageFallback(card as any, card) ||
                     ""
                   }
                   alt={selectedVersion ? selectedVersion.name : card.name}
@@ -197,18 +199,9 @@ export default function CardViewer() {
                     >
                       {/* Thumbnail Image */}
                       <div className="w-24 h-32 mb-3 relative">
-                        {version.image_uris ? (
+                        {getCardImageFallback(version as any, version) ? (
                           <Image
-                            src={version.image_uris.small}
-                            alt={version.name}
-                            fill
-                            className="object-cover rounded"
-                            unoptimized
-                          />
-                        ) : version.card_faces &&
-                          version.card_faces[0]?.image_uris ? (
-                          <Image
-                            src={version.card_faces[0].image_uris.small}
+                            src={getCardImageFallback(version as any, version)!}
                             alt={version.name}
                             fill
                             className="object-cover rounded"

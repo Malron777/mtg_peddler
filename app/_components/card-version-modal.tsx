@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
+import { getCardImageFallback } from "@/src/app/utils/card-image.utils";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -85,13 +86,23 @@ export function CardVersionModal({
                   <div className="aspect-[488/680] relative mb-3">
                     <Image
                       src={
-                        card.image_uris?.normal ||
-                        card.image_uris?.small ||
+                        getCardImageFallback(card as any, card) ||
                         "/card_back.png"
                       }
                       alt={card.name}
                       fill
                       className="object-contain rounded"
+                      onError={(e) => {
+                        console.log(
+                          "Version modal image failed to load for card:",
+                          card.name,
+                          "image_uris:",
+                          card.image_uris,
+                          "card_faces:",
+                          card.card_faces
+                        );
+                        e.currentTarget.src = "/card_back.png";
+                      }}
                     />
                   </div>
                   <div className="space-y-2">

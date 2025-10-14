@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card as UICard } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getCardImageFallback } from "@/src/app/utils/card-image.utils";
 import { Card as CardModel } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
 import { X } from "lucide-react";
@@ -113,11 +114,7 @@ export function CollectionItemEditModal({
           <div className="flex gap-4 mb-6 p-4 bg-slate-50 rounded-lg">
             <div className="w-20 h-28 relative flex-shrink-0">
               <Image
-                src={
-                  card.imageUris?.normal ||
-                  card.imageUris?.small ||
-                  "/card_back.png"
-                }
+                src={getCardImageFallback(card) || "/card_back.png"}
                 alt={card.name}
                 fill
                 className="object-contain rounded"

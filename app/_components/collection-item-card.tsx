@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card as UICard } from "@/components/ui/card";
 import { PriceCalculationService } from "@/src/app/services/price-calculation.service";
 import { ScryfallCard } from "@/src/app/services/scryfall.service";
+import { getCardImageFallback } from "@/src/app/utils/card-image.utils";
 import { Card } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
 import { DollarSign, Edit, Minus, Plus, RefreshCw, Trash2 } from "lucide-react";
@@ -76,11 +77,7 @@ export function CollectionItemCard({
         {/* Card Image */}
         <div className="w-full h-40 relative">
           <Image
-            src={
-              card.imageUris?.normal ||
-              card.imageUris?.small ||
-              "/card_back.png"
-            }
+            src={getCardImageFallback(card, scryfallCard) || "/card_back.png"}
             alt={card.name}
             fill
             className="object-contain rounded-lg"
@@ -89,7 +86,9 @@ export function CollectionItemCard({
                 "Image failed to load for card:",
                 card.name,
                 "imageUris:",
-                card.imageUris
+                card.imageUris,
+                "scryfallCard_faces:",
+                scryfallCard?.card_faces
               );
               e.currentTarget.src = "/card_back.png";
             }}
