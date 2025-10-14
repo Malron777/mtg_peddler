@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PriceCalculationService } from "@/src/app/services/price-calculation.service";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
 import { Collection } from "@/src/domain/tcg/collection.model";
 import {
@@ -22,6 +23,7 @@ import {
   EyeOff,
   Package,
   Plus,
+  RefreshCw,
   Trash2,
   Upload,
   Users,
@@ -30,6 +32,16 @@ import {
 interface CollectionHeaderProps {
   collection: Collection;
   collectionItems: CollectionItem[] | null;
+  priceSummary?: {
+    totalValue: number;
+    itemCount: number;
+    lastPriceUpdate: Date;
+    priceBreakdown: {
+      customPrices: number;
+      marketPrices: number;
+      unknownPrices: number;
+    };
+  };
   isEditingCollection: boolean;
   editingData: {
     name: string;
@@ -47,11 +59,13 @@ interface CollectionHeaderProps {
   onBulkImport: () => void;
   onExportCollection: () => void;
   onDeleteCollection: () => void;
+  onRefreshPrices?: () => void;
 }
 
 export function CollectionHeader({
   collection,
   collectionItems,
+  priceSummary,
   isEditingCollection,
   editingData,
   updateLoading,
@@ -64,19 +78,16 @@ export function CollectionHeader({
   onBulkImport,
   onExportCollection,
   onDeleteCollection,
+  onRefreshPrices,
 }: CollectionHeaderProps) {
-  // Calculate card count and value
+  // Calculate card count
   const cardCount =
     collectionItems && Array.isArray(collectionItems)
       ? collectionItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
       : 0;
-  const totalValue =
-    collectionItems && Array.isArray(collectionItems)
-      ? collectionItems.reduce((sum) => {
-          // TODO: Calculate actual value based on card prices
-          return sum + 0; // Placeholder
-        }, 0)
-      : 0;
+
+  // Use price summary if available, otherwise calculate from items
+  const totalValue = priceSummary?.totalValue || 0;
 
   // Calculate collection listing type (most common among items)
   const getCollectionListingType = () => {
@@ -243,14 +254,21 @@ export function CollectionHeader({
                   <Package className="h-4 w-4 text-slate-500" />
                   <span className="text-slate-600">{cardCount} cards</span>
                 </div>
-                {totalValue > 0 && (
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-slate-500" />
-                    <span className="text-slate-600">
-                      ${totalValue.toLocaleString()}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-slate-500" />
+                  <span className="text-slate-600">
+                    {PriceCalculationService.formatTotalValue(totalValue)}
+                  </span>
+                  {priceSummary &&
+                    priceSummary.priceBreakdown.unknownPrices > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-orange-600"
+                      >
+                        Some prices unknown
+                      </Badge>
+                    )}
+                </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-slate-500" />
                   <span className="text-slate-600">0 pending deals</span>
@@ -271,6 +289,17 @@ export function CollectionHeader({
 
         {!isEditingCollection && (
           <div className="flex flex-wrap gap-2">
+            {onRefreshPrices && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRefreshPrices}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh Prices
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

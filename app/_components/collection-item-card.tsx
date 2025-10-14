@@ -3,14 +3,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card as UICard } from "@/components/ui/card";
+import { PriceCalculationService } from "@/src/app/services/price-calculation.service";
+import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import { Card } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
-import { Edit, Minus, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { DollarSign, Edit, Minus, Plus, RefreshCw, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface CollectionItemCardProps {
   collectionItem: CollectionItem;
   card: Card;
+  scryfallCard?: ScryfallCard;
   viewMode?: "grid" | "list";
   onEdit: (collectionItem: CollectionItem) => void;
   onEditVersion?: (collectionItem: CollectionItem) => void;
@@ -24,6 +27,7 @@ interface CollectionItemCardProps {
 export function CollectionItemCard({
   collectionItem,
   card,
+  scryfallCard,
   viewMode = "list",
   onEdit,
   onEditVersion,
@@ -58,6 +62,13 @@ export function CollectionItemCard({
       onQuantityChange(collectionItem, collectionItem.quantity - 1);
     }
   };
+
+  // Get effective price information
+  const priceInfo = PriceCalculationService.getEffectivePrice(
+    collectionItem,
+    scryfallCard
+  );
+  const totalValue = priceInfo.price * collectionItem.quantity;
 
   if (viewMode === "grid") {
     return (
@@ -138,13 +149,32 @@ export function CollectionItemCard({
                 </Button>
               </div>
             </div>
-            {collectionItem.customPrice && (
-              <div className="text-sm text-slate-600">
+            {/* Price Information */}
+            <div className="text-sm text-slate-600">
+              <div className="flex items-center gap-1 mb-1">
+                <DollarSign className="h-3 w-3" />
                 <span className="font-medium">
-                  ${collectionItem.customPrice}
+                  {PriceCalculationService.formatPrice(priceInfo.price)}
                 </span>
+                {priceInfo.source !== "unknown" && (
+                  <Badge
+                    variant="outline"
+                    className={`text-xs ${
+                      priceInfo.source === "custom"
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-green-50 text-green-700 border-green-200"
+                    }`}
+                  >
+                    {priceInfo.source === "custom" ? "Custom" : "Market"}
+                  </Badge>
+                )}
               </div>
-            )}
+              {collectionItem.quantity > 1 && (
+                <div className="text-xs text-slate-500">
+                  Total: {PriceCalculationService.formatPrice(totalValue)}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action buttons */}
@@ -247,9 +277,28 @@ export function CollectionItemCard({
 
       {/* Price */}
       <td className="px-4 py-3">
-        <span className="text-sm font-medium">
-          {collectionItem.customPrice ? `$${collectionItem.customPrice}` : "-"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">
+            {PriceCalculationService.formatPrice(priceInfo.price)}
+          </span>
+          {priceInfo.source !== "unknown" && (
+            <Badge
+              variant="outline"
+              className={`text-xs ${
+                priceInfo.source === "custom"
+                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                  : "bg-green-50 text-green-700 border-green-200"
+              }`}
+            >
+              {priceInfo.source === "custom" ? "Custom" : "Market"}
+            </Badge>
+          )}
+        </div>
+        {collectionItem.quantity > 1 && (
+          <div className="text-xs text-slate-500 mt-1">
+            Total: {PriceCalculationService.formatPrice(totalValue)}
+          </div>
+        )}
       </td>
 
       {/* Actions */}

@@ -4,6 +4,7 @@ import { CardGrid } from "@/app/_components/card-grid";
 import { CollectionItemCard } from "@/app/_components/collection-item-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ScryfallCard } from "@/src/app/services/scryfall.service";
 import { Card as CardModel } from "@/src/domain/tcg/card.model";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
 import { Package, Plus, Upload } from "lucide-react";
@@ -11,6 +12,7 @@ import { Package, Plus, Upload } from "lucide-react";
 interface CollectionItemsGridProps {
   collectionItems: CollectionItem[] | null;
   collectionCards: Map<string, CardModel>;
+  scryfallCards?: Map<string, ScryfallCard>;
   viewMode: "grid" | "list";
   onEditItem: (item: CollectionItem) => void;
   onEditVersion?: (item: CollectionItem) => void;
@@ -23,6 +25,7 @@ interface CollectionItemsGridProps {
 export function CollectionItemsGrid({
   collectionItems,
   collectionCards,
+  scryfallCards,
   viewMode,
   onEditItem,
   onEditVersion,
@@ -57,6 +60,7 @@ export function CollectionItemsGrid({
                   key={item.id}
                   collectionItem={item}
                   card={card}
+                  scryfallCard={scryfallCards?.get(item.cardScryfallId)}
                   viewMode={viewMode}
                   onEdit={onEditItem}
                   onEditVersion={onEditVersion}
@@ -101,6 +105,7 @@ export function CollectionItemsGrid({
                       key={item.id}
                       collectionItem={item}
                       card={card}
+                      scryfallCard={scryfallCards?.get(item.cardScryfallId)}
                       viewMode={viewMode}
                       onEdit={onEditItem}
                       onEditVersion={onEditVersion}

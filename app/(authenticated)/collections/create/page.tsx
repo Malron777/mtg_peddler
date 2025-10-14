@@ -123,7 +123,7 @@ export default function CreateCollectionPage() {
       case "import":
         // If text import is selected, require import data
         if (formData.importMethod === "text") {
-          return formData.importData?.trim().length > 0;
+          return (formData.importData?.trim().length ?? 0) > 0;
         }
         return true;
       case "review":

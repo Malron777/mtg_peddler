@@ -19,6 +19,7 @@ import {
   useCollectionItems,
   useGetAllCollectionItemsForCollection,
 } from "@/app/lib/hooks/collection/use-collection-items.hook";
+import { useCollectionPricing } from "@/app/lib/hooks/collection/use-collection-pricing.hook";
 import {
   useGetCollection,
   useUpdateCollection,
@@ -109,6 +110,14 @@ export function CollectionDetailClient({
     CollectionItem[] | null
   >(null);
   const [shouldRefetchItems, setShouldRefetchItems] = useState(false);
+
+  // Price calculation hook
+  const { priceSummary, scryfallCards, refreshPrices, updateScryfallCard } =
+    useCollectionPricing({
+      collectionId,
+      items: localCollectionItems || [],
+      cards: collectionCards,
+    });
 
   // Load collection and items on component mount
   useEffect(() => {
@@ -306,6 +315,9 @@ export function CollectionDetailClient({
 
         // Update collection cards state
         setCollectionCards((prev) => new Map(prev).set(card.id, newCard));
+
+        // Update Scryfall cards state with the new card data (including prices)
+        updateScryfallCard(card.id, card);
       }
 
       setShowCardSearchPanel(false);
@@ -380,6 +392,9 @@ export function CollectionDetailClient({
 
         // Update collection cards state
         setCollectionCards((prev) => new Map(prev).set(card.id, newCard));
+
+        // Update Scryfall cards state with the new card data (including prices)
+        updateScryfallCard(card.id, card);
       }
 
       setShowVersionModal(false);
@@ -626,6 +641,7 @@ export function CollectionDetailClient({
         <CollectionHeader
           collection={collection}
           collectionItems={localCollectionItems}
+          priceSummary={priceSummary}
           isEditingCollection={isEditingCollection}
           editingData={editingCollectionData}
           updateLoading={updateLoading}
@@ -638,6 +654,7 @@ export function CollectionDetailClient({
           onBulkImport={() => setShowBulkImport(true)}
           onExportCollection={handleExportCollection}
           onDeleteCollection={handleDeleteCollection}
+          onRefreshPrices={refreshPrices}
         />
 
         {/* Bulk Import Panel */}
@@ -673,6 +690,7 @@ export function CollectionDetailClient({
         <CollectionItemsGrid
           collectionItems={filteredCollectionItems}
           collectionCards={collectionCards}
+          scryfallCards={scryfallCards}
           viewMode={viewMode}
           onEditItem={handleEditItem}
           onEditVersion={handleEditVersion}

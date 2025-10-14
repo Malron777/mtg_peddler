@@ -135,7 +135,7 @@ export default function DealDetailPage({ params }: DealDetailPageProps) {
               <div className="space-y-4">
                 {deal.cards.map((card, index) => (
                   <div
-                    key={`${card.id || card.name}-${index}`}
+                    key={`${card.name}-${index}`}
                     className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg"
                   >
                     <div className="w-16 h-20 bg-slate-200 rounded flex items-center justify-center">
@@ -149,26 +149,10 @@ export default function DealDetailPage({ params }: DealDetailPageProps) {
                       <h3 className="font-medium text-slate-900">
                         {card.name}
                       </h3>
-                      <p className="text-sm text-slate-600">{card.set}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          className={`text-xs ${
-                            card.condition === "nm"
-                              ? "bg-green-100 text-green-700"
-                              : card.condition === "lp"
-                              ? "bg-blue-100 text-blue-700"
-                              : card.condition === "mp"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : card.condition === "hp"
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {card.condition.toUpperCase()}
+                        <Badge className="text-xs bg-slate-100 text-slate-700">
+                          Qty: {card.quantity}
                         </Badge>
-                        <span className="text-sm text-slate-500">
-                          ${card.price.toFixed(2)}
-                        </span>
                       </div>
                     </div>
                   </div>
