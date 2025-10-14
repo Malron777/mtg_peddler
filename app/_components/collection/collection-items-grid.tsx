@@ -67,24 +67,50 @@ export function CollectionItemsGrid({
             })}
           </CardGrid>
         ) : (
-          <div className="space-y-4">
-            {collectionItems.map((item) => {
-              const card = collectionCards.get(item.cardScryfallId);
-              if (!card) return null;
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Card Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Set
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Condition
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Quantity
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Price
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {collectionItems.map((item) => {
+                  const card = collectionCards.get(item.cardScryfallId);
+                  if (!card) return null;
 
-              return (
-                <CollectionItemCard
-                  key={item.id}
-                  collectionItem={item}
-                  card={card}
-                  viewMode={viewMode}
-                  onEdit={onEditItem}
-                  onEditVersion={onEditVersion}
-                  onDelete={onDeleteItem}
-                  onQuantityChange={onQuantityChange}
-                />
-              );
-            })}
+                  return (
+                    <CollectionItemCard
+                      key={item.id}
+                      collectionItem={item}
+                      card={card}
+                      viewMode={viewMode}
+                      onEdit={onEditItem}
+                      onEditVersion={onEditVersion}
+                      onDelete={onDeleteItem}
+                      onQuantityChange={onQuantityChange}
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )
       ) : (

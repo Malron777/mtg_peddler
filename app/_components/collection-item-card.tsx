@@ -188,133 +188,104 @@ export function CollectionItemCard({
     );
   }
 
-  // List view (existing implementation)
+  // List view (table row)
   return (
-    <UICard className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
-      <div className="flex gap-4">
-        {/* Card Image */}
-        <div className="w-20 h-28 relative flex-shrink-0">
-          <Image
-            src={
-              card.imageUris?.normal ||
-              card.imageUris?.small ||
-              "/card_back.png"
-            }
-            alt={card.name}
-            fill
-            className="object-contain rounded-lg"
-            onError={(e) => {
-              console.log(
-                "Image failed to load for card:",
-                card.name,
-                "imageUris:",
-                card.imageUris
-              );
-              e.currentTarget.src = "/card_back.png";
-            }}
-          />
-          {/* Foil indicator */}
+    <tr className="hover:bg-slate-50 border-b border-slate-200">
+      {/* Card Name */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-slate-900">{card.name}</span>
           {collectionItem.isFoil && (
-            <div className="absolute top-1 right-1 bg-yellow-400 text-black text-xs font-bold px-1 rounded">
-              F
-            </div>
+            <Badge variant="outline" className="text-xs">
+              Foil
+            </Badge>
           )}
         </div>
+      </td>
 
-        {/* Card Details */}
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2">
-                {card.name}
-              </h3>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="text-xs">
-                  {card.setCode}
-                </Badge>
-                <Badge
-                  className={`text-xs ${getConditionColor(
-                    collectionItem.condition
-                  )}`}
-                >
-                  {collectionItem.condition}
-                </Badge>
-                {collectionItem.isFoil && (
-                  <Badge variant="outline" className="text-xs">
-                    Foil
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-1 ml-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(collectionItem)}
-                className="h-8 w-8 p-0"
-                title="Edit card details"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              {onEditVersion && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEditVersion(collectionItem)}
-                  className="h-8 w-8 p-0"
-                  title="Change card version"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(collectionItem)}
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                title="Delete card"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+      {/* Set */}
+      <td className="px-4 py-3">
+        <Badge variant="secondary" className="text-xs">
+          {card.setCode}
+        </Badge>
+      </td>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Quantity:</span>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleQuantityDecrease}
-                  disabled={collectionItem.quantity <= 1}
-                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
-                >
-                  <Minus className="h-3 w-3" />
-                </Button>
-                <span className="font-medium min-w-[20px] text-center">
-                  {collectionItem.quantity}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleQuantityIncrease}
-                  className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            {collectionItem.customPrice && (
-              <div className="text-sm text-slate-600">
-                <span className="font-medium">
-                  ${collectionItem.customPrice}
-                </span>
-              </div>
-            )}
-          </div>
+      {/* Condition */}
+      <td className="px-4 py-3">
+        <Badge
+          className={`text-xs ${getConditionColor(collectionItem.condition)}`}
+        >
+          {collectionItem.condition}
+        </Badge>
+      </td>
+
+      {/* Quantity */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleQuantityDecrease}
+            disabled={collectionItem.quantity <= 1}
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 disabled:opacity-50"
+          >
+            <Minus className="h-3 w-3" />
+          </Button>
+          <span className="font-medium min-w-[20px] text-center text-sm">
+            {collectionItem.quantity}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleQuantityIncrease}
+            className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
         </div>
-      </div>
-    </UICard>
+      </td>
+
+      {/* Price */}
+      <td className="px-4 py-3">
+        <span className="text-sm font-medium">
+          {collectionItem.customPrice ? `$${collectionItem.customPrice}` : "-"}
+        </span>
+      </td>
+
+      {/* Actions */}
+      <td className="px-4 py-3">
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(collectionItem)}
+            className="h-8 w-8 p-0"
+            title="Edit card details"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          {onEditVersion && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEditVersion(collectionItem)}
+              className="h-8 w-8 p-0"
+              title="Change card version"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(collectionItem)}
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            title="Delete card"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </td>
+    </tr>
   );
 }
