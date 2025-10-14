@@ -14,6 +14,7 @@ import { getManyCollectionsValueQuery } from "@/src/infra/repos/collection/get-m
 import { getWantListMatchesQuery } from "@/src/infra/repos/collection/get-want-list-matches.query";
 import { removeDealCardsFromCollectionQuery } from "@/src/infra/repos/collection/remove-deal-cards-from-collection.query";
 import { updateCollectionQuery } from "@/src/infra/repos/collection/update-collection.query";
+import { getCollectionInformationUseCase } from "./get-collection-information.use-case";
 
 export class CollectionsUseCase {
   private readonly db: DB;
@@ -89,5 +90,15 @@ export class CollectionsUseCase {
       collectionId,
       options
     );
+  }
+
+  async getCollectionInformation(
+    userId: string,
+    options?: {
+      includeFoil?: boolean;
+      priceSource?: "tcg" | "scg" | "custom" | "mtggoldfish" | "cardmarket";
+    }
+  ) {
+    return getCollectionInformationUseCase(this.db, userId, options);
   }
 }

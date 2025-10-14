@@ -3,6 +3,7 @@
 import { CardGrid } from "@/app/_components/card-grid";
 import { CollectionCard } from "@/app/_components/collection-card";
 import { PageHeader } from "@/app/_components/page-header";
+import { useGetCollectionInformation } from "@/app/lib/hooks/collection/use-collection-information.hook";
 import { useGetUserCollections } from "@/app/lib/hooks/collection/use-collections-data.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,19 @@ type FilterType = "all" | "public" | "private" | "trade" | "sale" | "both";
 export default function CollectionsPage() {
   const { collections, loading, error, getUserCollections } =
     useGetUserCollections();
+  const {
+    data: metadata,
+    loading: metadataLoading,
+    error: metadataError,
+    getCollectionInformation,
+  } = useGetCollectionInformation();
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
   // Load data on component mount
   useEffect(() => {
     getUserCollections();
-  }, [getUserCollections]);
+    getCollectionInformation();
+  }, [getUserCollections, getCollectionInformation]);
 
   const filteredCollections = Array.isArray(collections)
     ? collections.filter((collection) => {
@@ -40,8 +48,13 @@ export default function CollectionsPage() {
       })
     : [];
 
+  // Helper function to get metadata for a collection
+  const getCollectionMetadata = (collectionId: string) => {
+    return metadata?.collections?.find((c) => c.id === collectionId);
+  };
+
   // Show loading state
-  if (loading) {
+  if (loading || metadataLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -72,7 +85,7 @@ export default function CollectionsPage() {
   }
 
   // Show error state
-  if (error) {
+  if (error || metadataError) {
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,10 +96,11 @@ export default function CollectionsPage() {
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               Error loading collections
             </h3>
-            <p className="text-slate-600 mb-6">{error}</p>
+            <p className="text-slate-600 mb-6">{error || metadataError}</p>
             <Button
               onClick={() => {
                 getUserCollections();
+                getCollectionInformation();
               }}
               className="bg-olive-600 hover:bg-olive-700 text-white"
             >
@@ -161,11 +175,20 @@ export default function CollectionsPage() {
               <div className="text-sm text-slate-600">Total Collections</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-900">0</div>
+              <div className="text-2xl font-bold text-slate-900">
+                {metadata?.totalCards || 0}
+              </div>
               <div className="text-sm text-slate-600">Total Cards</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-900">$0</div>
+              <div className="text-2xl font-bold text-slate-900">
+                {metadata?.totalValue
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(metadata.totalValue)
+                  : "$0"}
+              </div>
               <div className="text-sm text-slate-600">Total Value</div>
             </div>
           </div>
@@ -203,22 +226,28 @@ export default function CollectionsPage() {
         {/* Collections Grid */}
         {filteredCollections.length > 0 ? (
           <CardGrid>
-            {filteredCollections.map((collection) => (
-              <Link key={collection.id} href={`/collections/${collection.id}`}>
-                <CollectionCard
-                  id={collection.id}
-                  name={collection.name}
-                  cardCount={0} // Placeholder until we have collection items
-                  value={undefined} // Placeholder until we have value data
-                  isPublic={collection.isPublic}
-                  pendingDeals={0} // Placeholder until we have deal data
-                  lastUpdated={
-                    new Date(collection.updatedAt || collection.createdAt)
-                  }
-                  status="trade" // Default status
-                />
-              </Link>
-            ))}
+            {filteredCollections.map((collection) => {
+              const collectionMetadata = getCollectionMetadata(collection.id);
+              return (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.id}`}
+                >
+                  <CollectionCard
+                    id={collection.id}
+                    name={collection.name}
+                    cardCount={collectionMetadata?.cardCount || 0}
+                    value={collectionMetadata?.totalValue}
+                    isPublic={collection.isPublic}
+                    pendingDeals={collectionMetadata?.dealCount || 0}
+                    lastUpdated={
+                      new Date(collection.updatedAt || collection.createdAt)
+                    }
+                    status="trade" // Default status
+                  />
+                </Link>
+              );
+            })}
           </CardGrid>
         ) : (
           <div className="text-center py-12">
