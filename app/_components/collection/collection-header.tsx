@@ -3,6 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CollectionItem } from "@/src/domain/tcg/collection-item.model";
 import { Collection } from "@/src/domain/tcg/collection.model";
@@ -24,10 +31,18 @@ interface CollectionHeaderProps {
   collection: Collection;
   collectionItems: CollectionItem[] | null;
   isEditingCollection: boolean;
+  editingData: {
+    name: string;
+    description: string;
+    isPublic: boolean;
+    listingType: "trade" | "sale" | "both";
+  };
+  updateLoading: boolean;
   onToggleVisibility: () => void;
   onEditCollection: () => void;
   onSaveCollection: () => void;
   onCancelEdit: () => void;
+  onFieldChange: (field: string, value: string | boolean) => void;
   onAddCards: () => void;
   onBulkImport: () => void;
   onExportCollection: () => void;
@@ -38,10 +53,13 @@ export function CollectionHeader({
   collection,
   collectionItems,
   isEditingCollection,
+  editingData,
+  updateLoading,
   onToggleVisibility,
   onEditCollection,
   onSaveCollection,
   onCancelEdit,
+  onFieldChange,
   onAddCards,
   onBulkImport,
   onExportCollection,
@@ -88,11 +106,12 @@ export function CollectionHeader({
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="flex-1">
           {isEditingCollection ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
+            <>
+              <div className="flex items-center gap-3 mb-4">
                 <Input
-                  defaultValue={collection.name}
-                  className="text-2xl font-bold border-none p-0 h-auto"
+                  value={editingData.name}
+                  onChange={(e) => onFieldChange("name", e.target.value)}
+                  className="text-3xl font-bold text-slate-900 border-none p-0 h-auto bg-transparent"
                 />
                 <Button
                   variant="outline"
@@ -100,7 +119,7 @@ export function CollectionHeader({
                   onClick={onToggleVisibility}
                   className="flex items-center gap-2"
                 >
-                  {collection.isPublic ? (
+                  {editingData.isPublic ? (
                     <>
                       <Eye className="h-4 w-4" />
                       Public
@@ -112,38 +131,69 @@ export function CollectionHeader({
                     </>
                   )}
                 </Button>
-                <Badge
-                  variant={
-                    collectionListingType === "trade"
-                      ? "default"
-                      : collectionListingType === "sale"
-                      ? "secondary"
-                      : "outline"
-                  }
-                  className="flex items-center gap-1"
+                <Select
+                  value={editingData.listingType}
+                  onValueChange={(value) => onFieldChange("listingType", value)}
                 >
-                  {collectionListingType === "trade" && "🔄 Trade"}
-                  {collectionListingType === "sale" && "💰 Sale"}
-                  {collectionListingType === "both" && "🔄💰 Trade & Sale"}
-                </Badge>
+                  <SelectTrigger className="w-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="trade">🔄 Trade</SelectItem>
+                    <SelectItem value="sale">💰 Sale</SelectItem>
+                    <SelectItem value="both">🔄💰 Trade & Sale</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
               <Textarea
-                defaultValue={collection.description || ""}
+                value={editingData.description}
+                onChange={(e) => onFieldChange("description", e.target.value)}
                 placeholder="Collection description..."
-                className="min-h-[100px]"
+                className="min-h-[100px] mb-4"
               />
+
+              <div className="flex flex-wrap gap-6 text-sm mb-4">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-slate-500" />
+                  <span className="text-slate-600">{cardCount} cards</span>
+                </div>
+                {totalValue > 0 && (
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-slate-500" />
+                    <span className="text-slate-600">
+                      ${totalValue.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-slate-500" />
+                  <span className="text-slate-600">0 pending deals</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-slate-500" />
+                  <span className="text-slate-600">
+                    Updated{" "}
+                    {new Date(
+                      collection.updatedAt || collection.createdAt
+                    ).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   onClick={onSaveCollection}
+                  disabled={updateLoading}
                   className="bg-olive-600 hover:bg-olive-700 text-white"
                 >
-                  Save Changes
+                  {updateLoading ? "Saving..." : "Save Changes"}
                 </Button>
                 <Button variant="outline" onClick={onCancelEdit}>
                   Cancel
                 </Button>
               </div>
-            </div>
+            </>
           ) : (
             <>
               <div className="flex items-center gap-3 mb-4">

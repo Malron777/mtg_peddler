@@ -19,7 +19,10 @@ import {
   useCollectionItems,
   useGetAllCollectionItemsForCollection,
 } from "@/app/lib/hooks/collection/use-collection-items.hook";
-import { useGetCollection } from "@/app/lib/hooks/collection/use-collections-data.hook";
+import {
+  useGetCollection,
+  useUpdateCollection,
+} from "@/app/lib/hooks/collection/use-collections-data.hook";
 import {
   useBulkImport,
   useCardVersions,
@@ -46,6 +49,7 @@ export function CollectionDetailClient({
     error: collectionError,
     getCollection,
   } = useGetCollection();
+  const { updateCollection, loading: updateLoading } = useUpdateCollection();
   const {
     loading: itemsLoading,
     error: itemsError,
@@ -88,6 +92,12 @@ export function CollectionDetailClient({
   const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
   const [bulkImportText, setBulkImportText] = useState("");
   const [isEditingCollection, setIsEditingCollection] = useState(false);
+  const [editingCollectionData, setEditingCollectionData] = useState({
+    name: "",
+    description: "",
+    isPublic: false,
+    listingType: "both" as "trade" | "sale" | "both",
+  });
   const [collectionCards, setCollectionCards] = useState<
     Map<string, CardModel>
   >(new Map());
@@ -109,6 +119,18 @@ export function CollectionDetailClient({
     };
     loadItems();
   }, [collectionId, getCollection, getAllCollectionItemsForCollection]);
+
+  // Initialize editing data when collection is loaded
+  useEffect(() => {
+    if (collection) {
+      setEditingCollectionData({
+        name: collection.name,
+        description: collection.description || "",
+        isPublic: collection.isPublic,
+        listingType: "both", // Default value, will be calculated from items
+      });
+    }
+  }, [collection]);
 
   // Load cards for collection in bulk
   useEffect(() => {
@@ -521,9 +543,13 @@ export function CollectionDetailClient({
     }
   };
 
-  const handleToggleVisibility = async () => {
-    // TODO: Implement visibility toggle
-    console.log("Toggle visibility");
+  const handleToggleVisibility = () => {
+    if (isEditingCollection) {
+      setEditingCollectionData((prev) => ({
+        ...prev,
+        isPublic: !prev.isPublic,
+      }));
+    }
   };
 
   const handleEditCollection = () => {
@@ -531,8 +557,47 @@ export function CollectionDetailClient({
   };
 
   const handleSaveCollection = async () => {
-    // TODO: Implement collection update
+    if (!collection) return;
+
+    try {
+      await updateCollection(collectionId, {
+        name: editingCollectionData.name,
+        description: editingCollectionData.description,
+        isPublic: editingCollectionData.isPublic,
+      });
+      setIsEditingCollection(false);
+      // Refresh the collection data
+      await getCollection(collectionId);
+    } catch (error) {
+      console.error("Failed to update collection:", error);
+      alert(
+        `Failed to update collection: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (collection) {
+      setEditingCollectionData({
+        name: collection.name,
+        description: collection.description || "",
+        isPublic: collection.isPublic,
+        listingType: "both",
+      });
+    }
     setIsEditingCollection(false);
+  };
+
+  const handleCollectionFieldChange = (
+    field: string,
+    value: string | boolean
+  ) => {
+    setEditingCollectionData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleExportCollection = () => {
@@ -562,10 +627,13 @@ export function CollectionDetailClient({
           collection={collection}
           collectionItems={localCollectionItems}
           isEditingCollection={isEditingCollection}
+          editingData={editingCollectionData}
+          updateLoading={updateLoading}
           onToggleVisibility={handleToggleVisibility}
           onEditCollection={handleEditCollection}
           onSaveCollection={handleSaveCollection}
-          onCancelEdit={() => setIsEditingCollection(false)}
+          onCancelEdit={handleCancelEdit}
+          onFieldChange={handleCollectionFieldChange}
           onAddCards={() => setShowCardSearchPanel(true)}
           onBulkImport={() => setShowBulkImport(true)}
           onExportCollection={handleExportCollection}
